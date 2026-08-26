@@ -5,7 +5,7 @@ import { sendChatMessage, transcribeAudio } from '../services/geminiService';
 import { formatLinks } from './soap/utils';
 import { sendNotification } from '../services/notificationService';
 import { Icons } from './ui/Icons';
-import { MODELS, DEFAULT_MODEL } from '../constants';
+import { MODELS, DEFAULT_MODEL } from '../config/appConfig';
 import CameraCaptureModal from './CameraCaptureModal';
 import ClinicalMarkdown from './ui/ClinicalMarkdown';
 import { createFileUpload, openAttachment, revokeUrl } from '../services/fileService';

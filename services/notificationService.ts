@@ -1,5 +1,5 @@
 
-import { APP_ICON_DATA_URL } from "../constants";
+import { APP_ICON_DATA_URL } from "../config/appConfig";
 
 export const requestNotificationPermission = async () => {
   try {
@@ -45,4 +45,3 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
     console.warn("Failing to send notification in this context:", e);
   }
 };
-

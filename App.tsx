@@ -24,7 +24,7 @@ import { MedicalChartResponse, ViewMode, FileUpload, SoapNote, GeneralData, Char
 import { useFileUpload } from './hooks/useFileUpload';
 import { generateMedicalChart, reassessSoapNote, generateProgressNote, refreshPatientSummary } from './services/geminiService';
 import { requestNotificationPermission, sendNotification } from './services/notificationService';
-import { DEFAULT_MODEL } from './constants';
+import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
 
 function App() {

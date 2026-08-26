@@ -18,7 +18,7 @@ import EditableTextArea from './ui/EditableTextArea';
 import { formatLinks } from './soap/utils';
 import { safeStorage, arrayToMarkdownBullets, keyValueToString, stringToKeyValue } from '../utils';
 import { integrateClinicalData, analyzeClinicalPhotos, analyzeLabPhotos, analyzeImagingPhotos } from '../services/geminiService';
-import { SPECIALIZATIONS } from '../constants';
+import { SPECIALIZATIONS } from '../config/appConfig';
 import StickyToolbar from './ui/StickyToolbar';
 import { ToolbarButton, ToolbarPagination, ToolbarSeparator } from './ui/ToolbarSections';
 

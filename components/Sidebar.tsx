@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ViewMode } from '../types';
-import { NAV_ITEMS } from '../constants';
+import { NAV_ITEMS } from '../config/appConfig';
 import { Icons } from './ui/Icons';
 
 interface SidebarProps {

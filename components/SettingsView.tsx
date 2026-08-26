@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Icons } from './ui/Icons';
-import { SPECIALIZATIONS, MODELS } from '../constants';
+import { SPECIALIZATIONS, MODELS } from '../config/appConfig';
 
 interface SettingsViewProps {
   defaultSpecialization: string;

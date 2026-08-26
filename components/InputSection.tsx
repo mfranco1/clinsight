@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect, useCallback, Dispatch, SetStateActi
 import { createPortal } from 'react-dom';
 import { FileUpload, MedicalChartResponse, GeneralData, EncounterType } from '../types';
 import { transcribeAudio } from '../services/geminiService';
-import { SPECIALIZATIONS, CLINICAL_TEMPLATES, MODELS } from '../constants';
+import { SPECIALIZATIONS, MODELS } from '../config/appConfig';
+import { CLINICAL_TEMPLATES } from '../constants';
 import { Icons } from './ui/Icons';
 import LookupModal from './LookupModal';
 import CameraCaptureModal from './CameraCaptureModal';

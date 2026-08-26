@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ViewMode } from '../types';
-import { NAV_ITEMS } from '../constants';
+import { NAV_ITEMS } from '../config/appConfig';
 
 interface HeaderProps {
   activePatient: {
