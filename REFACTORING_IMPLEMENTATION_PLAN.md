@@ -78,11 +78,23 @@ For every slice:
 
 **Verification:** `tests/app-config.test.ts` confirms facade parity; lint, unit tests, and production build pass without UI changes.
 
-#### [ ] 1.1b Extract AI prompts, schemas, and clinical templates
+#### [-] 1.1b Extract AI prompts, schemas, and clinical templates
 
 **Scope:** Move AI prompt/schema descriptions and remaining static clinical templates into owned AI/content modules, then migrate the Gemini service and remaining consumers.
 
 **Verification:** Prompt and schema exports remain byte-for-byte equivalent at the public boundary; clinical generation tests and the full browser suite pass.
+
+##### [x] 1.1b1 Extract schemas, diagnosis rules, and clinical templates
+
+**Scope:** Move schema descriptions, diagnosis formatting rules, and reusable clinical templates into `services/ai` and `config` modules while retaining compatibility exports.
+
+**Verification:** Content parity tests pass; typecheck, lint, unit tests, production build, and desktop/mobile browser tests pass.
+
+##### [ ] 1.1b2 Extract AI prompt functions and text
+
+**Scope:** Move the remaining prompt constants and prompt builders into an owned AI prompt module, then migrate `geminiService.ts` to direct imports.
+
+**Verification:** Prompt outputs remain unchanged for representative chart, SOAP, chat, and lookup inputs; the full regression suite passes.
 
 ### [ ] 1.2 Introduce typed domain aliases and remove low-risk `any`
 
@@ -291,3 +303,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-08-26 | 0.1, 0.2, 0.3, DG-1, DG-2, DG-3, 6.3 | complete | current workspace | `npm run lint`, `npm test`, `npm run build`, `npm run test:e2e` (4 desktop/mobile tests) | Adopted Tailwind 4.3 Vite delivery and modern test/lint tooling; added structured/legacy fixtures, persistence hydration coverage, and dashboard visual snapshots. Server-side AI proxy deferred. ESLint's newer React compiler rules remain deferred until the legacy components are migrated.
 2026-08-26 | 0.4 | complete | current workspace | `npm run lint`, `npm test` (8 unit tests), `npm run test:e2e` (6 desktop/mobile tests) | Added order-domain regression tests and input navigation/reset coverage. Reset assertion preserves the existing behavior: it clears the editor while remaining on the input view.
 2026-08-26 | 1.1a | complete | current workspace | `npm run lint`, `npm test` (9 unit tests), `npm run build` | Extracted app/navigation configuration to `config/appConfig.ts`, migrated direct consumers, and retained constants compatibility exports. AI prompt/schema and clinical-template extraction remains 1.1b.
+2026-08-26 | 1.1b1 | complete | current workspace | `npm run lint`, `npm test` (10 unit tests), `npm run build`, `npm run test:e2e` (6 browser tests) | Extracted schema descriptions, diagnosis rules, and clinical templates with compatibility parity tests. Remaining prompt text/builders are queued as 1.1b2.

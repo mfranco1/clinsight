@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { FileUpload, MedicalChartResponse, GeneralData, EncounterType } from '../types';
 import { transcribeAudio } from '../services/geminiService';
 import { SPECIALIZATIONS, MODELS } from '../config/appConfig';
-import { CLINICAL_TEMPLATES } from '../constants';
+import { CLINICAL_TEMPLATES } from '../config/clinicalTemplates';
 import { Icons } from './ui/Icons';
 import LookupModal from './LookupModal';
 import CameraCaptureModal from './CameraCaptureModal';
