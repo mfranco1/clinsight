@@ -158,6 +158,10 @@ export interface ChartEntry {
   groundingSources?: GroundingSource[];
 }
 
+/** Minimal shape accepted by chart-history rendering, including legacy/raw records. */
+export type ChartHistoryEntry = Pick<ChartEntry, 'date' | 'title'> &
+  Partial<Pick<ChartEntry, 'entryType' | 'soap' | 'rawText'>>;
+
 export interface CourseEvent {
   id?: string; // Adding id for easier deletion/updates if needed
   encounterId?: string;

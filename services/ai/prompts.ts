@@ -1,4 +1,4 @@
-import { SoapNote } from '../../types';
+import { ChartHistoryEntry, SoapNote } from '../../types';
 import { formatChartHistory, arrayToMarkdownBullets, keyValueToString } from '../../utils';
 import { SCHEMA_DESCRIPTIONS } from './schemaDescriptions';
 
@@ -177,7 +177,7 @@ export const PLAN_RULES = `
      - **Action items MUST be placed in their specific categories (Diagnostics, Therapeutics, Other) instead of a generic action list whenever possible.**
 `;
 
-export const REASSESS_SOAP_PROMPT = (currentSoap: SoapNote, history: any[], specialization: string, useGoogleSearch: boolean) => {
+export const REASSESS_SOAP_PROMPT = (currentSoap: SoapNote, history: ChartHistoryEntry[], specialization: string, useGoogleSearch: boolean) => {
   const subjectiveText = `SUBJECTIVE: 
     Chief Complaint: ${currentSoap.subjective.chiefComplaint || 'N/A'}, 
     HPI: ${currentSoap.subjective.hpi}, 

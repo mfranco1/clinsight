@@ -1,4 +1,4 @@
-import { ChartEntry, GeneralData } from "./types";
+import { ChartEntry, ChartHistoryEntry, DifferentialDiagnosisItem, GeneralData, PlanItem } from "./types";
 
 /**
  * Calculates a patient's age in years based on birthdate (dob) and the current local date.
@@ -176,7 +176,7 @@ export const getTodayLocalDateString = (): string => {
 /**
  * Formats a list of clinical entries (ChartEntry[]) into a standardized clinical history string.
  */
-export function formatChartHistory(history: ChartEntry[] | any[]): string {
+export function formatChartHistory(history: ChartHistoryEntry[]): string {
   if (!history || history.length === 0) return "";
   
   return history.map((e, index) => {
@@ -220,7 +220,7 @@ export function formatChartHistory(history: ChartEntry[] | any[]): string {
       if (assessment.rationale) entryDetails += `  Rationale: ${Array.isArray(assessment.rationale) ? assessment.rationale.join('; ') : assessment.rationale}\n`;
       if (assessment.differentialDiagnosis && assessment.differentialDiagnosis.length > 0) {
         entryDetails += `  Differential Diagnosis:\n`;
-        assessment.differentialDiagnosis.forEach((dd: any) => {
+        assessment.differentialDiagnosis.forEach((dd: DifferentialDiagnosisItem) => {
           entryDetails += `    - ${dd.diagnosis}: Pro: ${dd.evidenceFor?.join(', ') || ''}; Con: ${dd.evidenceAgainst?.join(', ') || ''}\n`;
         });
       }
@@ -231,7 +231,7 @@ export function formatChartHistory(history: ChartEntry[] | any[]): string {
         entryDetails += `  General Management: ${Object.entries(broaderManagement).filter(([_,v]) => v).map(([k,v]) => `${k}: ${v}`).join('; ')}\n`;
       }
       if (plan && plan.length > 0) {
-        plan.forEach((p: any) => {
+        plan.forEach((p: PlanItem) => {
           entryDetails += `  Problem: ${p.problem}\n`;
           if (p.diagnostics?.length) entryDetails += `    Diagnostics: ${p.diagnostics.join(', ')}\n`;
           if (p.therapeutics?.length) entryDetails += `    Therapeutics: ${p.therapeutics.join(', ')}\n`;

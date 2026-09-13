@@ -120,11 +120,23 @@ For every slice:
 
 **Verification:** Utility regression coverage confirms normalized age/sex values and preservation of unrelated fields; lint and 11 unit tests pass.
 
-##### [ ] 1.2b2 Type chart-history and persistence adapters
+##### [-] 1.2b2 Type chart-history and persistence adapters
 
 **Scope:** Narrow remaining utility and persistence inputs (`formatChartHistory`, storage payloads, and migration adapters) using explicit legacy/unknown guards.
 
 **Verification:** Structured and legacy fixture hydration plus full browser regression suite pass.
+
+###### [x] 1.2b2a Type chart-history rendering
+
+**Scope:** Add a reusable `ChartHistoryEntry` boundary and replace chart-history renderer callback `any` values with `DifferentialDiagnosisItem` and `PlanItem` types.
+
+**Verification:** Typecheck, lint, 11 unit tests, and 6 desktop/mobile browser tests pass.
+
+###### [ ] 1.2b2b Type persistence adapters
+
+**Scope:** Narrow local-storage payloads and migration adapters with explicit `unknown` guards.
+
+**Verification:** Legacy and structured persistence fixtures hydrate equivalently without casts that conceal malformed data.
 
 ### [ ] 1.3 Consolidate date, ID, text, and storage utilities
 
@@ -331,3 +343,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.1b2 | complete | current workspace | `npm run lint`, `npm test` (10 unit tests), `npm run build`, `npm run test:e2e` (6 browser tests) | Extracted all AI prompt constants/builders to `services/ai/prompts.ts`, migrated `geminiService.ts` to direct prompt/schema/config imports, and retained `constants.ts` as a compatibility facade.
 2026-09-13 | 1.2a | complete | current workspace | `npm run lint`, `npm test` (10 unit tests) | Added shared domain aliases and typed order filters; removed the order parser's low-risk `any` cast while preserving dynamic category parsing at the boundary.
 2026-09-13 | 1.2b1 | complete | current workspace | `npm run lint`, `npm test` (11 unit tests) | Replaced the patient age/sex normalizer's `any` input/output with explicit overloads and added regression coverage for legacy data normalization.
+2026-09-13 | 1.2b2a | complete | current workspace | `npm run lint`, `npm test` (11 unit tests), `npm run test:e2e` (6 browser tests) | Added the `ChartHistoryEntry` boundary and typed chart-history rendering callbacks while preserving raw and structured record support.
