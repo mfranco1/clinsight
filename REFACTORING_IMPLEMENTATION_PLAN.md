@@ -138,7 +138,7 @@ For every slice:
 
 **Verification:** Legacy and structured persistence fixtures hydrate equivalently without casts that conceal malformed data.
 
-### [-] 1.3 Consolidate date, ID, text, and storage utilities
+### [x] 1.3 Consolidate date, ID, text, and storage utilities
 
 **Scope:** Split `utils.ts` into focused, side-effect-free modules (`date`, `ids`, `clinical-text`, `storage`) while preserving exported behavior through a compatibility facade.
 
@@ -162,7 +162,7 @@ For every slice:
 
 **Verification:** Typecheck, lint, and all 13 unit tests pass.
 
-##### [-] 1.3b2 Extract clinical text utilities
+##### [x] 1.3b2 Extract clinical text utilities
 
 **Scope:** Move markdown, key/value, and chart-history formatting helpers into focused text modules.
 
@@ -174,11 +174,23 @@ For every slice:
 
 **Verification:** Typecheck, lint, and all 13 unit tests pass.
 
-###### [ ] 1.3b2b Extract structured clinical text utilities
+###### [x] 1.3b2b Extract structured clinical text utilities
 
 **Scope:** Move key/value conversion, section ordering, and chart-history formatting into focused modules.
 
 **Verification:** Clinical text output remains unchanged across structured and legacy fixtures.
+
+####### [x] 1.3b2b1 Extract section ordering and key/value conversion
+
+**Scope:** Move ROS/HEEADSSSS/physical-exam ordering and key/value conversion into `utils/clinicalText.ts`, preserving compatibility exports.
+
+**Verification:** Typecheck, lint, and all 13 unit tests pass.
+
+####### [x] 1.3b2b2 Extract chart-history formatting
+
+**Scope:** Move chart-history rendering into the clinical-text module after its dependency boundary is isolated.
+
+**Verification:** Structured and legacy chart-history outputs remain byte-for-byte equivalent.
 
 ### [ ] 1.4 Add a typed application error and notification contract
 
@@ -384,3 +396,5 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.3a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Added focused ID and safe-storage modules with compatibility exports; date/text utility migration remains 1.3b.
 2026-09-13 | 1.3b1 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Moved date/age/time helpers into `utils/date.ts` and retained compatibility exports through `utils.ts`.
 2026-09-13 | 1.3b2a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Extracted markdown bullet conversion into `utils/markdown.ts` with compatibility exports.
+2026-09-13 | 1.3b2b1 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Extracted section ordering and key/value conversion into `utils/clinicalText.ts`; chart-history formatting remains queued as 1.3b2b2.
+2026-09-13 | 1.3b2b2 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Moved chart-history rendering into `utils/clinicalText.ts`; `utils.ts` now serves as the compatibility facade for consolidated utilities.
