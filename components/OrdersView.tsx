@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { PatientOrder, OrderStatus, MedicationOrder, MedicationStatus, GeneralData, Encounter } from '../types';
+import { PatientOrder, OrderCategory, OrderStatus, OrderStatusFilter, MedicationOrder, MedicationStatus, GeneralData, Encounter } from '../types';
 import { Icons } from './ui/Icons';
 import { motion, AnimatePresence } from 'motion/react';
 import StickyToolbar from './ui/StickyToolbar';
@@ -60,8 +60,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<OrdersTab>('DIAGNOSTICS');
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>('ALL');
+  const [typeFilter, setTypeFilter] = useState<OrderCategory | 'ALL'>('ALL');
   const [encounterFilter, setEncounterFilter] = useState<string>('ALL');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -363,7 +363,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                   <ToolbarSelect 
                     label="Status"
                     value={statusFilter}
-                    onChange={setStatusFilter}
+                        onChange={(value) => setStatusFilter(value as OrderStatusFilter)}
                     options={[
                       { value: 'ALL', label: 'All Status' },
                       ...(activeTab === 'DIAGNOSTICS' 
@@ -391,7 +391,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                       <ToolbarSelect 
                         label="Type"
                         value={typeFilter}
-                        onChange={setTypeFilter}
+                        onChange={(value) => setTypeFilter(value as OrderCategory | 'ALL')}
                         options={[
                           { value: 'ALL', label: 'All Types' },
                           ...categories.map(cat => ({ value: cat, label: cat }))

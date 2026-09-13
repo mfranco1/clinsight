@@ -66,7 +66,7 @@ For every slice:
 
 ## Phase 1 — Shared foundations
 
-### [-] 1.1 Split generic constants by ownership
+### [x] 1.1 Split generic constants by ownership
 
 **Scope:** Move navigation configuration, model configuration, AI prompt text/schema descriptions, and static UI data out of `constants.ts` into owned modules. Keep compatibility exports while imports migrate.
 
@@ -78,7 +78,7 @@ For every slice:
 
 **Verification:** `tests/app-config.test.ts` confirms facade parity; lint, unit tests, and production build pass without UI changes.
 
-#### [-] 1.1b Extract AI prompts, schemas, and clinical templates
+#### [x] 1.1b Extract AI prompts, schemas, and clinical templates
 
 **Scope:** Move AI prompt/schema descriptions and remaining static clinical templates into owned AI/content modules, then migrate the Gemini service and remaining consumers.
 
@@ -90,17 +90,41 @@ For every slice:
 
 **Verification:** Content parity tests pass; typecheck, lint, unit tests, production build, and desktop/mobile browser tests pass.
 
-##### [ ] 1.1b2 Extract AI prompt functions and text
+##### [x] 1.1b2 Extract AI prompt functions and text
 
 **Scope:** Move the remaining prompt constants and prompt builders into an owned AI prompt module, then migrate `geminiService.ts` to direct imports.
 
 **Verification:** Prompt outputs remain unchanged for representative chart, SOAP, chat, and lookup inputs; the full regression suite passes.
 
-### [ ] 1.2 Introduce typed domain aliases and remove low-risk `any`
+### [-] 1.2 Introduce typed domain aliases and remove low-risk `any`
 
 **Scope:** Add explicit types for IDs, persisted records, status/filter values, AI results, attachments, and modal state. Start with `types.ts`, `utils.ts`, and `domain/orders.ts`.
 
 **Verification:** No new `any` is introduced; the touched modules compile under stricter local type settings without casts that conceal data-shape errors.
+
+#### [x] 1.2a Type order filters and identifiers
+
+**Scope:** Add shared patient, encounter, order, category, and status-filter aliases; apply them to the order domain and Orders view while preserving permissive parsing behavior at the text boundary.
+
+**Verification:** `npm run lint` and all existing unit tests pass; order filtering and bulk parsing behavior remains covered.
+
+#### [-] 1.2b Type persistence and utility boundaries
+
+**Scope:** Replace low-risk `any` usage in `utils.ts`, persistence helpers, and adjacent domain adapters with explicit unknown/narrowed types.
+
+**Verification:** Existing fixtures and browser workflows pass with no behavior or UI changes.
+
+##### [x] 1.2b1 Type patient normalization boundary
+
+**Scope:** Replace the `any` boundary in `normalizePatientAgeSex` with overloads for complete and partial patient data while preserving legacy age/sex parsing.
+
+**Verification:** Utility regression coverage confirms normalized age/sex values and preservation of unrelated fields; lint and 11 unit tests pass.
+
+##### [ ] 1.2b2 Type chart-history and persistence adapters
+
+**Scope:** Narrow remaining utility and persistence inputs (`formatChartHistory`, storage payloads, and migration adapters) using explicit legacy/unknown guards.
+
+**Verification:** Structured and legacy fixture hydration plus full browser regression suite pass.
 
 ### [ ] 1.3 Consolidate date, ID, text, and storage utilities
 
@@ -303,4 +327,7 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-08-26 | 0.1, 0.2, 0.3, DG-1, DG-2, DG-3, 6.3 | complete | current workspace | `npm run lint`, `npm test`, `npm run build`, `npm run test:e2e` (4 desktop/mobile tests) | Adopted Tailwind 4.3 Vite delivery and modern test/lint tooling; added structured/legacy fixtures, persistence hydration coverage, and dashboard visual snapshots. Server-side AI proxy deferred. ESLint's newer React compiler rules remain deferred until the legacy components are migrated.
 2026-08-26 | 0.4 | complete | current workspace | `npm run lint`, `npm test` (8 unit tests), `npm run test:e2e` (6 desktop/mobile tests) | Added order-domain regression tests and input navigation/reset coverage. Reset assertion preserves the existing behavior: it clears the editor while remaining on the input view.
 2026-08-26 | 1.1a | complete | current workspace | `npm run lint`, `npm test` (9 unit tests), `npm run build` | Extracted app/navigation configuration to `config/appConfig.ts`, migrated direct consumers, and retained constants compatibility exports. AI prompt/schema and clinical-template extraction remains 1.1b.
-2026-08-26 | 1.1b1 | complete | current workspace | `npm run lint`, `npm test` (10 unit tests), `npm run build`, `npm run test:e2e` (6 browser tests) | Extracted schema descriptions, diagnosis rules, and clinical templates with compatibility parity tests. Remaining prompt text/builders are queued as 1.1b2.
+2026-08-26 | 1.1b1 | complete | current workspace | `npm run lint`, `npm test` (10 unit tests), `npm run build`, `npm run test:e2e` (6 browser tests) | Extracted schema descriptions, diagnosis rules, and clinical templates with compatibility parity tests. Remaining prompt text/builders were queued as 1.1b2.
+2026-09-13 | 1.1b2 | complete | current workspace | `npm run lint`, `npm test` (10 unit tests), `npm run build`, `npm run test:e2e` (6 browser tests) | Extracted all AI prompt constants/builders to `services/ai/prompts.ts`, migrated `geminiService.ts` to direct prompt/schema/config imports, and retained `constants.ts` as a compatibility facade.
+2026-09-13 | 1.2a | complete | current workspace | `npm run lint`, `npm test` (10 unit tests) | Added shared domain aliases and typed order filters; removed the order parser's low-risk `any` cast while preserving dynamic category parsing at the boundary.
+2026-09-13 | 1.2b1 | complete | current workspace | `npm run lint`, `npm test` (11 unit tests) | Replaced the patient age/sex normalizer's `any` input/output with explicit overloads and added regression coverage for legacy data normalization.

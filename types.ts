@@ -14,6 +14,11 @@ export enum ViewMode {
   LOGIN = 'LOGIN',
 }
 
+/** Branded aliases make cross-module identifiers self-documenting without changing runtime values. */
+export type PatientId = string;
+export type EncounterId = string;
+export type OrderId = string;
+
 export enum PatientStatus {
   ADMITTED = 'ADMITTED',
   OUTPATIENT = 'OUTPATIENT',
@@ -278,6 +283,9 @@ export enum OrderStatus {
   PAUSED = 'PAUSED'
 }
 
+export type OrderCategory = 'Lab' | 'Imaging' | 'Medication' | 'Procedure' | 'Blood' | 'Papers' | 'Other';
+export type OrderStatusFilter = OrderStatus | 'ALL';
+
 export interface PatientOrder {
   id: string;
   encounterId?: string;
@@ -286,10 +294,9 @@ export interface PatientOrder {
   targetDate: string;
   status: OrderStatus;
   notes: string;
-  category?: 'Lab' | 'Imaging' | 'Medication' | 'Procedure' | 'Blood' | 'Papers' | 'Other';
+  category?: OrderCategory;
   sortOrder?: number;
   groupId?: string;
   groupName?: string;
   sourceText?: string;
 }
-

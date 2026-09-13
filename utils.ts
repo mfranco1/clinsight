@@ -23,12 +23,17 @@ export const calculateAge = (dobString: string | undefined | null): number | und
 /**
  * Normalizes general data to ensure age and sex are set separately and ageSex is kept in sync.
  */
-export const normalizePatientAgeSex = (info: any): any => {
+export function normalizePatientAgeSex(info: GeneralData): GeneralData;
+export function normalizePatientAgeSex(info: Partial<GeneralData>): Partial<GeneralData>;
+export function normalizePatientAgeSex(info: null | undefined): null | undefined;
+export function normalizePatientAgeSex(info: Partial<GeneralData> | null | undefined): Partial<GeneralData> | null | undefined {
   if (!info) return info;
+
+  const data = info;
   
-  let sex = info.sex || '';
-  if (!sex && info.ageSex && info.ageSex !== 'Not Recorded') {
-    const parts = info.ageSex.split('/');
+  let sex = data.sex || '';
+  if (!sex && data.ageSex && data.ageSex !== 'Not Recorded') {
+    const parts = data.ageSex.split('/');
     if (parts.length > 1) {
       sex = parts[1].trim();
     } else {
@@ -41,14 +46,14 @@ export const normalizePatientAgeSex = (info: any): any => {
   if (!sex) sex = 'Not Recorded';
 
   let age: number | undefined = undefined;
-  if (info.dob && info.dob !== 'Not Recorded') {
-    age = calculateAge(info.dob);
+  if (data.dob && data.dob !== 'Not Recorded') {
+    age = calculateAge(data.dob);
   }
   if (age === undefined) {
-    if (typeof info.age === 'number') {
-      age = info.age;
-    } else if (info.ageSex && info.ageSex !== 'Not Recorded') {
-      const match = info.ageSex.match(/^(\d+)/);
+    if (typeof data.age === 'number') {
+      age = data.age;
+    } else if (data.ageSex && data.ageSex !== 'Not Recorded') {
+      const match = data.ageSex.match(/^(\d+)/);
       if (match) {
         age = parseInt(match[1], 10);
       }
@@ -62,8 +67,8 @@ export const normalizePatientAgeSex = (info: any): any => {
     ageSexString = age.toString();
   } else if (sex !== 'Not Recorded') {
     ageSexString = sex;
-  } else if (info.ageSex) {
-    ageSexString = info.ageSex;
+  } else if (data.ageSex) {
+    ageSexString = data.ageSex;
   }
 
   return {
@@ -72,7 +77,7 @@ export const normalizePatientAgeSex = (info: any): any => {
     sex,
     ageSex: ageSexString
   };
-};
+}
 
 /**
  * Returns today's date as a YYYY-MM-DD string in the user's local timezone (en-CA).
@@ -448,5 +453,3 @@ export function stringToKeyValue(content: string | Record<string, string> | unde
   });
   return result;
 }
-
-

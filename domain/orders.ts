@@ -1,10 +1,10 @@
-import { PatientOrder, OrderStatus, MedicationOrder, MedicationStatus } from '../types';
+import { PatientOrder, OrderCategory, OrderStatus, OrderStatusFilter, MedicationOrder, MedicationStatus } from '../types';
 import { getLocalDateString, createId } from '../utils';
 
 export interface OrderFilters {
   searchQuery?: string;
-  statusFilter?: string;
-  typeFilter?: string;
+  statusFilter?: OrderStatusFilter;
+  typeFilter?: OrderCategory | 'ALL';
   encounterFilter?: string;
   startDate?: string;
   endDate?: string;
@@ -307,7 +307,7 @@ export const parseBulkOrdersText = (params: BulkParseParams): PatientOrder[] => 
         targetDate: new Date(`${targetDate}T${targetTime}:00`).toISOString(),
         status: defaultStatus,
         notes: '',
-        category: currentCategory as any,
+        category: currentCategory as OrderCategory,
         groupId: currentGroupId || undefined,
       });
     });

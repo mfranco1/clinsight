@@ -3,6 +3,7 @@ import {
   arrayToMarkdownBullets,
   markdownBulletsToArray,
   normalizeDateInput,
+  normalizePatientAgeSex,
   stringToKeyValue,
 } from '../utils';
 import { legacyPatientCase, structuredPatientCase } from './fixtures/patient-cases';
@@ -23,6 +24,19 @@ describe('clinical text utilities', () => {
 
   it('normalizes a date to the local calendar format', () => {
     expect(normalizeDateInput('2026-08-26T12:00:00.000Z')).toMatch(/^2026-08-2[5-6]$/);
+  });
+
+  it('normalizes legacy age/sex data without changing unrelated fields', () => {
+    expect(normalizePatientAgeSex({
+      patientName: 'Test Patient',
+      ageSex: '56/Male',
+      mrn: 'TEST-001',
+      dob: 'Not Recorded',
+      admissionDate: '2026-08-26',
+      address: '',
+      religion: '',
+      handedness: '',
+    })).toMatchObject({ patientName: 'Test Patient', age: 56, sex: 'Male', ageSex: '56/Male' });
   });
 
   it('keeps structured and legacy patient fixtures valid for migration tests', () => {

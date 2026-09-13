@@ -2,13 +2,9 @@
 import { GoogleGenAI, Type, Content, GenerateContentParameters } from "@google/genai";
 import { MedicalChartResponse, ChatMessage, SubNote, PlanItem, GroundingSource, SoapNote, ChartEntry, GeneralData, FileUpload, HandoffSummary, CourseEvent, SuggestionsData } from "../types";
 import { formatChartHistory, createId, getTodayDate, getCurrentTime24, markdownBulletsToArray, safeStorage } from "../utils";
-import { 
-  SYSTEM_INSTRUCTION, 
-  DEFAULT_MODEL, 
-  DEFAULT_STRUCTURED_MODEL,
-  MODELS,
+import {
+  SYSTEM_INSTRUCTION,
   GROUNDING_INSTRUCTION,
-  DIAGNOSIS_RULES,
   TRANSCRIBE_PROMPT,
   CLINICAL_PHOTO_PROMPT,
   LAB_PHOTO_PROMPT,
@@ -26,8 +22,11 @@ import {
   NOTE_THREAD_SYSTEM_INSTRUCTION,
   PROGRESS_NOTE_SYSTEM_INSTRUCTION,
   REFRESH_SUMMARY_SYSTEM_INSTRUCTION,
-  SCHEMA_DESCRIPTIONS
-} from "../constants";
+  PLAN_RULES,
+} from './ai/prompts';
+import { DIAGNOSIS_RULES } from './ai/diagnosisRules';
+import { SCHEMA_DESCRIPTIONS } from './ai/schemaDescriptions';
+import { DEFAULT_MODEL, DEFAULT_STRUCTURED_MODEL, MODELS } from '../config/appConfig';
 
 // Helper to get AI instance
 const getAI = () => {
