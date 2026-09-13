@@ -96,7 +96,7 @@ For every slice:
 
 **Verification:** Prompt outputs remain unchanged for representative chart, SOAP, chat, and lookup inputs; the full regression suite passes.
 
-### [-] 1.2 Introduce typed domain aliases and remove low-risk `any`
+### [x] 1.2 Introduce typed domain aliases and remove low-risk `any`
 
 **Scope:** Add explicit types for IDs, persisted records, status/filter values, AI results, attachments, and modal state. Start with `types.ts`, `utils.ts`, and `domain/orders.ts`.
 
@@ -108,7 +108,7 @@ For every slice:
 
 **Verification:** `npm run lint` and all existing unit tests pass; order filtering and bulk parsing behavior remains covered.
 
-#### [-] 1.2b Type persistence and utility boundaries
+#### [x] 1.2b Type persistence and utility boundaries
 
 **Scope:** Replace low-risk `any` usage in `utils.ts`, persistence helpers, and adjacent domain adapters with explicit unknown/narrowed types.
 
@@ -132,7 +132,7 @@ For every slice:
 
 **Verification:** Typecheck, lint, 11 unit tests, and 6 desktop/mobile browser tests pass.
 
-###### [ ] 1.2b2b Type persistence adapters
+###### [x] 1.2b2b Type persistence adapters
 
 **Scope:** Narrow local-storage payloads and migration adapters with explicit `unknown` guards.
 
@@ -344,3 +344,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.2a | complete | current workspace | `npm run lint`, `npm test` (10 unit tests) | Added shared domain aliases and typed order filters; removed the order parser's low-risk `any` cast while preserving dynamic category parsing at the boundary.
 2026-09-13 | 1.2b1 | complete | current workspace | `npm run lint`, `npm test` (11 unit tests) | Replaced the patient age/sex normalizer's `any` input/output with explicit overloads and added regression coverage for legacy data normalization.
 2026-09-13 | 1.2b2a | complete | current workspace | `npm run lint`, `npm test` (11 unit tests), `npm run test:e2e` (6 browser tests) | Added the `ChartHistoryEntry` boundary and typed chart-history rendering callbacks while preserving raw and structured record support.
+2026-09-13 | 1.2b2b | complete | current workspace | `npm run lint`, `npm test` (13 unit tests), `npm run test:e2e` (6 browser tests) | Extracted typed persistence hydration/migration to `services/patientPersistence.ts`, retained the storage key and legacy encounter migration, and added malformed-payload coverage.

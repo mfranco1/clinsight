@@ -26,6 +26,7 @@ import { generateMedicalChart, reassessSoapNote, generateProgressNote, refreshPa
 import { requestNotificationPermission, sendNotification } from './services/notificationService';
 import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
+import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -43,45 +44,7 @@ function App() {
   
   // Multi-patient state
   const [patients, setPatients] = useState<MedicalChartResponse[]>(() => {
-    const saved = safeStorage.getItem('clinsight_patients');
-    if (saved) {
-      try {
-        const parsed: MedicalChartResponse[] = JSON.parse(saved);
-        // Migration: add encounters if missing
-        return parsed.map(p => {
-          let updatedP = { ...p };
-          updatedP.patientInfo = normalizePatientAgeSex(updatedP.patientInfo);
-          let firstEncounterId: string;
-          
-          if (!updatedP.encounters || updatedP.encounters.length === 0) {
-            firstEncounterId = createId();
-            const type = updatedP.patientInfo.status === PatientStatus.OUTPATIENT ? EncounterType.CONSULT : EncounterType.ADMISSION;
-            const status = updatedP.patientInfo.status === PatientStatus.DISCHARGED ? 'COMPLETED' : 'ACTIVE';
-            const startDate = updatedP.patientInfo.admissionDate || p.entries[p.entries.length - 1]?.date || new Date().toISOString();
-            updatedP.encounters = [{ id: firstEncounterId, type, status, startDate }];
-          } else {
-            firstEncounterId = updatedP.encounters[0].id;
-          }
-
-          // Ensure all entries have an encounterId
-          updatedP.entries = updatedP.entries.map(e => e.encounterId ? e : { ...e, encounterId: firstEncounterId });
-          
-          // Ensure all course events have an encounterId
-          updatedP.course = (updatedP.course || []).map(ev => ev.encounterId ? ev : { ...ev, encounterId: firstEncounterId });
-          
-          // Ensure all orders have an encounterId
-          if (updatedP.orders) {
-            updatedP.orders = updatedP.orders.map(o => o.encounterId ? o : { ...o, encounterId: firstEncounterId });
-          }
-
-          return updatedP;
-        });
-      } catch (e) {
-        console.error("Failed to load patients from storage", e);
-        return [];
-      }
-    }
-    return [];
+    return loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY));
   });
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
   
@@ -98,7 +61,7 @@ function App() {
 
   // Persistence: Save to localStorage whenever patients change
   useEffect(() => {
-    safeStorage.setItem('clinsight_patients', JSON.stringify(patients));
+    safeStorage.setItem(PATIENTS_STORAGE_KEY, JSON.stringify(patients));
   }, [patients]);
 
   // Carry over undone orders for all patients
