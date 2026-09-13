@@ -1,6 +1,8 @@
 import { ChartEntry, ChartHistoryEntry, DifferentialDiagnosisItem, GeneralData, PlanItem } from "./types";
 import { calculateAge } from './utils/date';
 export { calculateAge } from './utils/date';
+export { arrayToMarkdownBullets, markdownBulletsToArray } from './utils/markdown';
+export { getCurrentTime24, getLocalDateTimeParts, getLocalDateString, getTodayDate, getTodayLocalDateString, normalizeDateInput } from './utils/date';
 export { createId } from './utils/ids';
 export { safeStorage } from './utils/storage';
 
@@ -67,84 +69,6 @@ export function normalizePatientAgeSex(info: Partial<GeneralData> | null | undef
     ageSex: ageSexString
   };
 }
-
-/**
- * Returns today's date as a YYYY-MM-DD string in the user's local timezone (en-CA).
- */
-export const getTodayDate = (): string => {
-  try {
-    return new Date().toLocaleDateString('en-CA');
-  } catch (e) {
-    const date = new Date();
-    const y = date.getFullYear();
-    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-    const d = date.getDate().toString().padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-};
-
-/**
- * Returns current time in 24-hour style HH:MM in the user's local timezone (en-GB).
- */
-export const getCurrentTime24 = (): string => {
-  try {
-    return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  } catch (e) {
-    const date = new Date();
-    const h = date.getHours().toString().padStart(2, '0');
-    const m = date.getMinutes().toString().padStart(2, '0');
-    return `${h}:${m}`;
-  }
-};
-
-/**
- * Returns an object with the current local date and 24-hour time parts.
- */
-export const getLocalDateTimeParts = (): { date: string; time: string } => {
-  return {
-    date: getTodayDate(),
-    time: getCurrentTime24()
-  };
-};
-
-/**
- * Normalizes any string/Date input into a YYYY-MM-DD string in user's local timezone.
- */
-export const normalizeDateInput = (val: string | Date | null | undefined): string => {
-  if (!val) return '';
-  const date = typeof val === 'string' ? new Date(val) : val;
-  if (isNaN(date.getTime())) {
-    if (typeof val === 'string') {
-      return val.split('T')[0].split(' ')[0];
-    }
-    return '';
-  }
-  const y = date.getFullYear();
-  const m = (date.getMonth() + 1).toString().padStart(2, '0');
-  const d = date.getDate().toString().padStart(2, '0');
-  return `${y}-${m}-${d}`;
-};
-
-/**
- * Generates a unique ID using crypto.randomUUID or standard cryptographically strong patterns, optionally prepended with a prefix.
- */
-
-export const getLocalDateString = (isoString: string): string => {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  if (isNaN(date.getTime())) return isoString.split('T')[0];
-  const y = date.getFullYear();
-  const m = (date.getMonth() + 1).toString().padStart(2, '0');
-  const d = date.getDate().toString().padStart(2, '0');
-  return `${y}-${m}-${d}`;
-};
-
-/**
- * Returns today's date as a YYYY-MM-DD string in the user's local timezone.
- */
-export const getTodayLocalDateString = (): string => {
-  return getTodayDate();
-};
 
 /**
  * Formats a list of clinical entries (ChartEntry[]) into a standardized clinical history string.
@@ -224,33 +148,7 @@ export function formatChartHistory(history: ChartHistoryEntry[]): string {
 /**
  * Converts an array of strings (or a string) to a formatted markdown bulleted list.
  */
-export const arrayToMarkdownBullets = (val: string[] | string | undefined | null): string => {
-  if (!val) return "";
-  if (Array.isArray(val)) {
-    return val
-      .map(item => item.trim())
-      .filter(item => item !== "")
-      .map(item => item.startsWith('-') || item.startsWith('*') ? item : `- ${item}`)
-      .join('\n');
-  }
-  return val;
-};
 
-/**
- * Parses/splits a markdown bulleted list string into an array of clean string items.
- */
-export const markdownBulletsToArray = (text: string | null | undefined): string[] => {
-  if (!text) return [];
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line !== '')
-    .map(line => {
-      // Clean off bullet prefixes like "- ", "* ", "1. ", etc.
-      return line.replace(/^([-\*\+]\s+|\d+\.\s*)/, '').trim();
-    })
-    .filter(line => line !== '');
-};
 
 export const ROS_ORDER = [
   "Constitutional",

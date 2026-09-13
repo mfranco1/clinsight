@@ -150,11 +150,35 @@ For every slice:
 
 **Verification:** Typecheck, lint, and all 13 unit tests pass.
 
-#### [ ] 1.3b Extract date and text utilities
+#### [-] 1.3b Extract date and text utilities
 
 **Scope:** Complete date-helper migration and split markdown/key-value/chart-history formatting into focused, side-effect-free modules.
 
 **Verification:** Existing utility and persistence tests pass with compatibility exports unchanged.
+
+##### [x] 1.3b1 Extract date utilities
+
+**Scope:** Move age/date/time normalization helpers into `utils/date.ts` and preserve the existing `utils.ts` compatibility surface.
+
+**Verification:** Typecheck, lint, and all 13 unit tests pass.
+
+##### [-] 1.3b2 Extract clinical text utilities
+
+**Scope:** Move markdown, key/value, and chart-history formatting helpers into focused text modules.
+
+**Verification:** Clinical text and chart-history regression tests pass with unchanged output.
+
+###### [x] 1.3b2a Extract markdown utilities
+
+**Scope:** Move markdown bullet conversion helpers into `utils/markdown.ts` and preserve compatibility exports.
+
+**Verification:** Typecheck, lint, and all 13 unit tests pass.
+
+###### [ ] 1.3b2b Extract structured clinical text utilities
+
+**Scope:** Move key/value conversion, section ordering, and chart-history formatting into focused modules.
+
+**Verification:** Clinical text output remains unchanged across structured and legacy fixtures.
 
 ### [ ] 1.4 Add a typed application error and notification contract
 
@@ -358,3 +382,5 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.2b2a | complete | current workspace | `npm run lint`, `npm test` (11 unit tests), `npm run test:e2e` (6 browser tests) | Added the `ChartHistoryEntry` boundary and typed chart-history rendering callbacks while preserving raw and structured record support.
 2026-09-13 | 1.2b2b | complete | current workspace | `npm run lint`, `npm test` (13 unit tests), `npm run test:e2e` (6 browser tests) | Extracted typed persistence hydration/migration to `services/patientPersistence.ts`, retained the storage key and legacy encounter migration, and added malformed-payload coverage.
 2026-09-13 | 1.3a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Added focused ID and safe-storage modules with compatibility exports; date/text utility migration remains 1.3b.
+2026-09-13 | 1.3b1 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Moved date/age/time helpers into `utils/date.ts` and retained compatibility exports through `utils.ts`.
+2026-09-13 | 1.3b2a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Extracted markdown bullet conversion into `utils/markdown.ts` with compatibility exports.
