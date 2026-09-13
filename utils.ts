@@ -1,24 +1,13 @@
 import { ChartEntry, ChartHistoryEntry, DifferentialDiagnosisItem, GeneralData, PlanItem } from "./types";
+import { calculateAge } from './utils/date';
+export { calculateAge } from './utils/date';
+export { createId } from './utils/ids';
+export { safeStorage } from './utils/storage';
 
 /**
  * Calculates a patient's age in years based on birthdate (dob) and the current local date.
  */
-export const calculateAge = (dobString: string | undefined | null): number | undefined => {
-  if (!dobString || dobString.toLowerCase() === "not recorded" || dobString.toLowerCase() === "unknown") return undefined;
-  try {
-    const dob = new Date(dobString);
-    if (isNaN(dob.getTime())) return undefined;
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-      age--;
-    }
-    return age;
-  } catch (e) {
-    return undefined;
-  }
-};
+
 
 /**
  * Normalizes general data to ensure age and sex are set separately and ageSex is kept in sync.
@@ -139,23 +128,7 @@ export const normalizeDateInput = (val: string | Date | null | undefined): strin
 /**
  * Generates a unique ID using crypto.randomUUID or standard cryptographically strong patterns, optionally prepended with a prefix.
  */
-export const createId = (prefix?: string): string => {
-  let uuid: string;
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    uuid = crypto.randomUUID();
-  } else {
-    uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  }
-  return prefix ? `${prefix}_${uuid}` : uuid;
-};
 
-/**
- * Returns a YYYY-MM-DD string in the user's local timezone from an ISO string.
- */
 export const getLocalDateString = (isoString: string): string => {
   if (!isoString) return '';
   const date = new Date(isoString);
@@ -246,37 +219,7 @@ export function formatChartHistory(history: ChartHistoryEntry[]): string {
 }
 
 // Safe localStorage wrapper to prevent crash in sandboxed/third-party iframe environments
-const createSafeStorage = () => {
-  const mem: Record<string, string> = {};
-  return {
-    getItem(key: string): string | null {
-      try {
-        return window.localStorage.getItem(key);
-      } catch (e) {
-        console.warn("Storage item read error:", e);
-        return mem[key] || null;
-      }
-    },
-    setItem(key: string, value: string): void {
-      try {
-        window.localStorage.setItem(key, value);
-      } catch (e) {
-        console.warn("Storage item write error:", e);
-        mem[key] = value;
-      }
-    },
-    removeItem(key: string): void {
-      try {
-        window.localStorage.removeItem(key);
-      } catch (e) {
-        console.warn("Storage item delete error:", e);
-        delete mem[key];
-      }
-    }
-  };
-};
 
-export const safeStorage = createSafeStorage();
 
 /**
  * Converts an array of strings (or a string) to a formatted markdown bulleted list.

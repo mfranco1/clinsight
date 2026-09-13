@@ -138,11 +138,23 @@ For every slice:
 
 **Verification:** Legacy and structured persistence fixtures hydrate equivalently without casts that conceal malformed data.
 
-### [ ] 1.3 Consolidate date, ID, text, and storage utilities
+### [-] 1.3 Consolidate date, ID, text, and storage utilities
 
 **Scope:** Split `utils.ts` into focused, side-effect-free modules (`date`, `ids`, `clinical-text`, `storage`) while preserving exported behavior through a compatibility facade.
 
 **Verification:** Unit tests cover date normalization, age normalization, markdown conversion, and structured key/value conversion using existing edge cases.
+
+#### [x] 1.3a Extract ID and safe-storage utilities
+
+**Scope:** Move ID generation and the safe local-storage wrapper into focused modules while preserving `utils.ts` compatibility exports and existing storage semantics.
+
+**Verification:** Typecheck, lint, and all 13 unit tests pass.
+
+#### [ ] 1.3b Extract date and text utilities
+
+**Scope:** Complete date-helper migration and split markdown/key-value/chart-history formatting into focused, side-effect-free modules.
+
+**Verification:** Existing utility and persistence tests pass with compatibility exports unchanged.
 
 ### [ ] 1.4 Add a typed application error and notification contract
 
@@ -345,3 +357,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.2b1 | complete | current workspace | `npm run lint`, `npm test` (11 unit tests) | Replaced the patient age/sex normalizer's `any` input/output with explicit overloads and added regression coverage for legacy data normalization.
 2026-09-13 | 1.2b2a | complete | current workspace | `npm run lint`, `npm test` (11 unit tests), `npm run test:e2e` (6 browser tests) | Added the `ChartHistoryEntry` boundary and typed chart-history rendering callbacks while preserving raw and structured record support.
 2026-09-13 | 1.2b2b | complete | current workspace | `npm run lint`, `npm test` (13 unit tests), `npm run test:e2e` (6 browser tests) | Extracted typed persistence hydration/migration to `services/patientPersistence.ts`, retained the storage key and legacy encounter migration, and added malformed-payload coverage.
+2026-09-13 | 1.3a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Added focused ID and safe-storage modules with compatibility exports; date/text utility migration remains 1.3b.
