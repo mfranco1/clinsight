@@ -27,6 +27,7 @@ import { requestNotificationPermission, sendNotification } from './services/noti
 import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
 import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
+import { updateEntry, updateEntrySoap } from './domain/patientTransitions';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -662,17 +663,11 @@ function App() {
   };
 
   const handleUpdateEntrySoap = (entryId: string, updatedSoap: SoapNote) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      entries: p.entries.map(e => e.id === entryId ? { ...e, soap: updatedSoap } : e)
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateEntrySoap(p, entryId, updatedSoap) : p));
   };
 
   const handleUpdateEntry = (entryId: string, updatedEntry: ChartEntry) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      entries: p.entries.map(e => e.id === entryId ? updatedEntry : e)
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateEntry(p, entryId, updatedEntry) : p));
   };
 
   const handleUpdatePatientInfo = (updatedInfo: GeneralData) => {

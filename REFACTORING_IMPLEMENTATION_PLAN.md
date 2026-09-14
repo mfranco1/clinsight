@@ -260,17 +260,29 @@ For every slice:
 
 ## Phase 2 — Patient state and persistence boundary
 
-### [ ] 2.1 Extract patient record hydration and migration
+### [x] 2.1 Extract patient record hydration and migration
 
 **Scope:** Move the local-storage loading/migration logic from `App.tsx` into a versioned `patientRepository` or `patientPersistence` module. Preserve the current storage key and legacy encounter migration.
 
 **Verification:** All Phase 0 fixtures hydrate to equivalent patient records; malformed storage falls back safely without crashing the app.
 
-### [ ] 2.2 Define pure patient transition functions
+### [-] 2.2 Define pure patient transition functions
 
 **Scope:** Extract pure operations for patient creation/import, entry updates/deletion, encounter/status transitions, course events, handoff, orders, medications, and notes.
 
 **Verification:** Unit tests prove each operation is immutable, preserves unrelated patient data, and matches current state transitions.
+
+#### [x] 2.2a Extract entry transitions
+
+**Scope:** Add immutable prepend, update, SOAP-update, and removal operations for patient chart entries; migrate existing App entry-update handlers.
+
+**Verification:** Transition tests prove immutability and preservation of unrelated patient data; 17 unit tests pass.
+
+#### [ ] 2.2b Extract remaining patient transitions
+
+**Scope:** Extract patient creation/import, encounter/status, course, handoff, orders, medications, and notes transitions.
+
+**Verification:** Each transition has focused immutable unit coverage and existing workflows remain unchanged.
 
 ### [ ] 2.3 Create the patient store/provider
 
@@ -467,3 +479,5 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-14 | 1.4b6 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced SOAP photo-analysis and integration alerts with a shared dismissible workflow error while preserving existing messages and actions.
 2026-09-14 | 1.4b7 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced subjective/objective assistance alerts with local dismissible errors while preserving suggestion behavior.
 2026-09-14 | 1.4b8 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests), `rg "alert\\(" components services` | Replaced patient-note microphone alerts with a local dismissible error; no direct component/service alerts remain.
+2026-09-14 | 2.1 | complete | current workspace | `npm run lint`, `npm test` (17 unit tests), `npm run test:e2e` (6 browser tests) | Extracted typed persistence hydration/migration to `services/patientPersistence.ts` and preserved legacy encounter behavior.
+2026-09-14 | 2.2a | complete | current workspace | `npm run lint`, `npm test` (17 unit tests) | Added immutable patient entry transition functions and migrated App entry update handlers.
