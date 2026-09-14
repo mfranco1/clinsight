@@ -31,6 +31,7 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<HomeInstructionsData | null>(null);
+  const [printError, setPrintError] = useState<string | null>(null);
   
   // Clinic Info (Editable)
   const [physicianName, setPhysicianName] = useState("Juan Dela Cruz, MD");
@@ -61,9 +62,10 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert("Please allow popups to print.");
+      setPrintError("Please allow popups to print.");
       return;
     }
+    setPrintError(null);
 
     const clone = printContent.cloneNode(true) as HTMLElement;
     
@@ -250,6 +252,13 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
                 <span className="ml-2">Print Instructions</span>
             </button>
         </div>
+
+        {printError && (
+          <div role="alert" className="mx-6 mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+            {printError}
+            <button type="button" className="ml-2 underline" onClick={() => setPrintError(null)}>Dismiss</button>
+          </div>
+        )}
 
         {/* Content Area - Gray Background for "Paper" feel */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-100 print:bg-white print:p-0 print:overflow-visible">

@@ -216,6 +216,12 @@ For every slice:
 
 **Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
 
+##### [x] 1.4b2 Migrate home-instructions print popup alert
+
+**Scope:** Replace the home-instructions modal's popup-blocked `alert` with its local dismissible error presentation, preserving the exact message and print behavior.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
 ## Phase 2 — Patient state and persistence boundary
 
 ### [ ] 2.1 Extract patient record hydration and migration
@@ -418,3 +424,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.3b2b2 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Moved chart-history rendering into `utils/clinicalText.ts`; `utils.ts` now serves as the compatibility facade for consolidated utilities.
 2026-09-14 | 1.4a | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Added typed `AppError`, safe unknown-error message normalization, and a typed notification service contract without changing browser notification behavior.
 2026-09-14 | 1.4b1 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the prescription popup-blocked alert with an inline dismissible error while preserving the exact user-facing message.
+2026-09-14 | 1.4b2 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the home-instructions popup-blocked alert with an inline dismissible error while preserving the exact user-facing message.
