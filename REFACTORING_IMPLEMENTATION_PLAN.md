@@ -192,11 +192,23 @@ For every slice:
 
 **Verification:** Structured and legacy chart-history outputs remain byte-for-byte equivalent.
 
-### [ ] 1.4 Add a typed application error and notification contract
+### [-] 1.4 Add a typed application error and notification contract
 
 **Scope:** Define shared error/result types and a single notification interface. Replace direct `alert` usage only in the code touched by this slice, while retaining the same user-visible message and timing.
 
 **Verification:** Failures produce the existing message style; errors can be asserted without relying on `window.alert`.
+
+#### [x] 1.4a Define error and notification contracts
+
+**Scope:** Add `AppError`, safe unknown-error message normalization, and a typed notification service contract without changing notification text or browser behavior.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass.
+
+#### [ ] 1.4b Migrate targeted alert paths
+
+**Scope:** Replace direct `alert` usage in touched workflows with the existing toast/error presentation while preserving exact messages.
+
+**Verification:** Alert-driven workflows retain their user-visible messages and pass browser regression coverage.
 
 ## Phase 2 — Patient state and persistence boundary
 
@@ -398,3 +410,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-13 | 1.3b2a | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Extracted markdown bullet conversion into `utils/markdown.ts` with compatibility exports.
 2026-09-13 | 1.3b2b1 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Extracted section ordering and key/value conversion into `utils/clinicalText.ts`; chart-history formatting remains queued as 1.3b2b2.
 2026-09-13 | 1.3b2b2 | complete | current workspace | `npm run lint`, `npm test` (13 unit tests) | Moved chart-history rendering into `utils/clinicalText.ts`; `utils.ts` now serves as the compatibility facade for consolidated utilities.
+2026-09-14 | 1.4a | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Added typed `AppError`, safe unknown-error message normalization, and a typed notification service contract without changing browser notification behavior.

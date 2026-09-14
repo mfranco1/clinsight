@@ -1,7 +1,12 @@
 
 import { APP_ICON_DATA_URL } from "../config/appConfig";
 
-export const requestNotificationPermission = async () => {
+export interface NotificationService {
+  requestPermission: () => Promise<boolean>;
+  send: (title: string, options?: NotificationOptions) => boolean;
+}
+
+export const requestNotificationPermission = async (): Promise<boolean> => {
   try {
     if (!("Notification" in window)) {
       console.warn("This browser does not support desktop notification");
@@ -23,10 +28,10 @@ export const requestNotificationPermission = async () => {
   return false;
 };
 
-export const sendNotification = (title: string, options?: NotificationOptions) => {
+export const sendNotification = (title: string, options?: NotificationOptions): boolean => {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") {
-      return;
+      return false;
     }
 
     // Only notify if the tab is hidden or the user is not actively looking at the result
@@ -41,7 +46,14 @@ export const sendNotification = (title: string, options?: NotificationOptions) =
       window.focus();
       notification.close();
     };
+    return true;
   } catch (e) {
     console.warn("Failing to send notification in this context:", e);
   }
+  return false;
+};
+
+export const notificationService: NotificationService = {
+  requestPermission: requestNotificationPermission,
+  send: sendNotification,
 };
