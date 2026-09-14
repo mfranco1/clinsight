@@ -48,6 +48,7 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
   
   const [isEditingLabInterp, setIsEditingLabInterp] = useState(false);
   const [isEditingImagingCorrelation, setIsEditingImagingCorrelation] = useState(false);
+  const [assistanceError, setAssistanceError] = useState<string | null>(null);
   
   const updateField = (field: keyof SoapNote['objective']) => (newContent: any) => {
     if (onUpdate) {
@@ -99,7 +100,7 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
         }
     } catch (e) {
         console.error(e);
-        alert("Failed to generate additional suggestions.");
+        setAssistanceError("Failed to generate additional suggestions.");
     }
   };
 
@@ -134,6 +135,12 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
   const hasImagingCorrelation = Array.isArray(data.imagingCorrelation) ? data.imagingCorrelation.length > 0 : !!data.imagingCorrelation;
   return (
     <SectionCard title="Objective" icon={<Icons.Objective />} collapsible headerActions={headerActions}>
+      {assistanceError && (
+        <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+          {assistanceError}
+          <button type="button" className="ml-2 underline" onClick={() => setAssistanceError(null)}>Dismiss</button>
+        </div>
+      )}
           {(visibleSubsections.vitals || visibleSubsections.anthropometrics) && (
             <div className={`grid grid-cols-1 ${visibleSubsections.anthropometrics ? 'md:grid-cols-2' : ''} gap-6 mb-6`}>
                 {visibleSubsections.vitals && (

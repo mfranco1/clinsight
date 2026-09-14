@@ -62,6 +62,7 @@ const SubjectiveSection: React.FC<SubjectiveSectionProps> = ({
   
   const [isEditingHeaadssss, setIsEditingHeaadssss] = useState(false);
   const [heaadssssLines, setHeaadssssLines] = useState<string[]>([]);
+  const [assistanceError, setAssistanceError] = useState<string | null>(null);
 
   const updateField = (field: keyof SoapNote['subjective']) => (newContent: string) => {
     if (onUpdate) {
@@ -136,7 +137,7 @@ const SubjectiveSection: React.FC<SubjectiveSectionProps> = ({
         }
     } catch (e) {
         console.error(e);
-        alert("Failed to generate additional suggestions.");
+        setAssistanceError("Failed to generate additional suggestions.");
     }
   };
 
@@ -224,6 +225,12 @@ const SubjectiveSection: React.FC<SubjectiveSectionProps> = ({
 
   return (
     <SectionCard title="Subjective" icon={<Icons.Subjective />} collapsible>
+         {assistanceError && (
+           <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+             {assistanceError}
+             <button type="button" className="ml-2 underline" onClick={() => setAssistanceError(null)}>Dismiss</button>
+           </div>
+         )}
          {visibleSubsections.chiefComplaint && (
            <EditableSubsection title="Chief Complaint" content={data.chiefComplaint} onSave={onUpdate ? updateField('chiefComplaint') : undefined} groundingSources={groundingSources} />
          )}

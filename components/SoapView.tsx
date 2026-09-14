@@ -487,6 +487,7 @@ const SoapView: React.FC<SoapViewProps> = ({
   const [isAnalyzingPhotos, setIsAnalyzingPhotos] = useState(false);
   const [isAnalyzingLabs, setIsAnalyzingLabs] = useState(false);
   const [isAnalyzingImaging, setIsAnalyzingImaging] = useState(false);
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
   const [galleryTab, setGalleryTab] = useState<PhotoCategory>('Physical Exam');
   const [entryIdToDelete, setEntryIdToDelete] = useState<string | null>(null);
   const [statusConfirm, setStatusConfirm] = useState<{action: 'READMIT' | 'CONSULT' | 'REACTIVATE'} | null>(null);
@@ -805,7 +806,7 @@ const SoapView: React.FC<SoapViewProps> = ({
       }
     } catch (error) {
       console.error("Failed to analyze photos:", error);
-      alert("Failed to analyze clinical photos. Please try again.");
+      setWorkflowError("Failed to analyze clinical photos. Please try again.");
     } finally {
       setIsAnalyzingPhotos(false);
     }
@@ -817,7 +818,7 @@ const SoapView: React.FC<SoapViewProps> = ({
     // Filter only laboratory photos
     const labPhotos = activeEntry.attachments.filter(a => a.category === 'Laboratory');
     if (labPhotos.length === 0) {
-      alert("No laboratory photos found to analyze.");
+      setWorkflowError("No laboratory photos found to analyze.");
       return;
     }
 
@@ -841,7 +842,7 @@ const SoapView: React.FC<SoapViewProps> = ({
       }
     } catch (error) {
       console.error("Failed to analyze labs:", error);
-      alert("Failed to analyze laboratory photos. Please try again.");
+      setWorkflowError("Failed to analyze laboratory photos. Please try again.");
     } finally {
       setIsAnalyzingLabs(false);
     }
@@ -853,7 +854,7 @@ const SoapView: React.FC<SoapViewProps> = ({
     // Filter only imaging photos
     const imagingPhotos = activeEntry.attachments.filter(a => a.category === 'Imaging');
     if (imagingPhotos.length === 0) {
-      alert("No imaging photos found to analyze.");
+      setWorkflowError("No imaging photos found to analyze.");
       return;
     }
 
@@ -877,7 +878,7 @@ const SoapView: React.FC<SoapViewProps> = ({
       }
     } catch (error) {
       console.error("Failed to analyze imaging:", error);
-      alert("Failed to analyze imaging photos. Please try again.");
+      setWorkflowError("Failed to analyze imaging photos. Please try again.");
     } finally {
       setIsAnalyzingImaging(false);
     }
@@ -930,7 +931,7 @@ const SoapView: React.FC<SoapViewProps> = ({
         setActiveSuggestions(null);
     } catch (err) {
         console.error(err);
-        alert("Failed to integrate information. Please try again.");
+        setWorkflowError("Failed to integrate information. Please try again.");
     }
   };
 
@@ -993,6 +994,12 @@ const SoapView: React.FC<SoapViewProps> = ({
 
   return (
     <>
+      {workflowError && (
+        <div role="alert" className="fixed bottom-24 right-4 z-[120] max-w-md rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-lg">
+          {workflowError}
+          <button type="button" className="ml-2 underline" onClick={() => setWorkflowError(null)}>Dismiss</button>
+        </div>
+      )}
       <div className="flex h-full relative overflow-hidden">
       
       {/* Chart History Timeline (Desktop Aside) */}

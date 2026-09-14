@@ -223,7 +223,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ isOpen, onClose, chartData, onSav
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Could not access microphone.");
+      setMessages(prev => [...prev, { role: 'model', text: 'Could not access microphone.', isError: true }]);
     }
   };
 

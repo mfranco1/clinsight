@@ -192,7 +192,7 @@ For every slice:
 
 **Verification:** Structured and legacy chart-history outputs remain byte-for-byte equivalent.
 
-### [-] 1.4 Add a typed application error and notification contract
+### [x] 1.4 Add a typed application error and notification contract
 
 **Scope:** Define shared error/result types and a single notification interface. Replace direct `alert` usage only in the code touched by this slice, while retaining the same user-visible message and timing.
 
@@ -204,7 +204,7 @@ For every slice:
 
 **Verification:** Typecheck, lint, and 15 unit tests pass.
 
-#### [ ] 1.4b Migrate targeted alert paths
+#### [x] 1.4b Migrate targeted alert paths
 
 **Scope:** Replace direct `alert` usage in touched workflows with the existing toast/error presentation while preserving exact messages.
 
@@ -227,6 +227,36 @@ For every slice:
 **Scope:** Replace the smart-append overlay's microphone-permission `alert` with its local dismissible error presentation, preserving the exact message and dictation behavior.
 
 **Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
+##### [x] 1.4b4 Migrate chat microphone alert
+
+**Scope:** Replace the chat panel's microphone-permission `alert` with an inline error chat message, preserving the exact message and recording behavior.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
+##### [x] 1.4b5 Migrate input workflow alerts
+
+**Scope:** Replace the input workflow's microphone and batch-import `alert` calls with a shared local dismissible error presentation, preserving existing messages and workflows.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
+##### [x] 1.4b6 Migrate SOAP photo/integration alerts
+
+**Scope:** Replace SOAP photo-analysis, missing-category, and integration `alert` calls with a shared local dismissible workflow error, preserving exact messages and actions.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
+##### [x] 1.4b7 Migrate SOAP assistance alerts
+
+**Scope:** Replace subjective and objective clinical-assistance `alert` calls with local dismissible error presentation, preserving exact messages and suggestion behavior.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; no other alert paths are changed.
+
+##### [x] 1.4b8 Migrate patient-note microphone alerts
+
+**Scope:** Replace both patient-note microphone-permission `alert` calls with a shared local dismissible error, preserving the exact message and recording behavior.
+
+**Verification:** Typecheck, lint, and 15 unit tests pass; repository search confirms no remaining direct `alert(...)` calls in components or services.
 
 ## Phase 2 — Patient state and persistence boundary
 
@@ -432,3 +462,8 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-14 | 1.4b1 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the prescription popup-blocked alert with an inline dismissible error while preserving the exact user-facing message.
 2026-09-14 | 1.4b2 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the home-instructions popup-blocked alert with an inline dismissible error while preserving the exact user-facing message.
 2026-09-14 | 1.4b3 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the smart-append microphone-permission alert with an inline dismissible error while preserving the exact user-facing message.
+2026-09-14 | 1.4b4 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced the chat microphone-permission alert with an inline error chat message while preserving the exact user-facing message.
+2026-09-14 | 1.4b5 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced input microphone and batch-import alerts with a shared inline dismissible error while preserving existing messages and workflows.
+2026-09-14 | 1.4b6 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced SOAP photo-analysis and integration alerts with a shared dismissible workflow error while preserving existing messages and actions.
+2026-09-14 | 1.4b7 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests) | Replaced subjective/objective assistance alerts with local dismissible errors while preserving suggestion behavior.
+2026-09-14 | 1.4b8 | complete | current workspace | `npm run lint`, `npm test` (15 unit tests), `rg "alert\\(" components services` | Replaced patient-note microphone alerts with a local dismissible error; no direct component/service alerts remain.

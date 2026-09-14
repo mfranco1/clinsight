@@ -423,6 +423,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
   // Voice states for clinical question threads
   const [isThreadRecording, setIsThreadRecording] = useState(false);
   const [isThreadTranscribing, setIsThreadTranscribing] = useState(false);
+  const [microphoneError, setMicrophoneError] = useState<string | null>(null);
   const threadMediaRecorderRef = useRef<MediaRecorder | null>(null);
   const threadAudioChunksRef = useRef<Blob[]>([]);
 
@@ -459,7 +460,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
       setIsThreadRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Could not access microphone.");
+      setMicrophoneError("Could not access microphone.");
     }
   };
 
@@ -509,7 +510,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
       setIsFloatingRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Could not access microphone.");
+      setMicrophoneError("Could not access microphone.");
     }
   };
 
@@ -1028,6 +1029,12 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
         onClick={() => !isEditing && setIsCollapsed(!isCollapsed)}
         className={`px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/30 rounded-t-2xl ${!isEditing ? 'cursor-pointer hover:bg-slate-100/50' : ''} transition-colors`}
       >
+      {microphoneError && (
+        <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+          {microphoneError}
+          <button type="button" className="ml-2 underline" onClick={() => setMicrophoneError(null)}>Dismiss</button>
+        </div>
+      )}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2">
             {!isEditing && (

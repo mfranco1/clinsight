@@ -87,6 +87,7 @@ const InputSection: React.FC<InputSectionProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLookupOpen, setIsLookupOpen] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -256,7 +257,7 @@ const InputSection: React.FC<InputSectionProps> = ({
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Could not access microphone.");
+      setError("Could not access microphone.");
     }
   };
 
@@ -335,7 +336,7 @@ const InputSection: React.FC<InputSectionProps> = ({
       })
       .catch((err) => {
         console.error("Error batch importing files:", err);
-        alert(err.message || "An error occurred while batch uploading cases. Please ensure all uploaded files are valid patient JSON cases.");
+        setError(err instanceof Error ? err.message : "An error occurred while batch uploading cases. Please ensure all uploaded files are valid patient JSON cases.");
       });
 
     e.target.value = '';
@@ -360,6 +361,12 @@ const InputSection: React.FC<InputSectionProps> = ({
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 py-6 animate-fade-in-up">
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+          {error}
+          <button type="button" className="ml-2 underline" onClick={() => setError(null)}>Dismiss</button>
+        </div>
+      )}
       
       {/* Workspace Context Header for Append Mode */}
       {isAppendMode && activePatient && (
