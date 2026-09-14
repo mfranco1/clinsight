@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { prependEntry, removeEntry, updateEntry, updateEntrySoap } from '../domain/patientTransitions';
+import { OrderStatus, type MedicalChartResponse } from '../types';
+import {
+  appendCourseEvent,
+  prependEntry,
+  prependNote,
+  removeEntry,
+  updateCourse,
+  updateEntry,
+  updateEntrySoap,
+  updateHandoff,
+  updateMedications,
+  updateNotes,
+  updateOrder,
+  updateOrders,
+  updatePatientInfo,
+} from '../domain/patientTransitions';
 import { structuredPatientCase } from './fixtures/patient-cases';
 
 describe('patient entry transitions', () => {
@@ -20,5 +35,23 @@ describe('patient entry transitions', () => {
 
     expect(withSoap.entries[0].id).toBe('new-entry');
     expect(removeEntry(withSoap, entry.id).entries).toHaveLength(1);
+  });
+
+  it('updates patient metadata immutably without changing unrelated fields', () => {
+    const patient = structuredPatientCase as MedicalChartResponse;
+    const course = [{ date: '2026-01-02', time: '09:00', event: 'Round', details: 'Stable' }];
+    const note = { id: 'note-2', title: 'Follow-up', content: '内容', createdAt: '2026-01-02', updatedAt: '2026-01-02' };
+    const order = { id: 'order-2', name: 'CBC', dateOrdered: '2026-01-02', targetDate: '2026-01-02', status: OrderStatus.DONE, notes: '' };
+    const info = { ...patient.patientInfo, patientName: 'Updated Patient' };
+
+    expect(updatePatientInfo(patient, info).patientInfo).toBe(info);
+    expect(updateCourse(patient, course).course).toBe(course);
+    expect(appendCourseEvent(patient, course[0]).course).toHaveLength((patient.course || []).length + 1);
+    expect(updateHandoff(patient, { ...patient.handoff, oneLiner: 'Updated' }).entries).toBe(patient.entries);
+    expect(updateOrders(patient, [order]).orders).toEqual([order]);
+    expect(updateOrder(updateOrders(patient, [order]), { ...order, notes: 'Updated' }).orders![0].notes).toBe('Updated');
+    expect(updateMedications(patient, []).medications).toEqual([]);
+    expect(updateNotes(patient, [note]).notes).toEqual([note]);
+    expect(prependNote(patient, note).notes?.[0]).toBe(note);
   });
 });

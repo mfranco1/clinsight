@@ -27,7 +27,7 @@ import { requestNotificationPermission, sendNotification } from './services/noti
 import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
 import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
-import { updateEntry, updateEntrySoap } from './domain/patientTransitions';
+import { appendCourseEvent, prependNote, updateCourse, updateEntry, updateEntrySoap, updateHandoff, updateMedications, updateNotes, updateOrder, updateOrders, updatePatientInfo } from './domain/patientTransitions';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -671,38 +671,23 @@ function App() {
   };
 
   const handleUpdatePatientInfo = (updatedInfo: GeneralData) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      patientInfo: normalizePatientAgeSex(updatedInfo)
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updatePatientInfo(p, normalizePatientAgeSex(updatedInfo)) : p));
   };
   
   const handleUpdateCourse = (updatedCourse: any[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      course: updatedCourse
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateCourse(p, updatedCourse) : p));
   };
 
   const handleUpdateHandoff = (updatedHandoff: HandoffSummary) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      handoff: updatedHandoff
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateHandoff(p, updatedHandoff) : p));
   };
 
   const handleUpdateOrders = (updatedOrders: PatientOrder[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      orders: updatedOrders
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateOrders(p, updatedOrders) : p));
   };
 
   const handleUpdateMedications = (updatedMeds: MedicationOrder[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      medications: updatedMeds
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateMedications(p, updatedMeds) : p));
   };
 
   const handleRefreshSummary = async () => {
@@ -735,17 +720,11 @@ function App() {
   };
 
   const handleUpdateNotes = (updatedNotes: PatientNote[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      notes: updatedNotes
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? updateNotes(p, updatedNotes) : p));
   };
 
   const handleUpdateGlobalOrder = (patientId: string, updatedOrder: PatientOrder) => {
-    setPatients(prev => prev.map(p => p.id === patientId ? {
-      ...p,
-      orders: (p.orders || []).map(o => o.id === updatedOrder.id ? updatedOrder : o)
-    } : p));
+    setPatients(prev => prev.map(p => p.id === patientId ? updateOrder(p, updatedOrder) : p));
   };
 
   const handleSaveChatAsNote = (content: string, groundingSources?: any[], title?: string) => {
@@ -761,10 +740,7 @@ function App() {
       groundingSources: groundingSources
     };
     
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      notes: [newNote, ...(p.notes || [])]
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? prependNote(p, newNote) : p));
     
     sendNotification("Note Saved", {
       body: "The assistant response has been saved to patient notes.",
@@ -789,10 +765,7 @@ function App() {
       details: "Enter clinical details here..."
     };
     
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
-      ...p,
-      course: [...(p.course || []), newEvent]
-    } : p));
+    setPatients(prev => prev.map(p => p.id === activePatientId ? appendCourseEvent(p, newEvent) : p));
   };
 
   const handleSelectPatient = (id: string, initialView: ViewMode = ViewMode.CHART) => {
