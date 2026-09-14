@@ -51,6 +51,7 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
   // Prescription Items
   const [items, setItems] = useState<RxItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [printError, setPrintError] = useState<string | null>(null);
 
   // Delete Confirmation State
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
@@ -147,9 +148,10 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
     // Open a new window/tab for the print view
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert("Please allow popups to print the prescription.");
+      setPrintError("Please allow popups to print the prescription.");
       return;
     }
+    setPrintError(null);
 
     // Clone the content node
     const clone = printContent.cloneNode(true) as HTMLElement;
@@ -496,6 +498,13 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
           </div>
 
         </div>
+
+        {printError && (
+          <div role="alert" className="mx-6 mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+            {printError}
+            <button type="button" className="ml-2 underline" onClick={() => setPrintError(null)}>Dismiss</button>
+          </div>
+        )}
 
         {/* Delete Confirmation Overlay - Moved to be a direct child of the relative container, outside the scrollview */}
         {itemToDelete !== null && (
