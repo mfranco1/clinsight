@@ -20,6 +20,7 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
   const [isIntegrating, setIsIntegrating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -69,7 +70,7 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
       mediaRecorder.start();
       setIsRecording(true);
     } catch (err) {
-      alert("Microphone access required for dictation.");
+      setError("Microphone access required for dictation.");
     }
   };
 
@@ -110,6 +111,12 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
         </div>
 
         <div className="p-6 relative">
+          {error && (
+            <div role="alert" className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+              {error}
+              <button type="button" className="ml-2 underline" onClick={() => setError(null)}>Dismiss</button>
+            </div>
+          )}
           <textarea
             ref={inputRef}
             value={userInput}
