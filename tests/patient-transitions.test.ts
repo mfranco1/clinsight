@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OrderStatus, type MedicalChartResponse } from '../types';
+import { OrderStatus, PatientStatus, type MedicalChartResponse } from '../types';
 import {
   appendCourseEvent,
   prependEntry,
@@ -14,6 +14,9 @@ import {
   updateOrder,
   updateOrders,
   updatePatientInfo,
+  updatePatientStatus,
+  reactivateEncounter,
+  withPatientId,
 } from '../domain/patientTransitions';
 import { structuredPatientCase } from './fixtures/patient-cases';
 
@@ -53,5 +56,24 @@ describe('patient entry transitions', () => {
     expect(updateMedications(patient, []).medications).toEqual([]);
     expect(updateNotes(patient, [note]).notes).toEqual([note]);
     expect(prependNote(patient, note).notes?.[0]).toBe(note);
+  });
+
+  it('transitions lifecycle state without mutating the original patient', () => {
+    const patient = structuredPatientCase as MedicalChartResponse;
+    const discharged = updatePatientStatus(patient, PatientStatus.DISCHARGED, {
+      now: '2026-08-26T16:00:00.000Z',
+      dischargeDateTime: '2026-08-26 16:00',
+    });
+
+    expect(discharged).not.toBe(patient);
+    expect(discharged.encounters![0].status).toBe('COMPLETED');
+    expect(patient.encounters![0].status).toBe('ACTIVE');
+    expect(discharged.patientInfo.status).toBe(PatientStatus.DISCHARGED);
+
+    const reactivated = reactivateEncounter(discharged, 'encounter-admission');
+    expect(reactivated.encounters![0].status).toBe('ACTIVE');
+    expect(reactivated.patientInfo.status).toBe(PatientStatus.ADMITTED);
+    expect(withPatientId(patient, 'new-id').id).toBe('new-id');
+    expect(patient.id).toBe('patient-structured');
   });
 });

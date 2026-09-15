@@ -27,7 +27,7 @@ import { requestNotificationPermission, sendNotification } from './services/noti
 import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
 import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
-import { appendCourseEvent, prependNote, updateCourse, updateEntry, updateEntrySoap, updateHandoff, updateMedications, updateNotes, updateOrder, updateOrders, updatePatientInfo } from './domain/patientTransitions';
+import { appendCourseEvent, prependNote, reactivateEncounter, updateCourse, updateEntry, updateEntrySoap, updateHandoff, updateMedications, updateNotes, updateOrder, updateOrders, updatePatientInfo, updatePatientStatus, withPatientId } from './domain/patientTransitions';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -789,91 +789,23 @@ function App() {
       if (p.id !== id) return p;
 
       const now = new Date().toISOString();
-      const encounters = p.encounters || [];
-      
-      // Complete any active encounter
-      const updatedEncounters = encounters.map(enc => 
-        enc.status === 'ACTIVE' 
-          ? { 
-              ...enc, 
-              status: 'COMPLETED' as const, 
-              endDate: status === PatientStatus.DISCHARGED && dischargeDateTime 
-                ? new Date(dischargeDateTime.replace(' ', 'T')).toISOString() 
-                : status === PatientStatus.DECEASED && deceasedInfo 
-                  ? new Date(`${deceasedInfo.date}T${deceasedInfo.time}`).toISOString()
-                  : now 
-            } 
-          : enc
-      );
-
-      let updatedPatientInfo = normalizePatientAgeSex({ ...p.patientInfo, status });
-
-      // Create new encounter for ADMITTED or OUTPATIENT
-      if (status === PatientStatus.ADMITTED || status === PatientStatus.OUTPATIENT) {
-        const { date, time } = getLocalDateTimeParts();
-        const effectiveDate = `${date} ${time}`;
-        
-        updatedEncounters.push({
-          id: createId(),
-          type: status === PatientStatus.ADMITTED ? EncounterType.ADMISSION : EncounterType.CONSULT,
-          status: 'ACTIVE',
-          startDate: now
-        });
-
-        // Update admission date for UI counter
-        updatedPatientInfo.admissionDate = effectiveDate;
-        // Clear discharge date and deceased info on readmission
-        updatedPatientInfo.dischargeDate = undefined;
-        updatedPatientInfo.deceasedInfo = undefined;
-        updatedPatientInfo = normalizePatientAgeSex(updatedPatientInfo);
-      } else if (status === PatientStatus.DISCHARGED) {
-        // Set discharge date
-        updatedPatientInfo.dischargeDate = dischargeDateTime || `${getTodayDate()} ${getCurrentTime24()}`;
-        updatedPatientInfo = normalizePatientAgeSex(updatedPatientInfo);
-      } else if (status === PatientStatus.DECEASED) {
-        // Set deceased info
-        updatedPatientInfo.deceasedInfo = deceasedInfo;
-        updatedPatientInfo = normalizePatientAgeSex(updatedPatientInfo);
-      }
-
-      return {
-        ...p,
-        patientInfo: updatedPatientInfo,
-        encounters: updatedEncounters
-      };
+      const { date, time } = getLocalDateTimeParts();
+      const updated = updatePatientStatus(p, status, {
+        now,
+        dischargeDateTime: dischargeDateTime || (status === PatientStatus.DISCHARGED ? `${getTodayDate()} ${getCurrentTime24()}` : undefined),
+        deceasedInfo,
+        nextEncounterId: createId(),
+        admissionDateTime: `${date} ${time}`,
+      });
+      return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
     }));
   };
 
   const handleReactivateEncounter = (id: string, encounterId: string) => {
     setPatients(prev => prev.map(p => {
       if (p.id !== id) return p;
-
-      const encounters = p.encounters || [];
-      const targetEncounter = encounters.find(enc => enc.id === encounterId);
-      if (!targetEncounter) return p;
-
-      // 1. Mark the target encounter status as 'ACTIVE' and clear endDate
-      const updatedEncounters = encounters.map(enc => 
-        enc.id === encounterId 
-          ? { ...enc, status: 'ACTIVE' as const, endDate: undefined } 
-          : enc
-      );
-
-      // 2. Set the patient's status back to ADMITTED or OUTPATIENT based on encounter type
-      const newStatus = targetEncounter.type === EncounterType.ADMISSION 
-        ? PatientStatus.ADMITTED 
-        : PatientStatus.OUTPATIENT;
-
-      const updatedPatientInfo = normalizePatientAgeSex({
-        ...p.patientInfo,
-        status: newStatus
-      });
-
-      return {
-        ...p,
-        patientInfo: updatedPatientInfo,
-        encounters: updatedEncounters
-      };
+      const updated = reactivateEncounter(p, encounterId);
+      return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
     }));
   };
 
@@ -917,23 +849,16 @@ function App() {
       if (data.length === 0) return;
       if (data.length === 1) {
         const singleCase = data[0];
-        if (!singleCase.id) {
-          singleCase.id = createId();
-        }
-        setPatients(prev => [singleCase, ...prev]);
-        setActivePatientId(singleCase.id);
-        if (singleCase.entries.length > 0) {
-          setActiveEntryId(singleCase.entries[0].id);
+        const identifiedCase = singleCase.id ? singleCase : withPatientId(singleCase, createId());
+        setPatients(prev => [identifiedCase, ...prev]);
+        setActivePatientId(identifiedCase.id);
+        if (identifiedCase.entries.length > 0) {
+          setActiveEntryId(identifiedCase.entries[0].id);
         }
         handleNavigate(ViewMode.CHART);
         setChatSessionId(prev => prev + 1);
       } else {
-        const processedCases = data.map(c => {
-          if (!c.id) {
-            c.id = createId();
-          }
-          return c;
-        });
+        const processedCases = data.map(c => c.id ? c : withPatientId(c, createId()));
         setPatients(prev => [...processedCases, ...prev]);
         handleNavigate(ViewMode.DASHBOARD);
         setToast({
@@ -942,13 +867,11 @@ function App() {
         });
       }
     } else {
-      if (!data.id) {
-        data.id = createId();
-      }
-      setPatients(prev => [data, ...prev]);
-      setActivePatientId(data.id);
-      if (data.entries.length > 0) {
-          setActiveEntryId(data.entries[0].id);
+      const identifiedCase = data.id ? data : withPatientId(data, createId());
+      setPatients(prev => [identifiedCase, ...prev]);
+      setActivePatientId(identifiedCase.id);
+      if (identifiedCase.entries.length > 0) {
+          setActiveEntryId(identifiedCase.entries[0].id);
       }
       handleNavigate(ViewMode.CHART);
       setChatSessionId(prev => prev + 1);

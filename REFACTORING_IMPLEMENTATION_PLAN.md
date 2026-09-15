@@ -290,11 +290,17 @@ For every slice:
 
 **Verification:** Focused transition tests cover immutable replacement/update behavior and `npm run lint` plus 18 unit tests pass.
 
-##### [ ] 2.2b2 Extract creation/import and encounter/status transitions
+##### [x] 2.2b2 Extract import identity and encounter/status transitions
 
-**Scope:** Extract patient creation/import and encounter/status lifecycle operations while preserving current IDs, migration behavior, and status semantics.
+**Scope:** Extract immutable import identity normalization and encounter/status lifecycle operations while preserving current IDs, migration behavior, and status semantics.
 
-**Verification:** Creation/import and lifecycle transition tests cover legacy and current records; existing workflows remain unchanged.
+**Verification:** Import identity and lifecycle transition tests cover legacy and current records; `npm run lint` plus 19 unit tests pass and existing workflows remain unchanged.
+
+##### [ ] 2.2b3 Extract generated and manual patient creation transitions
+
+**Scope:** Extract reusable constructors for generated charts and manual first-entry charts without changing IDs, defaults, encounter initialization, or UI behavior.
+
+**Verification:** Constructor tests cover generated and manual creation defaults; chart generation and manual-entry browser workflows remain unchanged.
 
 ### [ ] 2.3 Create the patient store/provider
 
@@ -494,3 +500,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-14 | 2.1 | complete | current workspace | `npm run lint`, `npm test` (17 unit tests), `npm run test:e2e` (6 browser tests) | Extracted typed persistence hydration/migration to `services/patientPersistence.ts` and preserved legacy encounter behavior.
 2026-09-14 | 2.2a | complete | current workspace | `npm run lint`, `npm test` (17 unit tests) | Added immutable patient entry transition functions and migrated App entry update handlers.
 2026-09-14 | 2.2b1 | complete | current workspace | `npm run lint`, `npm test` (18 unit tests) | Added immutable patient-info, course, handoff, order, medication, and note transition helpers; migrated corresponding App update, append, and global-order handlers.
+2026-09-15 | 2.2b2 | complete | current workspace | `npm run lint`, `npm test` (19 unit tests) | Added immutable encounter/status lifecycle transitions and non-mutating import ID normalization; migrated App status, reactivation, and import handlers.

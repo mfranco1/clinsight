@@ -1,12 +1,15 @@
 import {
   ChartEntry,
   CourseEvent,
+  DeceasedInfo,
+  EncounterType,
   GeneralData,
   HandoffSummary,
   MedicalChartResponse,
   MedicationOrder,
   PatientNote,
   PatientOrder,
+  PatientStatus,
   SoapNote,
 } from '../types';
 
@@ -81,4 +84,70 @@ export const updateNotes = (patient: MedicalChartResponse, notes: PatientNote[])
 export const prependNote = (patient: MedicalChartResponse, note: PatientNote): MedicalChartResponse => ({
   ...patient,
   notes: [note, ...(patient.notes || [])],
+});
+
+export interface PatientStatusTransitionOptions {
+  now: string;
+  dischargeDateTime?: string;
+  deceasedInfo?: DeceasedInfo;
+  nextEncounterId?: string;
+  admissionDateTime?: string;
+}
+
+export const updatePatientStatus = (
+  patient: MedicalChartResponse,
+  status: PatientStatus,
+  options: PatientStatusTransitionOptions
+): MedicalChartResponse => {
+  const updatedEncounters = (patient.encounters || []).map((encounter) => encounter.status === 'ACTIVE'
+    ? {
+        ...encounter,
+        status: 'COMPLETED' as const,
+        endDate: status === PatientStatus.DISCHARGED && options.dischargeDateTime
+          ? new Date(options.dischargeDateTime.replace(' ', 'T')).toISOString()
+          : status === PatientStatus.DECEASED && options.deceasedInfo
+            ? new Date(`${options.deceasedInfo.date}T${options.deceasedInfo.time}`).toISOString()
+            : options.now,
+      }
+    : encounter);
+  const patientInfo = { ...patient.patientInfo, status };
+
+  if (status === PatientStatus.ADMITTED || status === PatientStatus.OUTPATIENT) {
+    updatedEncounters.push({
+      id: options.nextEncounterId || options.now,
+      type: status === PatientStatus.ADMITTED ? EncounterType.ADMISSION : EncounterType.CONSULT,
+      status: 'ACTIVE',
+      startDate: options.now,
+    });
+    patientInfo.admissionDate = options.admissionDateTime || patientInfo.admissionDate;
+    patientInfo.dischargeDate = undefined;
+    patientInfo.deceasedInfo = undefined;
+  } else if (status === PatientStatus.DISCHARGED) {
+    patientInfo.dischargeDate = options.dischargeDateTime;
+  } else if (status === PatientStatus.DECEASED) {
+    patientInfo.deceasedInfo = options.deceasedInfo;
+  }
+
+  return { ...patient, patientInfo, encounters: updatedEncounters };
+};
+
+export const reactivateEncounter = (
+  patient: MedicalChartResponse,
+  encounterId: string
+): MedicalChartResponse => {
+  const targetEncounter = (patient.encounters || []).find((encounter) => encounter.id === encounterId);
+  if (!targetEncounter) return patient;
+  const status = targetEncounter.type === EncounterType.ADMISSION ? PatientStatus.ADMITTED : PatientStatus.OUTPATIENT;
+  return {
+    ...patient,
+    patientInfo: { ...patient.patientInfo, status },
+    encounters: (patient.encounters || []).map((encounter) => encounter.id === encounterId
+      ? { ...encounter, status: 'ACTIVE' as const, endDate: undefined }
+      : encounter),
+  };
+};
+
+export const withPatientId = (patient: MedicalChartResponse, id: string): MedicalChartResponse => ({
+  ...patient,
+  id,
 });
