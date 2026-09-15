@@ -1,9 +1,9 @@
-import { useCallback, useState, type SetStateAction } from 'react';
+import { useCallback, useState } from 'react';
 import { MedicalChartResponse } from '../types';
 
 export interface PatientStore {
   patients: MedicalChartResponse[];
-  setPatients: (next: SetStateAction<MedicalChartResponse[]>) => void;
+  updatePatients: (update: (patients: MedicalChartResponse[]) => MedicalChartResponse[]) => void;
   addPatient: (patient: MedicalChartResponse) => void;
   addPatients: (patients: MedicalChartResponse[]) => void;
   updatePatient: (patientId: string, update: (patient: MedicalChartResponse) => MedicalChartResponse) => void;
@@ -31,5 +31,9 @@ export const usePatientStore = (
     setPatients((current) => current.filter((patient) => patient.id !== patientId));
   }, []);
 
-  return { patients, setPatients, addPatient, addPatients, updatePatient, removePatient };
+  const updatePatients = useCallback((update: (current: MedicalChartResponse[]) => MedicalChartResponse[]) => {
+    setPatients(update);
+  }, []);
+
+  return { patients, updatePatients, addPatient, addPatients, updatePatient, removePatient };
 };

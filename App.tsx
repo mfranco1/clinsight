@@ -46,7 +46,7 @@ function App() {
   const [isReassessing, setIsReassessing] = useState<boolean>(false);
   
   // Multi-patient state
-  const { patients, setPatients, addPatient, addPatients, updatePatient, removePatient } = usePatientStore(() =>
+  const { patients, updatePatients, addPatient, addPatients, updatePatient, removePatient } = usePatientStore(() =>
     loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY))
   );
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
@@ -99,7 +99,7 @@ function App() {
     });
 
     if (hasChanges) {
-      setPatients(updatedPatients);
+      updatePatients(() => updatedPatients);
     }
   }, [patients]);
 

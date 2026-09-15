@@ -302,7 +302,7 @@ For every slice:
 
 **Verification:** Constructor tests cover generated and manual creation defaults; `npm run lint` plus 21 unit tests pass; chart generation and manual-entry workflows remain unchanged.
 
-### [-] 2.3 Create the patient store/provider
+### [x] 2.3 Create the patient store/provider
 
 **Scope:** Introduce a small reducer/context facade over the transition functions. It may coexist with `App` state during migration; do not add a third-party state library.
 
@@ -320,11 +320,11 @@ For every slice:
 
 **Verification:** Workflow mutations use the store API; `npm run lint` and 21 unit tests pass.
 
-#### [ ] 2.3c Remove the compatibility setter
+#### [x] 2.3c Remove the compatibility setter
 
 **Scope:** Move whole-collection order carry-over into a store-level operation and remove direct `setPatients` access from `App.tsx`.
 
-**Verification:** Persistence and order carry-over behavior remain unchanged with no direct patient setter usage in `App.tsx`.
+**Verification:** Persistence and order carry-over behavior remain unchanged; `App.tsx` has no direct patient setter usage.
 
 ### [ ] 2.4 Migrate `App.tsx` patient handlers to the store
 
@@ -522,3 +522,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-15 | 2.2b3 | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added pure generated/manual patient constructors and migrated both creation paths while preserving defaults, encounter initialization, and UI behavior.
 2026-09-15 | 2.3a | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added `usePatientStore` compatibility facade for patient hydration, add, batch-add, update, and remove operations; migrated creation/import/deletion entry points without changing persistence or UI behavior.
 2026-09-15 | 2.3b | complete | current workspace | `npm test` (21 unit tests) | Migrated remaining chart, encounter, status, order, note, and entry deletion workflows to `usePatientStore.updatePatient`/`removePatient`; retained direct setter only for order carry-over pending 2.3c.
+2026-09-15 | 2.3c | complete | current workspace | `npm run typecheck`, targeted ESLint | Moved whole-collection order carry-over behind `usePatientStore.updatePatients` and removed direct patient setter access from `App.tsx`.
