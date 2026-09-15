@@ -28,6 +28,7 @@ import { DEFAULT_MODEL } from './config/appConfig';
 import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
 import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
 import { appendCourseEvent, prependNote, reactivateEncounter, updateCourse, updateEntry, updateEntrySoap, updateHandoff, updateMedications, updateNotes, updateOrder, updateOrders, updatePatientInfo, updatePatientStatus, withPatientId } from './domain/patientTransitions';
+import { createGeneratedPatient, createManualPatient } from './domain/patientFactories';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -371,19 +372,17 @@ function App() {
           };
 
           const newPatient = {
-              ...data,
-              patientInfo: normalizePatientAgeSex({
-                ...data.patientInfo,
-                status: isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED
-              }),
-              encounters: [{
-                id: newEntryId,
-                type: isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
-                startDate: effectiveDate,
-                status: 'ACTIVE' as const
-              }],
-              entries: [newEntry],
-              course: data.course && data.course.length > 0 ? data.course : [newCourseEvent]
+            ...createGeneratedPatient(data, {
+              entry: newEntry,
+              encounterId: newEntryId,
+              effectiveDate,
+              isConsult,
+              fallbackCourseEvent: newCourseEvent,
+            }),
+            patientInfo: normalizePatientAgeSex({
+              ...data.patientInfo,
+              status: isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED
+            }),
           };
           setPatients(prev => [newPatient, ...prev]);
           setActivePatientId(newPatient.id);
@@ -459,36 +458,18 @@ function App() {
         encounterId
       };
 
+      const manualPatient = createManualPatient({
+          id: newPatientId,
+          encounterId,
+          now,
+          today,
+          isConsult,
+          entry: newEntry,
+          courseEvent: newEventWithEncounter,
+        });
       const newPatient: MedicalChartResponse = {
-        id: newPatientId,
-        patientInfo: normalizePatientAgeSex({
-          patientName: "Not Recorded",
-          ageSex: "Not Recorded",
-          mrn: "Not Recorded",
-          dob: "Not Recorded",
-          admissionDate: today,
-          status: isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED,
-          address: "Not Recorded",
-          religion: "Not Recorded",
-          handedness: "Not Recorded",
-          location: "Not Recorded",
-          contactNumber: "Not Recorded",
-          email: "Not Recorded"
-        }),
-        encounters: [{
-          id: encounterId,
-          type: isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
-          startDate: now,
-          status: 'ACTIVE'
-        }],
-        entries: [{ ...newEntry, encounterId }],
-        course: [newEventWithEncounter],
-        handoff: {
-          patientId: "Not Recorded",
-          oneLiner: "Manual admission recorded.",
-          activeIssues: ["Manual admission"],
-          toDoList: ["Review patient history"]
-        }
+        ...manualPatient,
+        patientInfo: normalizePatientAgeSex(manualPatient.patientInfo),
       };
       setPatients(prev => [newPatient, ...prev]);
       setActivePatientId(newPatientId);
