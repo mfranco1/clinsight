@@ -314,11 +314,17 @@ For every slice:
 
 **Verification:** App persistence and workflows remain unchanged; `npm run lint` and 21 unit tests pass.
 
-#### [ ] 2.3b Migrate remaining patient mutations behind the store API
+#### [x] 2.3b Migrate workflow patient mutations behind the store API
 
-**Scope:** Replace direct collection mutation callbacks in `App.tsx` with store operations, then remove the compatibility setter once all workflows use the facade.
+**Scope:** Replace direct collection mutation callbacks in `App.tsx` with store operations for chart, encounter, order, note, and deletion workflows; retain the setter only for the existing whole-collection order carry-over effect.
 
-**Verification:** No direct patient collection mutation remains outside the store; unit and browser suites pass.
+**Verification:** Workflow mutations use the store API; `npm run lint` and 21 unit tests pass.
+
+#### [ ] 2.3c Remove the compatibility setter
+
+**Scope:** Move whole-collection order carry-over into a store-level operation and remove direct `setPatients` access from `App.tsx`.
+
+**Verification:** Persistence and order carry-over behavior remain unchanged with no direct patient setter usage in `App.tsx`.
 
 ### [ ] 2.4 Migrate `App.tsx` patient handlers to the store
 
@@ -515,3 +521,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-15 | 2.2b2 | complete | current workspace | `npm run lint`, `npm test` (19 unit tests) | Added immutable encounter/status lifecycle transitions and non-mutating import ID normalization; migrated App status, reactivation, and import handlers.
 2026-09-15 | 2.2b3 | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added pure generated/manual patient constructors and migrated both creation paths while preserving defaults, encounter initialization, and UI behavior.
 2026-09-15 | 2.3a | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added `usePatientStore` compatibility facade for patient hydration, add, batch-add, update, and remove operations; migrated creation/import/deletion entry points without changing persistence or UI behavior.
+2026-09-15 | 2.3b | complete | current workspace | `npm test` (21 unit tests) | Migrated remaining chart, encounter, status, order, note, and entry deletion workflows to `usePatientStore.updatePatient`/`removePatient`; retained direct setter only for order carry-over pending 2.3c.

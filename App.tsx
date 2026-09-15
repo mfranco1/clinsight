@@ -277,11 +277,11 @@ function App() {
             details: result.courseEvent.details
           };
 
-          setPatients(prev => prev.map(p => p.id === activePatient.id ? {
+          updatePatient(activePatient.id, p => ({
             ...p,
             entries: [newEntry, ...p.entries],
             course: [...(p.course || []), newCourseEvent].sort((a, b) => new Date(`${b.date} ${b.time || '00:00'}`).getTime() - new Date(`${a.date} ${a.time || '00:00'}`).getTime()),
-          } : p));
+          }));
 
           setActiveEntryId(newEntryId);
           handleNavigate(ViewMode.CHART);
@@ -481,11 +481,11 @@ function App() {
         encounterId: activeEnc?.id
       };
       
-      setPatients(prev => prev.map(p => p.id === activePatientId ? {
+      updatePatient(activePatientId, p => ({
         ...p,
         entries: [newEntry, ...p.entries],
         course: [...p.course, newEventWithEncounter]
-      } : p));
+      }));
     }
 
     setActiveEntryId(newEntryId);
@@ -518,7 +518,7 @@ function App() {
       // Always use search grounding
       const result = await reassessSoapNote(activeEntry.soap, recentHistory, model, specialization, true);
       
-      setPatients(prev => prev.map(p => p.id === activePatientId ? {
+      updatePatient(activePatientId, p => ({
         ...p,
         entries: p.entries.map(e => e.id === activeEntryId ? {
            ...e,
@@ -530,7 +530,7 @@ function App() {
            references: result.references || e.references,
            groundingSources: result.groundingSources || e.groundingSources
         } : e),
-      } : p));
+      }));
 
       // Send notification
       sendNotification("Reassessment Complete", {
@@ -573,9 +573,7 @@ function App() {
       const getTodayISO = () => getTodayDate();
       const getNowTime24 = () => getCurrentTime24();
 
-      setPatients(prev => prev.map(p => {
-        if (p.id !== activePatientId) return p;
-
+      updatePatient(activePatientId, p => {
         const newCourseEvent = {
           date: activeEntry.date.split(' ')[0] || getTodayISO(),
           time: activeEntry.date.split(' ')[1] || getNowTime24(),
@@ -595,7 +593,7 @@ function App() {
           } : e),
           course: [...(p.course || []), newCourseEvent].sort((a, b) => new Date(`${b.date} ${b.time || '00:00'}`).getTime() - new Date(`${a.date} ${a.time || '00:00'}`).getTime()),
         };
-      }));
+      });
 
       sendNotification("Assessment Complete", {
         body: `The clinical assessment for ${activePatient?.patientInfo.patientName || "the patient"} is finished.`,
@@ -645,31 +643,31 @@ function App() {
   };
 
   const handleUpdateEntrySoap = (entryId: string, updatedSoap: SoapNote) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateEntrySoap(p, entryId, updatedSoap) : p));
+    updatePatient(activePatientId, p => updateEntrySoap(p, entryId, updatedSoap));
   };
 
   const handleUpdateEntry = (entryId: string, updatedEntry: ChartEntry) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateEntry(p, entryId, updatedEntry) : p));
+    updatePatient(activePatientId, p => updateEntry(p, entryId, updatedEntry));
   };
 
   const handleUpdatePatientInfo = (updatedInfo: GeneralData) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updatePatientInfo(p, normalizePatientAgeSex(updatedInfo)) : p));
+    updatePatient(activePatientId, p => updatePatientInfo(p, normalizePatientAgeSex(updatedInfo)));
   };
   
   const handleUpdateCourse = (updatedCourse: any[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateCourse(p, updatedCourse) : p));
+    updatePatient(activePatientId, p => updateCourse(p, updatedCourse));
   };
 
   const handleUpdateHandoff = (updatedHandoff: HandoffSummary) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateHandoff(p, updatedHandoff) : p));
+    updatePatient(activePatientId, p => updateHandoff(p, updatedHandoff));
   };
 
   const handleUpdateOrders = (updatedOrders: PatientOrder[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateOrders(p, updatedOrders) : p));
+    updatePatient(activePatientId, p => updateOrders(p, updatedOrders));
   };
 
   const handleUpdateMedications = (updatedMeds: MedicationOrder[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateMedications(p, updatedMeds) : p));
+    updatePatient(activePatientId, p => updateMedications(p, updatedMeds));
   };
 
   const handleRefreshSummary = async () => {
@@ -702,11 +700,11 @@ function App() {
   };
 
   const handleUpdateNotes = (updatedNotes: PatientNote[]) => {
-    setPatients(prev => prev.map(p => p.id === activePatientId ? updateNotes(p, updatedNotes) : p));
+    updatePatient(activePatientId, p => updateNotes(p, updatedNotes));
   };
 
   const handleUpdateGlobalOrder = (patientId: string, updatedOrder: PatientOrder) => {
-    setPatients(prev => prev.map(p => p.id === patientId ? updateOrder(p, updatedOrder) : p));
+    updatePatient(patientId, p => updateOrder(p, updatedOrder));
   };
 
   const handleSaveChatAsNote = (content: string, groundingSources?: any[], title?: string) => {
@@ -722,7 +720,7 @@ function App() {
       groundingSources: groundingSources
     };
     
-    setPatients(prev => prev.map(p => p.id === activePatientId ? prependNote(p, newNote) : p));
+    updatePatient(activePatientId, p => prependNote(p, newNote));
     
     sendNotification("Note Saved", {
       body: "The assistant response has been saved to patient notes.",
@@ -747,7 +745,7 @@ function App() {
       details: "Enter clinical details here..."
     };
     
-    setPatients(prev => prev.map(p => p.id === activePatientId ? appendCourseEvent(p, newEvent) : p));
+    updatePatient(activePatientId, p => appendCourseEvent(p, newEvent));
   };
 
   const handleSelectPatient = (id: string, initialView: ViewMode = ViewMode.CHART) => {
@@ -767,9 +765,7 @@ function App() {
   };
 
   const handleUpdatePatientStatus = (id: string, status: PatientStatus, dischargeDateTime?: string, deceasedInfo?: DeceasedInfo) => {
-    setPatients(prev => prev.map(p => {
-      if (p.id !== id) return p;
-
+    updatePatient(id, p => {
       const now = new Date().toISOString();
       const { date, time } = getLocalDateTimeParts();
       const updated = updatePatientStatus(p, status, {
@@ -780,15 +776,14 @@ function App() {
         admissionDateTime: `${date} ${time}`,
       });
       return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
-    }));
+    });
   };
 
   const handleReactivateEncounter = (id: string, encounterId: string) => {
-    setPatients(prev => prev.map(p => {
-      if (p.id !== id) return p;
+    updatePatient(id, p => {
       const updated = reactivateEncounter(p, encounterId);
       return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
-    }));
+    });
   };
 
   const handleDeleteEntry = (id: string) => {
@@ -801,10 +796,10 @@ function App() {
       return;
     }
 
-    setPatients(prev => prev.map(p => p.id === activePatientId ? {
+    updatePatient(activePatientId, p => ({
       ...p,
       entries: updatedEntries
-    } : p));
+    }));
 
     if (activeEntryId === id) {
       setActiveEntryId(updatedEntries[0].id);
