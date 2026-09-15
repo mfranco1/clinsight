@@ -302,11 +302,23 @@ For every slice:
 
 **Verification:** Constructor tests cover generated and manual creation defaults; `npm run lint` plus 21 unit tests pass; chart generation and manual-entry workflows remain unchanged.
 
-### [ ] 2.3 Create the patient store/provider
+### [-] 2.3 Create the patient store/provider
 
 **Scope:** Introduce a small reducer/context facade over the transition functions. It may coexist with `App` state during migration; do not add a third-party state library.
 
 **Verification:** Dashboard selection, patient navigation, persistence, and updates work unchanged through the facade.
+
+#### [x] 2.3a Add compatibility patient store hook
+
+**Scope:** Centralize patient collection initialization and common add, batch-add, update, and remove operations in a reusable hook while preserving the existing `setPatients` callback surface for incremental migration.
+
+**Verification:** App persistence and workflows remain unchanged; `npm run lint` and 21 unit tests pass.
+
+#### [ ] 2.3b Migrate remaining patient mutations behind the store API
+
+**Scope:** Replace direct collection mutation callbacks in `App.tsx` with store operations, then remove the compatibility setter once all workflows use the facade.
+
+**Verification:** No direct patient collection mutation remains outside the store; unit and browser suites pass.
 
 ### [ ] 2.4 Migrate `App.tsx` patient handlers to the store
 
@@ -502,3 +514,4 @@ YYYY-MM-DD | Slice ID | Status | PR/branch | Verification evidence | Notes/decis
 2026-09-14 | 2.2b1 | complete | current workspace | `npm run lint`, `npm test` (18 unit tests) | Added immutable patient-info, course, handoff, order, medication, and note transition helpers; migrated corresponding App update, append, and global-order handlers.
 2026-09-15 | 2.2b2 | complete | current workspace | `npm run lint`, `npm test` (19 unit tests) | Added immutable encounter/status lifecycle transitions and non-mutating import ID normalization; migrated App status, reactivation, and import handlers.
 2026-09-15 | 2.2b3 | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added pure generated/manual patient constructors and migrated both creation paths while preserving defaults, encounter initialization, and UI behavior.
+2026-09-15 | 2.3a | complete | current workspace | `npm run lint`, `npm test` (21 unit tests) | Added `usePatientStore` compatibility facade for patient hydration, add, batch-add, update, and remove operations; migrated creation/import/deletion entry points without changing persistence or UI behavior.

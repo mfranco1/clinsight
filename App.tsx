@@ -22,6 +22,7 @@ import { Icons } from './components/ui/Icons';
 import DashboardView from './components/DashboardView';
 import { MedicalChartResponse, ViewMode, FileUpload, SoapNote, GeneralData, ChartEntry, HandoffSummary, PatientNote, PatientOrder, OrderStatus, MedicationOrder, PatientStatus, EncounterType, DeceasedInfo, CauseOfDeath } from './types';
 import { useFileUpload } from './hooks/useFileUpload';
+import { usePatientStore } from './hooks/usePatientStore';
 import { generateMedicalChart, reassessSoapNote, generateProgressNote, refreshPatientSummary } from './services/geminiService';
 import { requestNotificationPermission, sendNotification } from './services/notificationService';
 import { DEFAULT_MODEL } from './config/appConfig';
@@ -45,9 +46,9 @@ function App() {
   const [isReassessing, setIsReassessing] = useState<boolean>(false);
   
   // Multi-patient state
-  const [patients, setPatients] = useState<MedicalChartResponse[]>(() => {
-    return loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY));
-  });
+  const { patients, setPatients, addPatient, addPatients, updatePatient, removePatient } = usePatientStore(() =>
+    loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY))
+  );
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
   
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
@@ -384,7 +385,7 @@ function App() {
               status: isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED
             }),
           };
-          setPatients(prev => [newPatient, ...prev]);
+          addPatient(newPatient);
           setActivePatientId(newPatient.id);
           
           setActiveEntryId(newEntryId);
@@ -471,7 +472,7 @@ function App() {
         ...manualPatient,
         patientInfo: normalizePatientAgeSex(manualPatient.patientInfo),
       };
-      setPatients(prev => [newPatient, ...prev]);
+      addPatient(newPatient);
       setActivePatientId(newPatientId);
     } else {
       const activeEnc = activePatient?.encounters?.find(e => e.status === 'ACTIVE');
@@ -759,7 +760,7 @@ function App() {
   };
 
   const handleDeletePatient = (id: string) => {
-    setPatients(prev => prev.filter(p => p.id !== id));
+    removePatient(id);
     if (activePatientId === id) {
       handleNavigate(ViewMode.DASHBOARD);
     }
@@ -831,7 +832,7 @@ function App() {
       if (data.length === 1) {
         const singleCase = data[0];
         const identifiedCase = singleCase.id ? singleCase : withPatientId(singleCase, createId());
-        setPatients(prev => [identifiedCase, ...prev]);
+        addPatient(identifiedCase);
         setActivePatientId(identifiedCase.id);
         if (identifiedCase.entries.length > 0) {
           setActiveEntryId(identifiedCase.entries[0].id);
@@ -840,7 +841,7 @@ function App() {
         setChatSessionId(prev => prev + 1);
       } else {
         const processedCases = data.map(c => c.id ? c : withPatientId(c, createId()));
-        setPatients(prev => [...processedCases, ...prev]);
+        addPatients(processedCases);
         handleNavigate(ViewMode.DASHBOARD);
         setToast({
           message: `Successfully uploaded ${data.length} patient cases`,
@@ -849,7 +850,7 @@ function App() {
       }
     } else {
       const identifiedCase = data.id ? data : withPatientId(data, createId());
-      setPatients(prev => [identifiedCase, ...prev]);
+      addPatient(identifiedCase);
       setActivePatientId(identifiedCase.id);
       if (identifiedCase.entries.length > 0) {
           setActiveEntryId(identifiedCase.entries[0].id);
