@@ -1,0 +1,17 @@
+# AI integration
+
+## Current request path
+
+Feature code calls typed operations in `services/ai/actions.ts`, which use the `ClinicalAiGateway` interface. `geminiGateway.ts` connects that interface to task modules under `services/ai/tasks/`. Tasks own prompt construction, schemas, parsing, and task-level fallbacks. `geminiTransport.ts` owns the Google SDK request boundary, abort handling, sanitation, grounding extraction, and file conversion. Tests cover gateway actions, task contracts, parsing, and transport.
+
+Keep UI/features independent of provider SDK details. Add or change task contracts at the gateway/action/task boundary and cover request mapping, response shape, empty or malformed output, and error behavior as appropriate. Keep raw prompts, completions, and patient content out of diagnostics.
+
+## Credential and deployment limitation
+
+`vite.config.ts` reads `GEMINI_API_KEY` and defines it into the client bundle. A browser user can inspect client-delivered credentials. This arrangement is for development with a development-only key; it is not suitable for a private or production credential. A gateway interface in the client does not protect the key.
+
+A server-side proxy was explicitly deferred in the refactoring record. It is future work and requires a separately scoped implementation and deployment decision. Do not report it as complete or infer that the browser integration is production-safe.
+
+## Safety and failure handling
+
+Generated clinical content requires clinician review. Preserve the existing typed result contracts and UI feedback. Diagnostics should describe operational failure without including clinical source text, generated output, credentials, or other patient data. A passing unit test/build does not establish provider uptime, output correctness, or clinical validation.

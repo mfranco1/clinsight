@@ -11,6 +11,7 @@
     "lint": "npm run typecheck && eslint . --max-warnings 0",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
+    "docs:check": "node scripts/check-docs.mjs --self-test && node scripts/check-docs.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
