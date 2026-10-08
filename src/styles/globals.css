@@ -69,6 +69,49 @@ body {
   color: var(--clinical-content-primary);
 }
 
+.brand-lockup:not(.brand-mono) {
+  --brand-wordmark-color: #0b2030;
+  display: inline-flex;
+  align-items: center;
+  color: var(--brand-wordmark-color);
+}
+
+.brand-lockup.brand-dark {
+  --brand-wordmark-color: #f4faf9;
+}
+
+.brand-lockup.brand-mono .brand-wordmark {
+  color: currentColor;
+}
+
+.brand-stacked {
+  flex-direction: column;
+}
+
+.brand-wordmark {
+  color: var(--brand-wordmark-color);
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.brand-tagline {
+  margin-top: 0.5rem;
+  color: var(--clinical-content-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.brand-copy-stacked {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
 .clinical-document-editor .ProseMirror {
   color: var(--clinical-content-primary);
   line-height: 1.65;

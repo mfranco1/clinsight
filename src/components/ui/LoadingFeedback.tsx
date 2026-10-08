@@ -42,7 +42,7 @@ export function LoadingScreen({
       aria-busy="true"
     >
       <div className="flex flex-col items-center gap-4">
-        <BrandMark badge />
+        <BrandMark size="lg" className="mb-1" />
         <LoadingIndicator label={label} />
       </div>
     </main>

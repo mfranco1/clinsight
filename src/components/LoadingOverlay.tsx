@@ -27,7 +27,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           aria-hidden="true"
           className="absolute inset-0 animate-spin rounded-full border-[3px] border-white border-t-transparent motion-reduce:animate-none"
         />
-        <BrandMark tone="white" className="h-8 w-8" />
+        <BrandMark size={32} colorMode="mono" className="text-white" />
       </div>
       <p className="mb-6 text-sm font-medium text-white">{message}</p>
 

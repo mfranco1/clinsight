@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`h-16 flex items-center border-b border-border-subtle transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-6"}`}
         >
-          <Brand size="sm" showName={!isCollapsed} />
+          <Brand size="sm" variant={isCollapsed ? "icon" : "full"} />
         </div>
 
         {/* Navigation Items */}

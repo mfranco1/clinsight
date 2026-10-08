@@ -1,6 +1,6 @@
 # Design
 
-ClinSight supports clinical documentation workflows with browser-local persistence and runtime AI assistance. Preserve clinical meaning, user review, data compatibility, accessible interactions, and responsive behavior when changing the product.
+Clinsight supports clinical documentation workflows with browser-local persistence and runtime AI assistance. Preserve clinical meaning, user review, data compatibility, accessible interactions, and responsive behavior when changing the product.
 
 Use these authoritative documents for design details:
 

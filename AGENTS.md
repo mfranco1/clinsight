@@ -2,7 +2,7 @@
 
 ## Project
 
-ClinSight is a browser-based clinical documentation application for patient intake, charts, orders, notes, handoffs, and AI-assisted workflows.
+Clinsight is a browser-based clinical documentation application for patient intake, charts, orders, notes, handoffs, and AI-assisted workflows.
 
 The current application stores patient data locally in the browser and calls Gemini at runtime. Keep its boundaries suitable for a future server integration while preserving current behavior and compatibility.
 

@@ -1,6 +1,6 @@
-# ClinSight
+# Clinsight
 
-ClinSight is a React and TypeScript clinical documentation application built with Vite. It supports patient intake, charts, orders, notes, handoffs, and clinical assistance.
+Clinsight is a React and TypeScript clinical documentation application built with Vite. It supports patient intake, charts, orders, notes, handoffs, and clinical assistance.
 
 ## Quick start
 

@@ -1,4 +1,4 @@
-import { BRAND_ICON_DATA_URL } from "../config/brand";
+import { BRAND_ICON_DATA_URL, BRAND_MONO_ICON_DATA_URL } from "../config/brand";
 
 export const requestNotificationPermission = async (): Promise<boolean> => {
   try {
@@ -35,7 +35,7 @@ export const sendNotification = (
     // This avoids annoying the user while they are already watching the progress
     const notification = new Notification(title, {
       icon: BRAND_ICON_DATA_URL,
-      badge: BRAND_ICON_DATA_URL,
+      badge: BRAND_MONO_ICON_DATA_URL,
       ...options,
     });
 
