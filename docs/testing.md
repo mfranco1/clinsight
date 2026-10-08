@@ -21,4 +21,6 @@ All test paths are offline by default. Vitest blocks and records unexpected `fet
 
 CI checks type/lint, Prettier, unit tests, production build, then installs Chromium and runs desktop and mobile browser projects. `npm run lint` already includes typecheck. E2E execution itself performs a fresh production build through Playwright's web server.
 
+The CI secret scan fetches full repository history and runs Gitleaks with its findings redacted; comments, summaries, and uploaded finding artifacts are disabled. For a local scan of all available refs and reflog commits, install Gitleaks and run `gitleaks git --log-opts="--all --reflog --full-history" --redact=100`. A local scan cannot establish coverage of refs or prior copies absent from the clone. Organization-owned repositories must configure the optional `GITLEAKS_LICENSE` GitHub secret required by the Gitleaks Action.
+
 Record only commands actually run and their result. A build does not verify live Gemini access, deployment, production credentials, backup recovery, or clinical correctness. For visual changes, inspect the affected desktop and mobile paths; use snapshots only where they materially guard a stable layout.

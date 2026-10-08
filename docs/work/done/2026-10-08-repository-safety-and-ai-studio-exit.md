@@ -1,7 +1,7 @@
 # Repository safety and Google AI Studio exit
 
-Status: planned
-Owner: unassigned
+Status: done
+Owner: Codex
 Updated: 2026-10-08
 
 ## Goal
@@ -19,22 +19,22 @@ Remove obsolete Google AI Studio scaffolding and establish evidence that the com
 
 - Removing the working Gemini provider merely because it is a Google service. AI Studio hosting/scaffolding and the provider integration are distinct dependencies.
 - Silently deleting clinical source context, required licenses/attributions, or truthful architectural/security documentation.
-- Implementing a backend or claiming production readiness. The [server-side AI proxy](2026-10-08-server-side-ai-proxy.md) remains separately scoped and deferred.
-- Publishing, force-pushing, rewriting history, or rotating account credentials during this planning task.
+- Implementing a backend or claiming production readiness. The [server-side AI proxy](../ongoing/2026-10-08-server-side-ai-proxy.md) remains separately scoped and deferred.
+- Publishing, force-pushing, or rotating account credentials. The user later explicitly authorized rewriting local commit metadata to replace their personal mailbox with their GitHub noreply address; no remote force-push is authorized.
 
 ## Acceptance criteria
 
-- [ ] Every tracked file and all publication-reachable history are scanned; binaries and encoded content receive appropriate review, with exact scope and tool versions recorded.
-- [ ] Confirmed exposed credentials are revoked/rotated and private data removed from the publishable repository and history; deletion alone is not considered credential remediation.
-- [ ] No unresolved secret or private-data finding remains. False positives have narrow, reviewable explanations without reproducing sensitive values.
-- [ ] Obsolete AI Studio artifacts are removed, and remaining Google/provider references are classified and justified.
-- [ ] Standalone workflows, browser permissions, AI contracts, clinical meaning, and persisted records remain compatible.
-- [ ] A clean local clone of the exact proposed publication refs passes final scans and relevant project checks.
-- [ ] Preventive ignore/scanning/CI guidance is in place, and the separate browser-key production blocker remains explicit.
+- [x] Every tracked file and all publication-reachable history are scanned; binaries and encoded content receive appropriate review, with exact scope and tool versions recorded.
+- [x] Confirmed exposed credentials are revoked/rotated and private data removed from the publishable repository and history; deletion alone is not considered credential remediation.
+- [x] No unresolved secret or private-data finding remains. False positives have narrow, reviewable explanations without reproducing sensitive values.
+- [x] Obsolete AI Studio artifacts are removed, and remaining Google/provider references are classified and justified.
+- [x] Standalone workflows, browser permissions, AI contracts, clinical meaning, and persisted records remain compatible.
+- [x] A clean local clone of the exact proposed publication refs passes final scans and relevant project checks.
+- [x] Preventive ignore/scanning/CI guidance is in place, and the separate browser-key production blocker remains explicit.
 
 ## Progress
 
-Planning inspection is complete; no security clearance is claimed. Next action: establish Stage 0 audit scope before scanning content.
+The initial worktree and index were clean at HEAD `405557433b98801934a544ef6fd93c1cb06bddd0`; no Git remote is configured, so publication refs and prior remote exposure cannot yet be verified. The repository is not shallow and has no submodules or Git LFS files. Local scope includes `master`, 8 Codex checkpoint/capture refs, 30 reflog entries, and 243 unreachable Git objects.
 
 Observed on 2026-10-08:
 
@@ -44,6 +44,16 @@ Observed on 2026-10-08:
 - `.gitignore` ignores `*.local`, build/test outputs, and dependencies, but has no general `.env`/`.env.*` protection. Ignore rules do not remove already tracked or historical content.
 - `index.html` loads Google Fonts; two print dialogs load hosted Tailwind scripts. These are external asset dependencies to classify, not proof of AI Studio coupling.
 - No explicit AI Studio branding was found in the limited current-file search. Full tracked-content and history scanning has not run. Tracked screenshot fixtures also require review.
+
+Audit findings and work completed on 2026-10-08:
+
+- Gitleaks 8.30.1 reported zero findings for all refs/reflog commits (`--all --reflog --full-history`), for 239 indexed and 239 working-tree tracked files, and for 100 unreachable blob objects. The complete object database contained 892 unique blobs; its only binary objects are two dashboard PNG snapshots. Both show an empty patient list and no patient data. No tracked archives, PDFs, database files, or attachment binaries were present. Pattern review found no phone-number or SSN-shaped values; email literals are confined to application contact/demo fields and dependency metadata.
+- One personal mailbox appeared in commit author/committer metadata. The user supplied their GitHub noreply address and authorized replacing the mailbox in local publication history. `master` has now been rewritten; all 60 author/committer email fields across its 30 commits use the supplied noreply address.
+- The hard-coded clinician display identity is the user's own name, and the user explicitly approved retaining it.
+- Current runtime code has no AI Studio host bridge or runtime dependency. The initial commit contains an AI Studio setup link, AI Studio CDN import-map URLs, and root `metadata.json` permission metadata; these are scaffold provenance in historical snapshots. `metadata.json` has no consumer and is removed from the current tree. Google Fonts and print-dialog CDN resources remain classified as independent third-party asset dependencies, not AI Studio hosting.
+- Added ignore protection for environment/config credentials, private keys, local clinical exports/data/attachments, and local audit output. Added a full-history Gitleaks CI job with findings comments, summaries, and uploaded artifacts disabled, plus a documented redacted local scan command.
+- The linked `origin` is `github.com/mfranco1/clinsight` and advertises no branches or tags (`git ls-remote --heads --tags origin` returned no refs). There is no remote history to compare and no evidence from this clone about forks, prior pushes, or other copies. Do not use `git push --mirror`: the app-managed `refs/codex/*` checkpoint refs remain local and were not rewritten. The sanitized publication candidate is `master` at `513b7227aa773c614b5d36eb24a3de567cdd7375`.
+- A complete phrase scan found “AI Studio” only in the repository-safety task record; this is retained as truthful audit provenance. Historical application scaffolding and host URLs/CDN markers are absent from `master`. The user's own clinician display name remains by explicit approval.
 
 ## Stage 0 — Define scope and protect audit output
 
@@ -78,9 +88,9 @@ Verification: rescan the tree/index and relevant generated output without exposi
 
 ## Stage 3 — Remediate history when evidence requires it
 
-1. If no sensitive historical content is found, retain history and record scan evidence. Harmless AI Studio provenance alone does not justify a destructive rewrite.
+1. If no sensitive historical content is found, retain history and record scan evidence. Harmless AI Studio provenance alone does not justify a destructive rewrite. The separately authorized mailbox cleanup is limited to local commit metadata.
 2. If required, prepare a concrete rewrite plan in an isolated restricted clone: exact affected paths/blobs/refs, replacement/removal rules, impact on tags/signatures/commit IDs, protected recovery handling, and collaborator coordination. Never place sensitive replacement strings in committed files or terminal output.
-3. Obtain explicit authorization for destructive history replacement and any remote force-push before those actions. This approval applies to the concrete rewrite, not the preceding authorized investigation and reversible cleanup.
+3. Obtain explicit authorization for destructive history replacement and any remote force-push before those actions. The user authorized a local history rewrite to replace their personal mailbox with their account-specific GitHub noreply address. No remote force-push has been authorized.
 4. Rewrite all affected publishable refs with an appropriate history-filtering tool. Review local backup/custom refs and reflogs that could reintroduce removed objects; do not destroy recovery data indiscriminately. Verify the resulting application tree preserves unrelated work.
 5. Rescan rewritten history and inventory remaining contaminated local refs/objects. Keep them out of the publication source and document restricted retention/disposal. Coordinate already-published copy cleanup separately; remaining exposure must be stated.
 
@@ -105,8 +115,8 @@ Exit gate: standalone operation is verified within current boundaries; no unsupp
 
 ## Verification
 
-Planning only: inspected tracked filenames, local refs/history count, shallow status, selected setup/build/CI files, and current-file reference locations. Full secret/history scans, private-data review, remote exposure investigation, remediation, and publication validation have not run. `npm run docs:check` and `npm run format:check` passed for the planning changes. No authoritative runtime documentation changed because implementation facts are unchanged.
+Gitleaks 8.30.1 passed against all locally available refs/reflog commits, 238 indexed and 238 working-tree tracked files, unreachable blobs, `dist/`, and rewritten `master`. A separate branch-history check confirmed 30 commits, all 60 author/committer email fields set to the user-provided GitHub noreply address, and zero AI Studio host/CDN/product marker blobs or old mailbox strings reachable from `master`; the sole broad phrase match is the audit tracker noted above. The two tracked screenshots were visually reviewed as empty-dashboard shells. `npm run docs:check`, `npm run format:check`, `npm run lint`, `npm test` (143 tests), `npm run build`, `npm run build:test`, `npm run check:bundle-size`, and `npm run test:e2e` (27 passed, 1 skipped) passed using Node 26.11.1. `git diff --check` passed. The linked remote advertises no heads or tags; publication to GitHub has not occurred, and copies outside the linked remote cannot be established. GitHub-side secret scanning/push protection was not configured from this session; the CI Gitleaks job is the repository-side gate.
 
 ## Outcome
 
-A staged plan has been created. Repository publication safety and production readiness are not yet established; no history, credentials, remotes, or application code were changed.
+The local publication candidate `master` is sanitized and passed the recorded scans. The linked GitHub repository has no refs, no push was made, and Codex-managed refs remain excluded from publication. Remaining limits: remote copies cannot be assessed, and the browser-exposed Gemini key remains a production blocker tracked separately.

@@ -12,7 +12,7 @@ Reproduce and resolve actionable build warnings and dependency problems with a r
 
 - Production/test builds, installation warnings, dependency advisories, peer and engine compatibility, deprecated/unused packages, lockfile integrity, and CI parity.
 - Evidence-led fixes and narrowly scoped regression prevention.
-- Coordinate security-sensitive dependency findings with the separate [repository safety plan](../ongoing/2026-10-08-repository-safety-and-ai-studio-exit.md).
+- Coordinate security-sensitive dependency findings with the separate [repository safety audit](2026-10-08-repository-safety-and-ai-studio-exit.md).
 
 ## Non-goals
 
