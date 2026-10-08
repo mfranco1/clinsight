@@ -42,4 +42,20 @@ describe("document mode fidelity gate", () => {
     expect(firstRoundTrip).toBe(source);
     expect(secondRoundTrip).toBe(source);
   });
+
+  it("supports exact round trips for checked and unchecked task lists", () => {
+    const source = "- [ ] Verify allergies\n- [x] Review medications";
+
+    expect(checkDocumentModeEligibility(source)).toEqual({ supported: true });
+    expect(serializeDocumentMarkdown(parseDocumentMarkdown(source))).toBe(
+      source,
+    );
+  });
+
+  it("creates a valid empty document for visual editing without changing its source", () => {
+    const emptyDocument = parseDocumentMarkdown("");
+
+    expect(emptyDocument.content).toEqual([{ type: "paragraph" }]);
+    expect(serializeDocumentMarkdown(emptyDocument)).toBe("");
+  });
 });

@@ -593,6 +593,7 @@ const InputSection: React.FC<InputSectionProps> = ({
             </div>
 
             <EditableTextArea
+              key={`${activePatient?.id ?? "new-patient"}:${isAppendMode}`}
               value={textInput}
               onSave={setTextInput}
               onChange={setTextInput}

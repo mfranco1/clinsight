@@ -12,10 +12,12 @@ export function replaceSourceEditorsWithPrintText(
 
     const printedText = document.createElement("div");
     printedText.className = "print-textarea";
-    printedText.textContent = Array.from(
-      sourceEditor.querySelectorAll(".cm-line"),
-      (line) => line.textContent ?? "",
-    ).join("\n");
+    printedText.textContent =
+      sourceEditor.dataset.printText ??
+      Array.from(
+        sourceEditor.querySelectorAll(".cm-line"),
+        (line) => line.textContent ?? "",
+      ).join("\n");
     printedText.style.minHeight = sourceEditor.style.minHeight;
     clonedEditor.replaceWith(printedText);
   });

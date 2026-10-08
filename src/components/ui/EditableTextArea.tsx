@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Icons } from "./Icons";
 import ClinicalMarkdown from "../clinical/ClinicalMarkdown";
 import { GroundingSource } from "../../types";
+import { EditorErrorBoundary } from "./editor/EditorErrorBoundary";
 
 const LazySourceTextEditor = React.lazy(() =>
   import("./editor/SourceTextEditor").then(({ SourceTextEditor }) => ({
@@ -198,6 +199,18 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     }
   };
 
+  const handleFallbackKeyDown = (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      handleSave();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      handleCancel();
+    }
+  };
+
   const handleSave = () => {
     if (onSave) onSave(editValue);
     setIsEditing(false);
@@ -223,53 +236,80 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   };
 
   if (isEditing) {
+    const renderPlainTextFallback = () => (
+      <div className="space-y-2">
+        <p
+          className="rounded-md bg-warning-50 px-3 py-2 text-xs text-content-primary"
+          role="status"
+        >
+          The enhanced editor could not load. Your text is available in the
+          plain editor below.
+        </p>
+        <textarea
+          value={editValue}
+          onChange={(event) => {
+            setEditValue(event.target.value);
+            onChange?.(event.target.value);
+          }}
+          onKeyDown={handleFallbackKeyDown}
+          aria-label={placeholder}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
+        />
+      </div>
+    );
+
     return (
       <div className={`space-y-3 ${className}`}>
         {editorMode !== "native" ? (
-          <React.Suspense
-            fallback={
-              <textarea
-                value={editValue}
-                onChange={(event) => {
-                  setEditValue(event.target.value);
-                  onChange?.(event.target.value);
-                }}
-                aria-label={placeholder}
-                disabled={disabled}
-                autoFocus={autoFocus}
-                className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
-              />
-            }
-          >
-            {editorMode === "document" ? (
-              <LazyDocumentTextEditor
-                value={editValue}
-                onChange={(newValue) => {
-                  setEditValue(newValue);
-                  onChange?.(newValue);
-                }}
-                ariaLabel={placeholder}
-                disabled={disabled}
-                autoFocus={autoFocus}
-                minHeightClass={minHeight}
-                onSave={handleSave}
-                onCancel={handleCancel}
-              />
-            ) : (
-              <LazySourceTextEditor
-                value={editValue}
-                onChange={(newValue) => {
-                  setEditValue(newValue);
-                  onChange?.(newValue);
-                }}
-                aria-label={placeholder}
-                disabled={disabled}
-                autoFocus={autoFocus}
-                onSave={handleSave}
-                onCancel={handleCancel}
-              />
-            )}
-          </React.Suspense>
+          <EditorErrorBoundary fallback={renderPlainTextFallback}>
+            <React.Suspense
+              fallback={
+                <textarea
+                  value={editValue}
+                  onChange={(event) => {
+                    setEditValue(event.target.value);
+                    onChange?.(event.target.value);
+                  }}
+                  onKeyDown={handleFallbackKeyDown}
+                  aria-label={placeholder}
+                  disabled={disabled}
+                  autoFocus={autoFocus}
+                  className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
+                />
+              }
+            >
+              {editorMode === "document" ? (
+                <LazyDocumentTextEditor
+                  value={editValue}
+                  onChange={(newValue) => {
+                    setEditValue(newValue);
+                    onChange?.(newValue);
+                  }}
+                  ariaLabel={placeholder}
+                  disabled={disabled}
+                  autoFocus={autoFocus}
+                  minHeightClass={minHeight}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                />
+              ) : (
+                <LazySourceTextEditor
+                  value={editValue}
+                  onChange={(newValue) => {
+                    setEditValue(newValue);
+                    onChange?.(newValue);
+                  }}
+                  aria-label={placeholder}
+                  disabled={disabled}
+                  autoFocus={autoFocus}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                />
+              )}
+            </React.Suspense>
+          </EditorErrorBoundary>
         ) : (
           <textarea
             ref={textareaRef}

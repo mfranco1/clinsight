@@ -1287,6 +1287,7 @@ function App() {
 
             {currentView === ViewMode.COURSE && activePatient && (
               <CourseView
+                patientId={activePatient.id}
                 events={activePatient.course}
                 encounters={activePatient.encounters}
                 onUpdateEvents={(updatedCourse) =>

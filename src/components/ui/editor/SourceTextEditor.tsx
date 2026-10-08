@@ -104,13 +104,16 @@ export function SourceTextEditor({
             "data-testid": "source-text-editor",
           }),
           EditorView.updateListener.of((update) => {
-            if (
-              update.docChanged &&
-              !update.transactions.some((transaction) =>
-                transaction.annotation(externalValueSync),
-              )
-            ) {
-              onChangeRef.current(update.state.doc.toString());
+            if (update.docChanged) {
+              const nextValue = update.state.doc.toString();
+              update.view.dom.dataset.printText = nextValue;
+              if (
+                !update.transactions.some((transaction) =>
+                  transaction.annotation(externalValueSync),
+                )
+              ) {
+                onChangeRef.current(nextValue);
+              }
             }
           }),
           EditorView.theme({
@@ -138,6 +141,7 @@ export function SourceTextEditor({
       }),
       parent,
     });
+    view.dom.dataset.printText = value;
     viewRef.current = view;
 
     return () => {

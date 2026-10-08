@@ -1,9 +1,10 @@
 import StarterKit from "@tiptap/starter-kit";
 import type { JSONContent } from "@tiptap/core";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { MarkdownManager } from "@tiptap/markdown";
 
-const documentExtensions = [StarterKit, TableKit];
+const documentExtensions = [StarterKit, TableKit, TaskList, TaskItem];
 const markdownManager = new MarkdownManager({ extensions: documentExtensions });
 
 export type DocumentModeEligibility =
@@ -43,6 +44,9 @@ export function checkDocumentModeEligibility(
 }
 
 export function parseDocumentMarkdown(source: string): JSONContent {
+  if (source === "") {
+    return { type: "doc", content: [{ type: "paragraph" }] };
+  }
   return markdownManager.parse(source);
 }
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TableKit } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
@@ -8,6 +9,7 @@ import {
   checkDocumentModeEligibility,
   parseDocumentMarkdown,
 } from "./documentMode";
+import { sanitizeDocumentPasteHtml } from "./sanitizeDocumentPaste";
 
 const LazySourceTextEditor = React.lazy(() =>
   import("./SourceTextEditor").then(({ SourceTextEditor }) => ({
@@ -28,7 +30,7 @@ interface DocumentTextEditorProps {
   minHeightClass?: string;
 }
 
-const extensions = [StarterKit, TableKit, Markdown];
+const extensions = [StarterKit, TableKit, TaskList, TaskItem, Markdown];
 
 export function DocumentTextEditor({
   value,
@@ -51,6 +53,11 @@ export function DocumentTextEditor({
     () => checkDocumentModeEligibility(draft),
     [draft],
   );
+  // A document can change identity while this editor stays mounted. If the new
+  // source is outside the visual subset, never keep showing the prior ProseMirror
+  // document while waiting for an effect to switch modes.
+  const activeMode =
+    mode === "visual" && !eligibility.supported ? "source" : mode;
   const modeRef = useRef(mode);
   const eligibilityRef = useRef(eligibility.supported);
   modeRef.current = mode;
@@ -62,6 +69,7 @@ export function DocumentTextEditor({
     editable: !disabled,
     shouldRerenderOnTransaction: false,
     editorProps: {
+      transformPastedHTML: sanitizeDocumentPasteHtml,
       attributes: {
         "aria-label": ariaLabel,
         "aria-multiline": "true",
@@ -136,7 +144,7 @@ export function DocumentTextEditor({
             <button
               key={viewMode}
               type="button"
-              aria-pressed={mode === viewMode}
+              aria-pressed={activeMode === viewMode}
               disabled={viewMode === "visual" && !eligibility.supported}
               onClick={() => switchMode(viewMode)}
               className="rounded-lg px-2.5 py-1.5 text-xs font-semibold capitalize text-content-secondary hover:bg-surface-muted aria-pressed:bg-action-subtle aria-pressed:text-action disabled:cursor-not-allowed disabled:opacity-40"
@@ -150,7 +158,7 @@ export function DocumentTextEditor({
             </button>
           ))}
         </div>
-        {mode === "visual" && readyEditor && (
+        {activeMode === "visual" && readyEditor && (
           <div
             role="toolbar"
             aria-orientation="horizontal"
@@ -215,6 +223,14 @@ export function DocumentTextEditor({
               onClick={() => readyEditor.chain().toggleOrderedList().run()}
             >
               1. List
+            </ToolbarButton>
+            <ToolbarButton
+              label="Task list"
+              active={readyEditor.isActive("taskList")}
+              disabled={disabled}
+              onClick={() => readyEditor.chain().toggleTaskList().run()}
+            >
+              Checklist
             </ToolbarButton>
             <ToolbarButton
               label="Heading level 2"
@@ -296,7 +312,7 @@ export function DocumentTextEditor({
         )}
       </div>
 
-      {mode === "visual" && showLinkInput && (
+      {activeMode === "visual" && showLinkInput && (
         <form
           className="flex items-center gap-2 border-b border-border-subtle bg-canvas px-3 py-2 print:hidden"
           onSubmit={(event) => {
@@ -338,7 +354,7 @@ export function DocumentTextEditor({
         </p>
       )}
 
-      {mode === "visual" ? (
+      {activeMode === "visual" ? (
         <div className="relative">
           <EditorContent
             editor={editor}
@@ -353,7 +369,7 @@ export function DocumentTextEditor({
             </div>
           )}
         </div>
-      ) : mode === "source" ? (
+      ) : activeMode === "source" ? (
         <React.Suspense
           fallback={
             <textarea

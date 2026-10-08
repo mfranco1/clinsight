@@ -16,6 +16,7 @@ import {
 import EditableTextArea from "../../components/ui/EditableTextArea";
 
 interface CourseViewProps {
+  patientId?: string;
   events: CourseEvent[];
   encounters?: Encounter[];
   onUpdateEvents?: (events: CourseEvent[]) => void;
@@ -23,6 +24,7 @@ interface CourseViewProps {
 }
 
 const CourseView: React.FC<CourseViewProps> = ({
+  patientId,
   events,
   encounters,
   onUpdateEvents,
@@ -336,6 +338,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                 <div className="bg-surface py-3 pl-6 pr-2 rounded-2xl border border-border-default shadow-sm group-hover:border-action-border group-hover:shadow-md transition-all duration-200 relative flex items-start gap-1 overflow-hidden">
                   <div className="flex-1 min-w-0">
                     <EditableTextArea
+                      key={`${patientId ?? "unknown-patient"}:${item.encounterId ?? "no-encounter"}:${item.date}:${item.time ?? ""}:${idx}`}
                       value={item.details}
                       onSave={(val) => {
                         handleUpdateEvent(uniqueId, "details", val);

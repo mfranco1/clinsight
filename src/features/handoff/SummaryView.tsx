@@ -131,6 +131,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({
               )}
             </div>
             <EditableTextArea
+              key={data.patientId}
               value={data.oneLiner}
               onSave={(val) => {
                 handleUpdateOneLiner(val);

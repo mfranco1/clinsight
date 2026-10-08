@@ -32,6 +32,7 @@
     "@google/genai": "^1.30.0",
     "@radix-ui/react-dialog": "^1.2.0",
     "@radix-ui/react-select": "^2.3.8",
+    "@tiptap/extension-list": "^3.31.4",
     "@tiptap/extension-table": "^3.31.4",
     "@tiptap/markdown": "^3.31.4",
     "@tiptap/pm": "^3.31.4",

@@ -138,6 +138,45 @@ test("applies visual formatting and reflects it in Markdown source", async ({
   );
 });
 
+test("creates a Markdown task list from the visual editor toolbar", async ({
+  page,
+}) => {
+  const patientWithNote = {
+    ...structuredPatientCase,
+    notes: [
+      {
+        id: "note-editor-task-list",
+        title: "Editor task list",
+        content: "Review plan.",
+        createdAt: "2026-08-26 09:00",
+        updatedAt: "2026-08-26 09:00",
+      },
+    ],
+  };
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([patientWithNote]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Notes" }).last().click();
+  await page.getByRole("button", { name: "Edit Note" }).click();
+  const editor = page.getByRole("textbox", {
+    name: "Start typing your note here... (Supports Markdown and LaTeX)",
+  });
+  await editor.press("ControlOrMeta+End");
+  await page.getByRole("button", { name: "Task list" }).click();
+  await expect(editor.locator('input[type="checkbox"]')).toHaveCount(1);
+
+  await page.getByRole("button", { name: /source/i }).click();
+  await expect(page.getByTestId("source-text-editor")).toContainText(
+    "- [ ] Review plan.",
+  );
+});
+
 test("selects order and medication statuses through the shared desktop/mobile portal menus", async ({
   page,
 }) => {
