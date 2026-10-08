@@ -1,3 +1,4 @@
+import { transformBrandHtml } from "./src/config/brandHtml";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
@@ -11,7 +12,17 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: "0.0.0.0",
     },
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: "clinsight-brand",
+        transformIndexHtml: {
+          order: "pre",
+          handler: (html) => transformBrandHtml(html),
+        },
+      },
+    ],
     define: {
       __CLINSIGHT_TEST_MODE__: JSON.stringify(isTestBuild),
       "process.env.API_KEY": JSON.stringify(

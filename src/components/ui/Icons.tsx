@@ -79,9 +79,6 @@ export const Icons = {
   HeartOff: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
     <HeartOff className={className} />
   ),
-  Logo: ({ className = "w-6 h-6 text-white" }: { className?: string } = {}) => (
-    <Stethoscope className={className} />
-  ),
   Upload: ({ className = "w-6 h-6" }: { className?: string }) => (
     <Upload className={className} />
   ),

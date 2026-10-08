@@ -1,4 +1,4 @@
-import { APP_ICON_DATA_URL } from "../config/appConfig";
+import { BRAND_ICON_DATA_URL } from "../config/brand";
 
 export const requestNotificationPermission = async (): Promise<boolean> => {
   try {
@@ -34,8 +34,8 @@ export const sendNotification = (
     // Only notify if the tab is hidden or the user is not actively looking at the result
     // This avoids annoying the user while they are already watching the progress
     const notification = new Notification(title, {
-      icon: APP_ICON_DATA_URL,
-      badge: APP_ICON_DATA_URL,
+      icon: BRAND_ICON_DATA_URL,
+      badge: BRAND_ICON_DATA_URL,
       ...options,
     });
 

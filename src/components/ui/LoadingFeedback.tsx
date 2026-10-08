@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
-import { Icons } from "./Icons";
+import BrandMark from "../brand/BrandMark";
+import { BRAND } from "../../config/brand";
 
 interface LoadingIndicatorProps {
   label?: string;
@@ -31,7 +32,7 @@ export function LoadingIndicator({
 }
 
 export function LoadingScreen({
-  label = "Loading ClinSight…",
+  label = `Loading ${BRAND.name}…`,
 }: {
   label?: string;
 }) {
@@ -41,9 +42,7 @@ export function LoadingScreen({
       aria-busy="true"
     >
       <div className="flex flex-col items-center gap-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-action">
-          <Icons.Logo className="h-6 w-6 text-white" />
-        </span>
+        <BrandMark badge />
         <LoadingIndicator label={label} />
       </div>
     </main>

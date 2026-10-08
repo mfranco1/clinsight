@@ -1,3 +1,4 @@
+import BrandName from "./components/brand/BrandName";
 import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "./app/shell/Sidebar";
 import Header from "./app/shell/Header";
@@ -1427,7 +1428,9 @@ function App() {
 
           <footer className="py-6 border-t border-border-default mt-auto bg-surface/50 shrink-0">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-center items-center gap-8 text-xs text-content-muted">
-              <p>&copy; {new Date().getFullYear()} Clinsight</p>
+              <p>
+                &copy; {new Date().getFullYear()} <BrandName />
+              </p>
               <div className="flex space-x-6">
                 <button
                   onClick={() => {

@@ -1,3 +1,4 @@
+import Brand from "../../components/brand/Brand";
 import React, { useState } from "react";
 import { Icons } from "../../components/ui/Icons";
 import TextInput from "../../components/ui/TextInput";
@@ -26,17 +27,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
       <div className="w-full max-w-[440px] relative z-10">
         {/* Branding */}
-        <div className="flex flex-col items-center mb-10 text-center">
-          <div className="h-12 w-12 bg-action rounded-xl flex items-center justify-center shadow-lg shadow-action-100 mb-3 animate-fade-in-up">
-            <Icons.Logo className="h-7 w-7 text-white" />
-          </div>
-          <h1 className="text-4xl font-bold text-content-strong tracking-tight mb-2">
-            Clinsight
-          </h1>
-          <p className="text-content-secondary text-xs font-bold uppercase tracking-[0.15em]">
-            Intelligent Medical Charting
-          </p>
-        </div>
+        <Brand
+          layout="stacked"
+          nameAs="h1"
+          size="lg"
+          showTagline
+          className="mb-10 animate-fade-in-up"
+        />
 
         {/* Login Card */}
         <div

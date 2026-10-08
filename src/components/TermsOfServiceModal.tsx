@@ -1,3 +1,4 @@
+import BrandName from "./brand/BrandName";
 import React from "react";
 import { Icons } from "./ui/Icons";
 interface TermsOfServiceModalProps {
@@ -41,11 +42,11 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
               1. Acceptance of Terms
             </h3>
             <p>
-              By accessing or using the Clinsight application ("Service"), you
-              agree to be bound by these Terms of Service ("Terms"). If you do
-              not agree to these Terms, you may not use the Service. These Terms
-              apply to all visitors, users, and others who access or use the
-              Service.
+              By accessing or using the <BrandName /> application ("Service"),
+              you agree to be bound by these Terms of Service ("Terms"). If you
+              do not agree to these Terms, you may not use the Service. These
+              Terms apply to all visitors, users, and others who access or use
+              the Service.
             </p>
           </section>
 
@@ -54,7 +55,7 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
               2. Medical Disclaimer
             </h3>
             <p>
-              Clinsight uses artificial intelligence to assist in drafting
+              <BrandName /> uses artificial intelligence to assist in drafting
               medical documentation. You acknowledge and agree that:
             </p>
             <ul className="list-disc pl-5 space-y-1 mt-2">
@@ -75,7 +76,7 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
                 information ("hallucinations").
               </li>
               <li>
-                Clinsight assumes no liability for any clinical decisions or
+                <BrandName /> assumes no liability for any clinical decisions or
                 patient outcomes resulting from the use of this Service.
               </li>
             </ul>
@@ -114,10 +115,10 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
             <p>
               The Service and its original content (excluding data provided by
               you), features, and functionality are and will remain the
-              exclusive property of Clinsight and its licensors. The clinical
-              data you input and the medical records you generate remain your
-              property or the property of your institution, subject to
-              applicable laws.
+              exclusive property of <BrandName /> and its licensors. The
+              clinical data you input and the medical records you generate
+              remain your property or the property of your institution, subject
+              to applicable laws.
             </p>
           </section>
 
@@ -127,12 +128,12 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
             </h3>
             <p>
               To the maximum extent permitted by law, in no event shall
-              Clinsight, its directors, employees, partners, agents, suppliers,
-              or affiliates, be liable for any indirect, incidental, special,
-              consequential, or punitive damages, including without limitation,
-              loss of profits, data, use, goodwill, or other intangible losses,
-              resulting from your access to or use of or inability to access or
-              use the Service.
+              <BrandName />, its directors, employees, partners, agents,
+              suppliers, or affiliates, be liable for any indirect, incidental,
+              special, consequential, or punitive damages, including without
+              limitation, loss of profits, data, use, goodwill, or other
+              intangible losses, resulting from your access to or use of or
+              inability to access or use the Service.
             </p>
           </section>
 
@@ -154,7 +155,7 @@ const TermsOfServiceModal: React.FC<TermsOfServiceModalProps> = ({
             </h3>
             <p>
               These Terms shall be governed and construed in accordance with the
-              laws of the jurisdiction in which Clinsight operates, without
+              laws of the jurisdiction in which <BrandName /> operates, without
               regard to its conflict of law provisions.
             </p>
           </section>

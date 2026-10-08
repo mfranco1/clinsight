@@ -32,9 +32,6 @@ export const SPECIALIZATIONS = [
   "Otorhinolaryngology",
 ];
 
-export const APP_ICON_DATA_URL =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.3.3 0 1 0 .2.3'%3E%3C/path%3E%3Cpath d='M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4'%3E%3C/path%3E%3Ccircle cx='20' cy='10' r='2'%3E%3C/circle%3E%3C/svg%3E";
-
 export const MODELS = [
   //{ id: 'gemma-4-26b-a4b-it', label: 'Low 4.0', supportsStructuredOutput: false },
   {

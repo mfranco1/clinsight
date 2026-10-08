@@ -1,3 +1,4 @@
+import Brand from "../../components/brand/Brand";
 import React, { useState } from "react";
 import { ViewMode } from "../../types";
 import { NAV_ITEMS } from "../../config/appConfig";
@@ -57,14 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`h-16 flex items-center border-b border-border-subtle transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-6"}`}
         >
-          <div className="h-9 w-9 bg-action rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-action-100">
-            <Icons.Logo className="h-5 w-5 text-white" />
-          </div>
-          {!isCollapsed && (
-            <span className="ml-3 font-bold text-xl text-content-strong tracking-tight animate-fade-in whitespace-nowrap">
-              Clinsight
-            </span>
-          )}
+          <Brand size="sm" showName={!isCollapsed} />
         </div>
 
         {/* Navigation Items */}

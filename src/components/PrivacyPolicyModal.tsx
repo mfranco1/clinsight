@@ -1,3 +1,4 @@
+import BrandName from "./brand/BrandName";
 import React from "react";
 import { Icons } from "./ui/Icons";
 interface PrivacyPolicyModalProps {
@@ -32,9 +33,9 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
           <div className="bg-canvas p-4 rounded-lg border border-border-default text-xs text-content-secondary">
             <strong>Last Updated:</strong> {new Date().toLocaleDateString()}{" "}
             <br />
-            This Privacy Policy explains how Clinsight ("we", "us", or "our")
-            collects, uses, and discloses information about you when you use our
-            clinical documentation automation platform.
+            This Privacy Policy explains how <BrandName /> ("we", "us", or
+            "our") collects, uses, and discloses information about you when you
+            use our clinical documentation automation platform.
           </div>
 
           <section>
@@ -42,7 +43,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               1. Introduction & Scope
             </h3>
             <p>
-              Clinsight is a professional medical utility designed to assist
+              <BrandName /> is a professional medical utility designed to assist
               healthcare providers in generating clinical documentation. We
               recognize the sensitivity of the data processed through our
               Application, specifically Protected Health Information (PHI). We
@@ -118,7 +119,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               <li>Strict access controls and authentication mechanisms.</li>
               <li>
                 Ephemeral data handling: Clinical data processed in the browser
-                is cleared upon session reset and is not stored on Clinsight
+                is cleared upon session reset and is not stored on <BrandName />
                 servers permanently.
               </li>
             </ul>
@@ -129,7 +130,7 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               5. Provider Responsibility
             </h3>
             <p>
-              <strong>Important:</strong> Clinsight is a clinical decision
+              <strong>Important:</strong> <BrandName /> is a clinical decision
               support tool. The healthcare provider remains solely responsible
               for verifying the accuracy of all generated documentation (SOAP
               notes, Patient Summaries) and for the final patient care

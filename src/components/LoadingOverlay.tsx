@@ -1,3 +1,4 @@
+import BrandMark from "./brand/BrandMark";
 import React from "react";
 import { Icons } from "./ui/Icons";
 
@@ -26,7 +27,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
           aria-hidden="true"
           className="absolute inset-0 animate-spin rounded-full border-[3px] border-white border-t-transparent motion-reduce:animate-none"
         />
-        <Icons.Logo className="h-8 w-8 text-white" />
+        <BrandMark tone="white" className="h-8 w-8" />
       </div>
       <p className="mb-6 text-sm font-medium text-white">{message}</p>
 
