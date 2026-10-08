@@ -3,8 +3,8 @@ import {
   collectAttachmentPreviewUrls,
   hydrateAttachments,
   serializeAttachments,
-} from "../services/attachmentPersistence";
-import type { FileUpload } from "../types";
+} from "../src/services/attachmentPersistence";
+import type { FileUpload } from "../src/types";
 
 describe("attachment persistence", () => {
   afterEach(() => vi.unstubAllGlobals());

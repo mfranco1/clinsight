@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useChatPanelResize } from "../features/chat/useChatPanelResize";
+import { useChatPanelResize } from "../src/features/chat/useChatPanelResize";
 
 describe("useChatPanelResize", () => {
   afterEach(() => {

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import ClinicalMarkdown from "../components/ui/ClinicalMarkdown";
+import ClinicalMarkdown from "../src/components/clinical/ClinicalMarkdown";
 
 describe("ClinicalMarkdown", () => {
   it("preserves custom paragraph, heading, and list rendering", () => {

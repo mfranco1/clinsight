@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { OrderStatus } from "../types";
+import { OrderStatus } from "../src/types";
 import {
   cleanupGroups,
   createDiagnosticOrder,
   filterOrders,
   parseBulkOrdersText,
-} from "../domain/orders";
+} from "../src/domain/orders";
 
 describe("order domain behavior", () => {
   it("creates a pending diagnostic order with caller overrides", () => {

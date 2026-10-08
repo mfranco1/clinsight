@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { SectionVisibility } from "../features/chart/components/ManageSectionsDropdown";
-import { useEntrySectionVisibility } from "../features/chart/useEntrySectionVisibility";
+import type { SectionVisibility } from "../src/features/chart/components/ManageSectionsDropdown";
+import { useEntrySectionVisibility } from "../src/features/chart/useEntrySectionVisibility";
 
 const initial: SectionVisibility = {
   subjective: {

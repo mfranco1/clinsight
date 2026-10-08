@@ -3,11 +3,12 @@ import type { GenerateContentResponse } from "@google/genai";
 import {
   awaitWithAbort,
   blobToBase64,
+  callGemini,
   cleanGroundingSources,
   fileToGenerativePart,
   sanitizeModelOutput,
-} from "../services/ai/geminiTransport";
-import { extractAndParseJSON } from "../services/ai/responseParsing";
+} from "../src/services/ai/geminiTransport";
+import { extractAndParseJSON } from "../src/services/ai/responseParsing";
 
 describe("Gemini transport helpers", () => {
   it("sanitizes model reasoning markers and normalizes grounding URLs", () => {
@@ -41,6 +42,12 @@ describe("Gemini transport helpers", () => {
     const result = awaitWithAbort(pending, controller.signal);
     controller.abort();
     await expect(result).rejects.toMatchObject({ name: "AbortError" });
+  });
+
+  it("refuses provider requests in test mode", async () => {
+    await expect(
+      callGemini({ contents: "synthetic test input" }),
+    ).rejects.toThrow("AI provider calls are disabled in test mode.");
   });
 
   it("converts browser files and blobs into base64 data", async () => {

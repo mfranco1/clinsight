@@ -3,7 +3,7 @@ import {
   AppError,
   getErrorMessage,
   getErrorMessageCompat,
-} from "../services/appErrors";
+} from "../src/services/appErrors";
 
 describe("application error contract", () => {
   it("preserves typed code and cause", () => {

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { structuredPatientCase } from "../fixtures/patient-cases";
 
 test("opens and closes the clinical assistant panel", async ({ page }) => {

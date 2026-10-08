@@ -19,6 +19,19 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
   {
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    files: ["tests/e2e/**/*.{ts,tsx}"],
+    rules: {
+      // Playwright's fixture callback is named "use"; it is not a React hook.
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       globals: {

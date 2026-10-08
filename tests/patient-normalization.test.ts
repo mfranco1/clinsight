@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePatientAgeSex } from "../utils/patient";
+import { normalizePatientAgeSex } from "../src/utils/patient";
 
 describe("patient age and sex normalization module", () => {
   it("preserves patient fields while normalizing demographic data", () => {

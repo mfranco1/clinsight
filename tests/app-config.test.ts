@@ -5,7 +5,7 @@ import {
   MODELS,
   NAV_ITEMS,
   SPECIALIZATIONS,
-} from "../config/appConfig";
+} from "../src/config/appConfig";
 
 describe("app configuration", () => {
   it("exposes valid model choices and navigation configuration", () => {

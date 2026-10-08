@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { CLINICAL_TEMPLATES } from "../features/input/templates";
-import { DIAGNOSIS_RULES } from "../services/ai/diagnosisRules";
-import { SCHEMA_DESCRIPTIONS } from "../services/ai/schemaDescriptions";
+import { CLINICAL_TEMPLATES } from "../src/features/input/templates";
+import { DIAGNOSIS_RULES } from "../src/services/ai/diagnosisRules";
+import { SCHEMA_DESCRIPTIONS } from "../src/services/ai/schemaDescriptions";
 
 describe("content configuration", () => {
   it("keeps clinical templates and AI configuration populated", () => {

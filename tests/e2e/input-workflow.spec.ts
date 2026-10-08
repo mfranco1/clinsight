@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("opens the input workflow and resets an unsaved draft", async ({
   page,

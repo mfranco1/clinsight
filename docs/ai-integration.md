@@ -2,9 +2,11 @@
 
 ## Current request path
 
-Feature code calls typed operations in `services/ai/actions.ts`, which use the `ClinicalAiGateway` interface. `geminiGateway.ts` connects that interface to task modules under `services/ai/tasks/`. Tasks own prompt construction, schemas, parsing, and task-level fallbacks. `geminiTransport.ts` owns the Google SDK request boundary, abort handling, sanitation, grounding extraction, and file conversion. Tests cover gateway actions, task contracts, parsing, and transport.
+Feature code calls typed operations in `src/services/ai/actions.ts`, which use the `ClinicalAiGateway` interface. `geminiGateway.ts` connects that interface to task modules under `src/services/ai/tasks/`. Tasks own prompt construction, schemas, parsing, and task-level fallbacks. `geminiTransport.ts` owns the Google SDK request boundary, abort handling, sanitation, grounding extraction, and file conversion. Tests cover gateway actions, task contracts, parsing, and transport.
 
 Keep UI/features independent of provider SDK details. Add or change task contracts at the gateway/action/task boundary and cover request mapping, response shape, empty or malformed output, and error behavior as appropriate. Keep raw prompts, completions, and patient content out of diagnostics.
+
+Tests must never call an AI provider. Vitest rejects unexpected network requests, and the `test` build mode omits local credentials and makes `geminiTransport` fail before constructing the SDK client. Browser tests use a local-only network fixture. Cover AI workflows with synthetic responses and mocked gateway/transport boundaries; there is no live-provider test exception.
 
 ## Credential and deployment limitation
 

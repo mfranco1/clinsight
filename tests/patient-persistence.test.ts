@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   loadPersistedPatients,
   migratePersistedPatients,
-} from "../services/patientPersistence";
+} from "../src/services/patientPersistence";
 import {
   legacyPatientCase,
   structuredPatientCase,

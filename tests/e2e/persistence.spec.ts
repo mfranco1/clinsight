@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import {
   legacyPatientCase,
   structuredPatientCase,
@@ -82,17 +82,17 @@ test("selects order and medication statuses through the shared desktop/mobile po
   await page.getByText("Test Patient").first().click();
   await page.getByRole("button", { name: "Orders" }).last().click();
 
-  await page.getByRole("button", { name: "PENDING", exact: true }).click();
-  await page.getByRole("button", { name: "DONE", exact: true }).click();
+  await page.getByRole("combobox", { name: "PENDING" }).click();
+  await page.getByRole("option", { name: "DONE", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "DONE" }).first(),
+    page.getByRole("combobox", { name: "DONE" }).first(),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Medications", exact: true }).click();
-  await page.getByRole("button", { name: "ACTIVE", exact: true }).click();
-  await page.getByRole("button", { name: "HOLD", exact: true }).click();
+  await page.getByRole("combobox", { name: "ACTIVE" }).click();
+  await page.getByRole("option", { name: "HOLD", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "HOLD" }).first(),
+    page.getByRole("combobox", { name: "HOLD" }).first(),
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Print Rx" }).click();

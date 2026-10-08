@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { ChatMessage } from "../types";
+import { ChatMessage } from "../src/types";
 import {
   createAssistantChatMessage,
   createChatErrorMessage,
   getChatRetryContext,
-} from "../features/chat/messages";
+} from "../src/features/chat/messages";
 
 describe("chat message helpers", () => {
   it("applies the established assistant title fallback and retains grounding sources", () => {

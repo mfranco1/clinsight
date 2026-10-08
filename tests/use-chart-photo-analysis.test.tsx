@@ -4,12 +4,12 @@ import {
   analyzeClinicalPhotos,
   analyzeImagingPhotos,
   analyzeLabPhotos,
-} from "../services/ai/actions";
-import { useChartPhotoAnalysis } from "../features/chart/useChartPhotoAnalysis";
-import { FileUpload } from "../types";
+} from "../src/services/ai/actions";
+import { useChartPhotoAnalysis } from "../src/features/chart/useChartPhotoAnalysis";
+import { FileUpload } from "../src/types";
 import { structuredPatientCase } from "./fixtures/patient-cases";
 
-vi.mock("../services/ai/actions", () => ({
+vi.mock("../src/services/ai/actions", () => ({
   analyzeClinicalPhotos: vi.fn(),
   analyzeImagingPhotos: vi.fn(),
   analyzeLabPhotos: vi.fn(),

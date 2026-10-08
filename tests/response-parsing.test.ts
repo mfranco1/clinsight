@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { postProcessSoapNote } from "../services/ai/responseParsing";
+import { postProcessSoapNote } from "../src/services/ai/responseParsing";
 
 describe("postProcessSoapNote", () => {
   it("flattens dynamic list sections while preserving the original object identity", () => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { normalizeDateInput } from "../utils/date";
-import { stringToKeyValue } from "../utils/clinicalText";
+import { normalizeDateInput } from "../src/utils/date";
+import { stringToKeyValue } from "../src/utils/clinicalText";
 import {
   arrayToMarkdownBullets,
   markdownBulletsToArray,
-} from "../utils/markdown";
-import { normalizePatientAgeSex } from "../utils/patient";
+} from "../src/utils/markdown";
+import { normalizePatientAgeSex } from "../src/utils/patient";
 import {
   legacyPatientCase,
   structuredPatientCase,

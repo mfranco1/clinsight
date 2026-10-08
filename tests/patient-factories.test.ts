@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   createGeneratedPatient,
   createManualPatient,
-} from "../domain/patientFactories";
-import { EncounterType, PatientStatus, type ChartEntry } from "../types";
+} from "../src/domain/patientFactories";
+import { EncounterType, PatientStatus, type ChartEntry } from "../src/types";
 import { structuredPatientCase } from "./fixtures/patient-cases";
 
 const entry: ChartEntry = {

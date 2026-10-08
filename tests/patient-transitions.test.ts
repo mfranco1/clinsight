@@ -3,7 +3,7 @@ import {
   OrderStatus,
   PatientStatus,
   type MedicalChartResponse,
-} from "../types";
+} from "../src/types";
 import {
   appendCourseEvent,
   prependEntry,
@@ -21,7 +21,7 @@ import {
   updatePatientStatus,
   reactivateEncounter,
   withPatientId,
-} from "../domain/patientTransitions";
+} from "../src/domain/patientTransitions";
 import { structuredPatientCase } from "./fixtures/patient-cases";
 
 describe("patient entry transitions", () => {

@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { PatientStatus } from "../types";
-import { useChartStatusActions } from "../features/chart/useChartStatusActions";
+import { PatientStatus } from "../src/types";
+import { useChartStatusActions } from "../src/features/chart/useChartStatusActions";
 
 describe("useChartStatusActions", () => {
   it("updates status, clears confirmation, and keeps the existing success message", () => {

@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useChartToolbarState } from "../features/chart/useChartToolbarState";
+import { useChartToolbarState } from "../src/features/chart/useChartToolbarState";
 
 describe("useChartToolbarState", () => {
   it("closes portal menus on outside clicks and removes its listener on cleanup", () => {

@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FileUpload } from "../types";
-import { useFileUpload } from "../hooks/useFileUpload";
+import { FileUpload } from "../src/types";
+import { useFileUpload } from "../src/hooks/useFileUpload";
 
 const attachment = (name: string, previewUrl: string): FileUpload => ({
   file: new File(["content"], name, { type: "image/png" }),

@@ -3,8 +3,8 @@ import { structuredPatientCase } from "./fixtures/patient-cases";
 import {
   applyIntegrationResult,
   resolveIntegrationTarget,
-} from "../features/chart/clinicalIntegration";
-import { SoapNote } from "../types";
+} from "../src/features/chart/clinicalIntegration";
+import { SoapNote } from "../src/types";
 
 const baseSoap = structuredPatientCase.entries[0].soap as SoapNote;
 

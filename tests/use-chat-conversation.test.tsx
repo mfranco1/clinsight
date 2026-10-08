@@ -1,12 +1,12 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { sendChatMessage } from "../services/ai/actions";
-import { sendNotification } from "../services/notificationService";
-import { useChatConversation } from "../features/chat/useChatConversation";
-import { FileUpload } from "../types";
+import { sendChatMessage } from "../src/services/ai/actions";
+import { sendNotification } from "../src/services/notificationService";
+import { useChatConversation } from "../src/features/chat/useChatConversation";
+import { FileUpload } from "../src/types";
 
-vi.mock("../services/ai/actions", () => ({ sendChatMessage: vi.fn() }));
-vi.mock("../services/notificationService", () => ({
+vi.mock("../src/services/ai/actions", () => ({ sendChatMessage: vi.fn() }));
+vi.mock("../src/services/notificationService", () => ({
   sendNotification: vi.fn(),
 }));
 

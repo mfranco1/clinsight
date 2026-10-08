@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import NoteContentArea from "../features/notes/components/NoteContentArea";
+import NoteContentArea from "../src/features/notes/components/NoteContentArea";
 
 describe("NoteContentArea", () => {
   it("keeps the edit attachment control and forwards selected files", () => {

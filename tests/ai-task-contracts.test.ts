@@ -5,7 +5,7 @@ const { callGemini, convertFilesToParts, blobToBase64 } = vi.hoisted(() => ({
   convertFilesToParts: vi.fn(async () => []),
   blobToBase64: vi.fn(async () => "YXVkaW8="),
 }));
-vi.mock("../services/ai/geminiTransport", () => ({
+vi.mock("../src/services/ai/geminiTransport", () => ({
   callGemini,
   convertFilesToParts,
   blobToBase64,
@@ -15,23 +15,23 @@ vi.mock("../services/ai/geminiTransport", () => ({
 import {
   generateHomeInstructions,
   parsePrescriptions,
-} from "../services/ai/tasks/discharge";
-import { refreshPatientSummary } from "../services/ai/tasks/summary";
-import { generateClinicalSuggestions } from "../services/ai/tasks/clinicalAssistance";
+} from "../src/services/ai/tasks/discharge";
+import { refreshPatientSummary } from "../src/services/ai/tasks/summary";
+import { generateClinicalSuggestions } from "../src/services/ai/tasks/clinicalAssistance";
 import {
   generateInputSuggestions,
   medicalLookup,
-} from "../services/ai/tasks/inputAssistance";
+} from "../src/services/ai/tasks/inputAssistance";
 import {
   analyzeLabPhotos,
   transcribeAudio,
-} from "../services/ai/tasks/mediaAnalysis";
-import { sendChatMessage } from "../services/ai/tasks/conversation";
+} from "../src/services/ai/tasks/mediaAnalysis";
+import { sendChatMessage } from "../src/services/ai/tasks/conversation";
 import {
   generateMedicalChart,
   generateProgressNote,
   reassessSoapNote,
-} from "../services/ai/tasks/chartGeneration";
+} from "../src/services/ai/tasks/chartGeneration";
 
 describe("AI task request and result contracts", () => {
   beforeEach(() => {

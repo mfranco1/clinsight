@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { PatientNote } from "../types";
-import { filterAndSortNotes, paginateNotes } from "../features/notes/listing";
+import { PatientNote } from "../src/types";
+import {
+  filterAndSortNotes,
+  paginateNotes,
+} from "../src/features/notes/listing";
 
 const notes: PatientNote[] = [
   {

@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PatientNote } from "../types";
-import { sendNoteThreadMessage } from "../services/ai/actions";
-import { sendThreadInquiry } from "../features/notes/sendThreadInquiry";
+import { PatientNote } from "../src/types";
+import { sendNoteThreadMessage } from "../src/services/ai/actions";
+import { sendThreadInquiry } from "../src/features/notes/sendThreadInquiry";
 
-vi.mock("../services/ai/actions", () => ({ sendNoteThreadMessage: vi.fn() }));
+vi.mock("../src/services/ai/actions", () => ({
+  sendNoteThreadMessage: vi.fn(),
+}));
 
 const note: PatientNote = {
   id: "note-1",

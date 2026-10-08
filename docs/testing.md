@@ -15,6 +15,8 @@ For documentation changes, run `npm run docs:check` and `npm run format:check`. 
 
 Tests live under `tests/`; Playwright journeys are in `tests/e2e/`. Fixtures in `tests/fixtures/` and `tests/patient-cases.ts` are synthetic/de-identified. Keep those constraints for new examples.
 
+All test paths are offline by default. Vitest blocks and records unexpected `fetch` and `XMLHttpRequest` use, and fails the test even if application code catches the resulting error. Playwright uses an isolated `test` build that never loads local environment credentials; the Gemini transport rejects provider calls in test mode. Its shared fixture permits only the local app origin, stubs the external font stylesheet, blocks service workers and WebSockets, and fails on any other external request. Do not add credentials or exceptions for live provider traffic. Test AI behavior through synthetic gateway/task responses and transport-boundary mocks.
+
 CI checks type/lint, Prettier, unit tests, production build, then installs Chromium and runs desktop and mobile browser projects. `npm run lint` already includes typecheck. E2E execution itself performs a fresh production build through Playwright's web server.
 
 Record only commands actually run and their result. A build does not verify live Gemini access, deployment, production credentials, backup recovery, or clinical correctness. For visual changes, inspect the affected desktop and mobile paths; use snapshots only where they materially guard a stable layout.

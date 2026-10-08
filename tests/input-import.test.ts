@@ -3,7 +3,7 @@ import { structuredPatientCase } from "./fixtures/patient-cases";
 import {
   parsePatientCaseFile,
   parsePatientCaseFiles,
-} from "../features/input/importCases";
+} from "../src/features/input/importCases";
 
 describe("Input case import parsing", () => {
   it("parses a valid patient case and preserves file order in batches", async () => {

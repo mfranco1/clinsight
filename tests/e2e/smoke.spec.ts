@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("loads the dashboard shell", async ({ page }) => {
   await page.goto("/");

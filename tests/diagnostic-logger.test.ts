@@ -13,7 +13,7 @@ describe("diagnostic logger", () => {
     const error = vi
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
-    const { logDiagnostic } = await import("../services/diagnosticLogger");
+    const { logDiagnostic } = await import("../src/services/diagnosticLogger");
 
     logDiagnostic("error", "Gemini request failed.");
 
@@ -24,7 +24,7 @@ describe("diagnostic logger", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.resetModules();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const { logDiagnostic } = await import("../services/diagnosticLogger");
+    const { logDiagnostic } = await import("../src/services/diagnosticLogger");
 
     logDiagnostic(
       "warn",

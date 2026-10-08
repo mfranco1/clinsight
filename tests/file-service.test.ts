@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createFileUploads } from "../services/fileService";
+import { createFileUploads } from "../src/services/fileService";
 
 describe("createFileUploads", () => {
   afterEach(() => vi.restoreAllMocks());

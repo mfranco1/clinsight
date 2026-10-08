@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseReferenceList } from "../features/chart/references";
+import { parseReferenceList } from "../src/features/chart/references";
 
 describe("parseReferenceList", () => {
   it("trims blank lines and removes existing numeric or bullet prefixes", () => {

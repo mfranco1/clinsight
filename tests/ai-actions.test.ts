@@ -15,10 +15,10 @@ const gateway = vi.hoisted(() => ({
   parsePrescriptions: vi.fn(),
 }));
 
-vi.mock("../services/ai/geminiGateway", () => ({ geminiGateway: gateway }));
+vi.mock("../src/services/ai/geminiGateway", () => ({ geminiGateway: gateway }));
 
-import { medicalLookup, sendChatMessage } from "../services/ai/actions";
-import type { FileUpload } from "../types";
+import { medicalLookup, sendChatMessage } from "../src/services/ai/actions";
+import type { FileUpload } from "../src/types";
 
 describe("AI feature actions", () => {
   beforeEach(() => vi.clearAllMocks());

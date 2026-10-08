@@ -2,7 +2,7 @@ import {
   EncounterType,
   PatientStatus,
   type MedicalChartResponse,
-} from "../../types";
+} from "../../src/types";
 
 const patientInfo = {
   patientName: "Test Patient",

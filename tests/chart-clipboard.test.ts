@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatChartRecordForClipboard } from "../features/chart/formatForClipboard";
+import { formatChartRecordForClipboard } from "../src/features/chart/formatForClipboard";
 import { structuredPatientCase } from "./fixtures/patient-cases";
 
 describe("formatChartRecordForClipboard", () => {

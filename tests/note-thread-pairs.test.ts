@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SubNote } from "../types";
-import { pairThreadSubNotes } from "../features/notes/threadPairs";
+import { SubNote } from "../src/types";
+import { pairThreadSubNotes } from "../src/features/notes/threadPairs";
 
 const subNote = (id: string, isAssistant: boolean): SubNote => ({
   id,

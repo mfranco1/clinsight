@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useClinicalNoteResize } from "../features/chart/useClinicalNoteResize";
+import { useClinicalNoteResize } from "../src/features/chart/useClinicalNoteResize";
 
 describe("useClinicalNoteResize", () => {
   it("preserves the initial height and existing viewport constraints", () => {

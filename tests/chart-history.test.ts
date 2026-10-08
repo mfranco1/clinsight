@@ -1,11 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ChartEntry } from "../types";
+import { ChartEntry } from "../src/types";
 import {
   filterChartHistory,
   paginateChartHistory,
-} from "../features/chart/history";
-import { useChartHistoryNavigation } from "../features/chart/useChartHistoryNavigation";
+} from "../src/features/chart/history";
+import { useChartHistoryNavigation } from "../src/features/chart/useChartHistoryNavigation";
 
 const entries: ChartEntry[] = [
   {
