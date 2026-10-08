@@ -57,18 +57,3 @@ export const formatLinks = (
     }
   />
 );
-
-/** Render a clinical narrative through the same Markdown/math/HTML pipeline. */
-export const renderBulletedContent = (
-  content: string,
-  textColorClass = "text-neutral-800",
-  groundingSources?: GroundingSource[],
-  searchQuery?: string,
-) => (
-  <ClinicalMarkdown
-    content={content}
-    groundingSources={groundingSources}
-    searchQuery={searchQuery}
-    className={textColorClass}
-  />
-);

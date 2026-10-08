@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Node.js 24 (the CI version)
+- Node.js 26.11.1 (the CI version; Node 26 is currently the Current release line, while Node 24 is LTS)
 - npm
 
 ## Set up and run
@@ -44,5 +44,5 @@ Vite reads environment files and maps `GEMINI_API_KEY` to the client bundle in `
 - Vite's large chunk warning compares each minified JavaScript chunk against its default 500 kB limit before gzip; CSS and font assets do not trigger it. `src/App.tsx` loads non-dashboard views on navigation, chat and legal dialogs on first open, and AI task modules on request. The React runtime and KaTeX use named vendor chunks; the clinical Markdown and math pipeline remains fully available on first render when a feature requests it. Run `npm run check:bundle-size` after a production build to list chunk/startup/total sizes and guard the default per-chunk limit.
 - If environment changes do not appear, restart Vite.
 - If browser tests cannot start, check whether port 4173 is already occupied and whether Playwright Chromium is installed.
-- If `npm ci` fails after package metadata changes, confirm `package.json` and `package-lock.json` are both committed and use Node 24.
+- If `npm ci` fails after package metadata changes, confirm `package.json` and `package-lock.json` are both committed and use Node 26.11.1 from `.nvmrc`.
 - Browser storage belongs to the active browser origin/profile. Clearing it removes locally stored patient data; see [data and persistence](data-and-persistence.md).

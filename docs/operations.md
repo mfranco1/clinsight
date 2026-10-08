@@ -4,7 +4,7 @@ The repository defines a Vite development server, production build, and local pr
 
 ## Local build and preview
 
-Use `npm ci` with Node 24, then `npm run build` and `npm run preview`. See [development](development.md). The build can include a configured Gemini development key in browser assets, so do not supply a private/production credential. See [AI integration](ai-integration.md).
+Use `npm ci` with Node 26.11.1 from `.nvmrc`, then `npm run build` and `npm run preview`. Node 26 is currently the Current release line; Node 24 remains LTS. See [development](development.md). The build can include a configured Gemini development key in browser assets, so do not supply a private/production credential. See [AI integration](ai-integration.md).
 
 ## Data constraints
 
@@ -12,7 +12,7 @@ Patient charts and some preferences are stored in the browser profile. Browser s
 
 ## Troubleshooting
 
-- Build/type errors: use Node 24, run `npm ci`, then inspect `npm run lint` and `npm run build` output.
+- Build/type errors: use Node 26.11.1 from `.nvmrc`, run `npm ci`, then inspect `npm run lint` and `npm run build` output.
 - Browser test startup: verify Chromium is installed and port 4173 is available.
 - AI feature errors: verify a development key is configured locally and the browser has network access; do not paste prompts, patient data, or keys into issue logs.
 - Missing local patient records: verify the same browser profile and origin are in use. No server copy or recovery path is implemented here.

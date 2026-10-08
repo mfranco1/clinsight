@@ -4,7 +4,7 @@ ClinSight is a React and TypeScript clinical documentation application built wit
 
 ## Quick start
 
-Requires Node.js 24 and npm.
+Requires Node.js 26.11.1 and npm. The exact version is recorded in `.nvmrc` and used by CI.
 
 ```sh
 npm ci
