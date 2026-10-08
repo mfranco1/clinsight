@@ -1,36 +1,35 @@
-
-import React from 'react';
-import { 
-  Stethoscope, 
-  Upload, 
-  FileText, 
-  Activity, 
-  Clock, 
-  Clipboard, 
-  GraduationCap, 
-  Mic, 
-  CloudUpload, 
-  X, 
-  RotateCcw, 
-  Filter, 
-  Printer, 
-  Trash2, 
-  Plus, 
-  LogOut, 
-  User, 
+import React from "react";
+import {
+  Stethoscope,
+  Upload,
+  FileText,
+  Activity,
+  Clock,
+  Clipboard,
+  GraduationCap,
+  Mic,
+  CloudUpload,
+  X,
+  RotateCcw,
+  Filter,
+  Printer,
+  Trash2,
+  Plus,
+  LogOut,
+  User,
   Calendar,
-  MessageSquare, 
-  ClipboardList, 
-  Copy, 
-  Check, 
-  Edit3, 
-  PanelLeftOpen, 
-  PanelLeftClose, 
-  ExternalLink, 
-  MoreVertical, 
+  MessageSquare,
+  ClipboardList,
+  Copy,
+  Check,
+  Edit3,
+  PanelLeftOpen,
+  PanelLeftClose,
+  ExternalLink,
+  MoreVertical,
   MoreHorizontal,
-  Download, 
-  Pill, 
+  Download,
+  Pill,
   Home,
   MapPin,
   Phone,
@@ -73,92 +72,256 @@ import {
   Layers,
   Play,
   RefreshCw,
-  HeartOff
-} from 'lucide-react';
+  HeartOff,
+} from "lucide-react";
 
 export const Icons = {
-  HeartOff: ({ className = "w-4 h-4" }: { className?: string } = {}) => <HeartOff className={className} />,
-  Logo: ({ className = "w-6 h-6 text-white" }: { className?: string } = {}) => <Stethoscope className={className} />,
-  Upload: ({ className = "w-6 h-6" }: { className?: string }) => <Upload className={className} />,
-  FileText: ({ className = "w-6 h-6" }: { className?: string }) => <FileText className={className} />,
-  Activity: ({ className = "w-6 h-6" }: { className?: string }) => <Activity className={className} />,
-  Clock: ({ className = "w-6 h-6" }: { className?: string }) => <Clock className={className} />,
-  Clipboard: ({ className = "w-6 h-6" }: { className?: string }) => <Clipboard className={className} />,
-  Microphone: ({ className = "w-4 h-4" }: { className?: string }) => <Mic className={className} />,
-  CloudUpload: ({ className = "w-12 h-12" }: { className?: string }) => <CloudUpload className={className} />,
-  Close: ({ className = "w-4 h-4" }: { className?: string }) => <X className={className} />,
-  Refresh: ({ className = "w-4 h-4" }: { className?: string }) => <RotateCcw className={className} />,
-  RefreshCw: ({ className = "w-4 h-4" }: { className?: string }) => <RefreshCw className={className} />,
-  Document: ({ className = "w-6 h-6" }: { className?: string }) => <FileText className={className} />,
-  Filter: ({ className = "w-4 h-4" }: { className?: string }) => <Filter className={className} />,
-  Print: ({ className = "w-6 h-6" }: { className?: string }) => <Printer className={className} />,
-  Trash: ({ className = "w-6 h-6" }: { className?: string }) => <Trash2 className={className} />,
-  Plus: ({ className = "w-6 h-6" }: { className?: string }) => <Plus className={className} />,
-  Logout: ({ className = "w-5 h-5" }: { className?: string }) => <LogOut className={className} />,
-  Home: ({ className = "w-5 h-5" }: { className?: string }) => <Home className={className} />,
-  Kebab: ({ className = "w-5 h-5" }: { className?: string }) => <MoreVertical className={className} />,
-  MoreHorizontal: ({ className = "w-5 h-5" }: { className?: string }) => <MoreHorizontal className={className} />,
-  MoreVertical: ({ className = "w-5 h-5" }: { className?: string }) => <MoreVertical className={className} />,
-  General: ({ className = "w-5 h-5" }: { className?: string } = {}) => <User className={className} />,
-  Subjective: ({ className = "w-5 h-5" }: { className?: string } = {}) => <MessageSquare className={className} />,
-  Objective: ({ className = "w-5 h-5" }: { className?: string } = {}) => <Stethoscope className={className} />,
-  Assessment: ({ className = "w-5 h-5" }: { className?: string } = {}) => <ClipboardList className={className} />,
-  Plan: ({ className = "w-5 h-5" }: { className?: string } = {}) => <Pill className={className} />,
-  Copy: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Copy className={className} />,
-  Check: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Check className={className} />,
-  Edit: ({ className = "w-3 h-3" }: { className?: string } = {}) => <Edit3 className={className} />,
-  Edit3: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Edit3 className={className} />,
-  PanelOpen: ({ className = "w-4 h-4" }: { className?: string } = {}) => <PanelLeftOpen className={className} />,
-  PanelClose: ({ className = "w-4 h-4" }: { className?: string } = {}) => <PanelLeftClose className={className} />,
-  ExternalLink: ({ className = "w-3.5 h-3.5" }: { className?: string } = {}) => <ExternalLink className={className} />,
-  More: ({ className = "w-5 h-5" }: { className?: string } = {}) => <MoreVertical className={className} />,
-  Download: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Download className={className} />,
-  Prescription: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Pill className={className} />,
-  HomeHealth: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Home className={className} />,
-  MapPin: ({ className = "w-3.5 h-3.5" }: { className?: string } = {}) => <MapPin className={className} />,
-  Phone: ({ className = "w-3.5 h-3.5" }: { className?: string } = {}) => <Phone className={className} />,
-  Search: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Search className={className} />,
-  SearchIcon: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Search className={className} />,
-  Save: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Save className={className} />,
-  LayoutGrid: ({ className = "w-4 h-4" }: { className?: string } = {}) => <LayoutGrid className={className} />,
-  ChevronDown: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ChevronDown className={className} />,
-  ChevronUp: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ChevronUp className={className} />,
-  ChevronLeft: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ChevronLeft className={className} />,
-  ChevronRight: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ChevronRight className={className} />,
-  List: ({ className = "w-4 h-4" }: { className?: string } = {}) => <List className={className} />,
-  ArrowLeft: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ArrowLeft className={className} />,
-  Code: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Code className={className} />,
-  Book: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Book className={className} />,
-  Layout: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Layout className={className} />,
-  Mail: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Mail className={className} />,
-  Lock: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Lock className={className} />,
-  Unlock: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Unlock className={className} />,
-  Eye: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Eye className={className} />,
-  EyeOff: ({ className = "w-4 h-4" }: { className?: string } = {}) => <EyeOff className={className} />,
-  ShieldCheck: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ShieldCheck className={className} />,
-  Loader: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Loader2 className={className + " animate-spin"} />,
-  Alert: ({ className = "w-6 h-6" }: { className?: string } = {}) => <AlertTriangle className={className} />,
-  History: ({ className = "w-4 h-4" }: { className?: string } = {}) => <History className={className} />,
-  Settings: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Settings className={className} />,
-  Calendar: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Calendar className={className} />,
-  Chat: ({ className = "w-6 h-6" }: { className?: string } = {}) => <MessageSquare className={className} />,
-  Camera: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Camera className={className} />,
-  Image: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ImageIcon className={className} />,
-  Send: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Send className={className} />,
-  Paperclip: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Paperclip className={className} />,
-  Info: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Info className={className} />,
-  Assistance: ({ className = "w-5 h-5" }: { className?: string } = {}) => <Lightbulb className={className} />,
-  Rationale: ({ className = "w-3 h-3" }: { className?: string } = {}) => <ClipboardCheck className={className} />,
-  Brain: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Brain className={className} />,
-  ListPlus: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ListPlus className={className} />,
-  ClipboardList: ({ className = "w-4 h-4" }: { className?: string } = {}) => <ClipboardList className={className} />,
-  GripVertical: ({ className = "w-4 h-4" }: { className?: string } = {}) => <GripVertical className={className} />,
-  Pause: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Pause className={className} />,
-  AlertCircle: ({ className = "w-4 h-4" }: { className?: string } = {}) => <AlertCircle className={className} />,
-  Circle: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Circle className={className} />,
-  CheckCircle: ({ className = "w-4 h-4" }: { className?: string } = {}) => <CheckCircle className={className} />,
-  Layers: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Layers className={className} />,
-  Play: ({ className = "w-4 h-4" }: { className?: string } = {}) => <Play className={className} />
+  HeartOff: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <HeartOff className={className} />
+  ),
+  Logo: ({ className = "w-6 h-6 text-white" }: { className?: string } = {}) => (
+    <Stethoscope className={className} />
+  ),
+  Upload: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Upload className={className} />
+  ),
+  FileText: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <FileText className={className} />
+  ),
+  Activity: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Activity className={className} />
+  ),
+  Clock: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Clock className={className} />
+  ),
+  Clipboard: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Clipboard className={className} />
+  ),
+  Microphone: ({ className = "w-4 h-4" }: { className?: string }) => (
+    <Mic className={className} />
+  ),
+  CloudUpload: ({ className = "w-12 h-12" }: { className?: string }) => (
+    <CloudUpload className={className} />
+  ),
+  Close: ({ className = "w-4 h-4" }: { className?: string }) => (
+    <X className={className} />
+  ),
+  Refresh: ({ className = "w-4 h-4" }: { className?: string }) => (
+    <RotateCcw className={className} />
+  ),
+  RefreshCw: ({ className = "w-4 h-4" }: { className?: string }) => (
+    <RefreshCw className={className} />
+  ),
+  Document: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <FileText className={className} />
+  ),
+  Filter: ({ className = "w-4 h-4" }: { className?: string }) => (
+    <Filter className={className} />
+  ),
+  Print: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Printer className={className} />
+  ),
+  Trash: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Trash2 className={className} />
+  ),
+  Plus: ({ className = "w-6 h-6" }: { className?: string }) => (
+    <Plus className={className} />
+  ),
+  Logout: ({ className = "w-5 h-5" }: { className?: string }) => (
+    <LogOut className={className} />
+  ),
+  Home: ({ className = "w-5 h-5" }: { className?: string }) => (
+    <Home className={className} />
+  ),
+  Kebab: ({ className = "w-5 h-5" }: { className?: string }) => (
+    <MoreVertical className={className} />
+  ),
+  MoreHorizontal: ({ className = "w-5 h-5" }: { className?: string }) => (
+    <MoreHorizontal className={className} />
+  ),
+  MoreVertical: ({ className = "w-5 h-5" }: { className?: string }) => (
+    <MoreVertical className={className} />
+  ),
+  General: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <User className={className} />
+  ),
+  Subjective: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <MessageSquare className={className} />
+  ),
+  Objective: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <Stethoscope className={className} />
+  ),
+  Assessment: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <ClipboardList className={className} />
+  ),
+  Plan: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <Pill className={className} />
+  ),
+  Copy: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Copy className={className} />
+  ),
+  Check: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Check className={className} />
+  ),
+  Edit: ({ className = "w-3 h-3" }: { className?: string } = {}) => (
+    <Edit3 className={className} />
+  ),
+  Edit3: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Edit3 className={className} />
+  ),
+  PanelOpen: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <PanelLeftOpen className={className} />
+  ),
+  PanelClose: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <PanelLeftClose className={className} />
+  ),
+  ExternalLink: ({
+    className = "w-3.5 h-3.5",
+  }: { className?: string } = {}) => <ExternalLink className={className} />,
+  More: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <MoreVertical className={className} />
+  ),
+  Download: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Download className={className} />
+  ),
+  Prescription: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Pill className={className} />
+  ),
+  HomeHealth: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Home className={className} />
+  ),
+  MapPin: ({ className = "w-3.5 h-3.5" }: { className?: string } = {}) => (
+    <MapPin className={className} />
+  ),
+  Phone: ({ className = "w-3.5 h-3.5" }: { className?: string } = {}) => (
+    <Phone className={className} />
+  ),
+  Search: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Search className={className} />
+  ),
+  SearchIcon: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Search className={className} />
+  ),
+  Save: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Save className={className} />
+  ),
+  LayoutGrid: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <LayoutGrid className={className} />
+  ),
+  ChevronDown: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ChevronDown className={className} />
+  ),
+  ChevronUp: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ChevronUp className={className} />
+  ),
+  ChevronLeft: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ChevronLeft className={className} />
+  ),
+  ChevronRight: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ChevronRight className={className} />
+  ),
+  List: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <List className={className} />
+  ),
+  ArrowLeft: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ArrowLeft className={className} />
+  ),
+  Code: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Code className={className} />
+  ),
+  Book: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Book className={className} />
+  ),
+  Layout: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Layout className={className} />
+  ),
+  Mail: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Mail className={className} />
+  ),
+  Lock: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Lock className={className} />
+  ),
+  Unlock: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Unlock className={className} />
+  ),
+  Eye: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Eye className={className} />
+  ),
+  EyeOff: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <EyeOff className={className} />
+  ),
+  ShieldCheck: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ShieldCheck className={className} />
+  ),
+  Loader: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Loader2 className={className + " animate-spin"} />
+  ),
+  Alert: ({ className = "w-6 h-6" }: { className?: string } = {}) => (
+    <AlertTriangle className={className} />
+  ),
+  History: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <History className={className} />
+  ),
+  Settings: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Settings className={className} />
+  ),
+  Calendar: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Calendar className={className} />
+  ),
+  Chat: ({ className = "w-6 h-6" }: { className?: string } = {}) => (
+    <MessageSquare className={className} />
+  ),
+  Camera: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Camera className={className} />
+  ),
+  Image: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ImageIcon className={className} />
+  ),
+  Send: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Send className={className} />
+  ),
+  Paperclip: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Paperclip className={className} />
+  ),
+  Info: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Info className={className} />
+  ),
+  Assistance: ({ className = "w-5 h-5" }: { className?: string } = {}) => (
+    <Lightbulb className={className} />
+  ),
+  Rationale: ({ className = "w-3 h-3" }: { className?: string } = {}) => (
+    <ClipboardCheck className={className} />
+  ),
+  Brain: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Brain className={className} />
+  ),
+  ListPlus: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ListPlus className={className} />
+  ),
+  ClipboardList: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <ClipboardList className={className} />
+  ),
+  GripVertical: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <GripVertical className={className} />
+  ),
+  Pause: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Pause className={className} />
+  ),
+  AlertCircle: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <AlertCircle className={className} />
+  ),
+  Circle: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Circle className={className} />
+  ),
+  CheckCircle: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <CheckCircle className={className} />
+  ),
+  Layers: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Layers className={className} />
+  ),
+  Play: ({ className = "w-4 h-4" }: { className?: string } = {}) => (
+    <Play className={className} />
+  ),
 };
 
 export const RxIcon = Icons.Prescription;

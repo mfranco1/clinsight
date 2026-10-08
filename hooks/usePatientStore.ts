@@ -1,19 +1,25 @@
-import { useCallback, useState } from 'react';
-import { MedicalChartResponse } from '../types';
+import { useCallback, useState } from "react";
+import { MedicalChartResponse } from "../types";
 
 export interface PatientStore {
   patients: MedicalChartResponse[];
-  updatePatients: (update: (patients: MedicalChartResponse[]) => MedicalChartResponse[]) => void;
+  updatePatients: (
+    update: (patients: MedicalChartResponse[]) => MedicalChartResponse[],
+  ) => void;
   addPatient: (patient: MedicalChartResponse) => void;
   addPatients: (patients: MedicalChartResponse[]) => void;
-  updatePatient: (patientId: string, update: (patient: MedicalChartResponse) => MedicalChartResponse) => void;
+  updatePatient: (
+    patientId: string,
+    update: (patient: MedicalChartResponse) => MedicalChartResponse,
+  ) => void;
   removePatient: (patientId: string) => void;
 }
 
 export const usePatientStore = (
-  initialPatients: () => MedicalChartResponse[]
+  initialPatients: () => MedicalChartResponse[],
 ): PatientStore => {
-  const [patients, setPatients] = useState<MedicalChartResponse[]>(initialPatients);
+  const [patients, setPatients] =
+    useState<MedicalChartResponse[]>(initialPatients);
 
   const addPatient = useCallback((patient: MedicalChartResponse) => {
     setPatients((current) => [patient, ...current]);
@@ -23,17 +29,39 @@ export const usePatientStore = (
     setPatients((current) => [...nextPatients, ...current]);
   }, []);
 
-  const updatePatient = useCallback((patientId: string, update: (patient: MedicalChartResponse) => MedicalChartResponse) => {
-    setPatients((current) => current.map((patient) => patient.id === patientId ? update(patient) : patient));
-  }, []);
+  const updatePatient = useCallback(
+    (
+      patientId: string,
+      update: (patient: MedicalChartResponse) => MedicalChartResponse,
+    ) => {
+      setPatients((current) =>
+        current.map((patient) =>
+          patient.id === patientId ? update(patient) : patient,
+        ),
+      );
+    },
+    [],
+  );
 
   const removePatient = useCallback((patientId: string) => {
-    setPatients((current) => current.filter((patient) => patient.id !== patientId));
+    setPatients((current) =>
+      current.filter((patient) => patient.id !== patientId),
+    );
   }, []);
 
-  const updatePatients = useCallback((update: (current: MedicalChartResponse[]) => MedicalChartResponse[]) => {
-    setPatients(update);
-  }, []);
+  const updatePatients = useCallback(
+    (update: (current: MedicalChartResponse[]) => MedicalChartResponse[]) => {
+      setPatients(update);
+    },
+    [],
+  );
 
-  return { patients, updatePatients, addPatient, addPatients, updatePatient, removePatient };
+  return {
+    patients,
+    updatePatients,
+    addPatient,
+    addPatients,
+    updatePatient,
+    removePatient,
+  };
 };

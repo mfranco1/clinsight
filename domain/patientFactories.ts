@@ -4,7 +4,7 @@ import {
   MedicalChartResponse,
   PatientStatus,
   CourseEvent,
-} from '../types';
+} from "../types";
 
 interface GeneratedPatientOptions {
   entry: ChartEntry;
@@ -14,22 +14,27 @@ interface GeneratedPatientOptions {
   fallbackCourseEvent: CourseEvent;
 }
 
-type GeneratedPatientData = Omit<MedicalChartResponse, 'entries'>;
+type GeneratedPatientData = Omit<MedicalChartResponse, "entries">;
 
 export const createGeneratedPatient = (
   data: GeneratedPatientData,
-  options: GeneratedPatientOptions
+  options: GeneratedPatientOptions,
 ): MedicalChartResponse => ({
   ...data,
   patientInfo: { ...data.patientInfo },
-  encounters: [{
-    id: options.encounterId,
-    type: options.isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
-    startDate: options.effectiveDate,
-    status: 'ACTIVE',
-  }],
+  encounters: [
+    {
+      id: options.encounterId,
+      type: options.isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
+      startDate: options.effectiveDate,
+      status: "ACTIVE",
+    },
+  ],
   entries: [options.entry],
-  course: data.course && data.course.length > 0 ? data.course : [options.fallbackCourseEvent],
+  course:
+    data.course && data.course.length > 0
+      ? data.course
+      : [options.fallbackCourseEvent],
 });
 
 interface ManualPatientOptions {
@@ -42,34 +47,40 @@ interface ManualPatientOptions {
   courseEvent: CourseEvent;
 }
 
-export const createManualPatient = (options: ManualPatientOptions): MedicalChartResponse => ({
+export const createManualPatient = (
+  options: ManualPatientOptions,
+): MedicalChartResponse => ({
   id: options.id,
   patientInfo: {
-    patientName: 'Not Recorded',
-    ageSex: 'Not Recorded',
-    mrn: 'Not Recorded',
-    dob: 'Not Recorded',
+    patientName: "Not Recorded",
+    ageSex: "Not Recorded",
+    mrn: "Not Recorded",
+    dob: "Not Recorded",
     admissionDate: options.today,
-    status: options.isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED,
-    address: 'Not Recorded',
-    religion: 'Not Recorded',
-    handedness: 'Not Recorded',
-    location: 'Not Recorded',
-    contactNumber: 'Not Recorded',
-    email: 'Not Recorded',
+    status: options.isConsult
+      ? PatientStatus.OUTPATIENT
+      : PatientStatus.ADMITTED,
+    address: "Not Recorded",
+    religion: "Not Recorded",
+    handedness: "Not Recorded",
+    location: "Not Recorded",
+    contactNumber: "Not Recorded",
+    email: "Not Recorded",
   },
-  encounters: [{
-    id: options.encounterId,
-    type: options.isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
-    startDate: options.now,
-    status: 'ACTIVE',
-  }],
+  encounters: [
+    {
+      id: options.encounterId,
+      type: options.isConsult ? EncounterType.CONSULT : EncounterType.ADMISSION,
+      startDate: options.now,
+      status: "ACTIVE",
+    },
+  ],
   entries: [{ ...options.entry, encounterId: options.encounterId }],
   course: [options.courseEvent],
   handoff: {
-    patientId: 'Not Recorded',
-    oneLiner: 'Manual admission recorded.',
-    activeIssues: ['Manual admission'],
-    toDoList: ['Review patient history'],
+    patientId: "Not Recorded",
+    oneLiner: "Manual admission recorded.",
+    activeIssues: ["Manual admission"],
+    toDoList: ["Review patient history"],
   },
 });

@@ -1,4 +1,3 @@
-
 import { APP_ICON_DATA_URL } from "../config/appConfig";
 
 export interface NotificationService {
@@ -28,7 +27,10 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
   return false;
 };
 
-export const sendNotification = (title: string, options?: NotificationOptions): boolean => {
+export const sendNotification = (
+  title: string,
+  options?: NotificationOptions,
+): boolean => {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") {
       return false;

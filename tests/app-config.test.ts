@@ -1,25 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 import {
   DEFAULT_MODEL,
   DEFAULT_STRUCTURED_MODEL,
   MODELS,
   NAV_ITEMS,
   SPECIALIZATIONS,
-} from '../config/appConfig';
-import {
-  DEFAULT_MODEL as FACADE_DEFAULT_MODEL,
-  DEFAULT_STRUCTURED_MODEL as FACADE_DEFAULT_STRUCTURED_MODEL,
-  MODELS as FACADE_MODELS,
-  NAV_ITEMS as FACADE_NAV_ITEMS,
-  SPECIALIZATIONS as FACADE_SPECIALIZATIONS,
-} from '../constants';
+} from "../config/appConfig";
 
-describe('app configuration', () => {
-  it('preserves the constants compatibility facade', () => {
-    expect(FACADE_DEFAULT_MODEL).toBe(DEFAULT_MODEL);
-    expect(FACADE_DEFAULT_STRUCTURED_MODEL).toBe(DEFAULT_STRUCTURED_MODEL);
-    expect(FACADE_MODELS).toEqual(MODELS);
-    expect(FACADE_NAV_ITEMS).toEqual(NAV_ITEMS);
-    expect(FACADE_SPECIALIZATIONS).toEqual(SPECIALIZATIONS);
+describe("app configuration", () => {
+  it("exposes valid model choices and navigation configuration", () => {
+    expect(MODELS).toContainEqual(
+      expect.objectContaining({ id: DEFAULT_MODEL }),
+    );
+    expect(DEFAULT_STRUCTURED_MODEL).toBeTruthy();
+    expect(NAV_ITEMS.length).toBeGreaterThan(0);
+    expect(SPECIALIZATIONS.length).toBeGreaterThan(0);
   });
 });

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Icons } from './Icons';
-import ClinicalMarkdown from './ClinicalMarkdown';
-import { GroundingSource } from '../../types';
+import React, { useState, useEffect, useRef } from "react";
+import { Icons } from "./Icons";
+import ClinicalMarkdown from "./ClinicalMarkdown";
+import { GroundingSource } from "../../types";
 
 interface EditableTextAreaProps {
   value: string;
@@ -38,18 +38,24 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   hideEditButton = false,
   minHeight = "min-h-[120px]",
   searchQuery,
-  disabled = false
+  disabled = false,
 }) => {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
-  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
-  const setIsEditing = externalSetIsEditing !== undefined ? externalSetIsEditing : setInternalIsEditing;
+  const isEditing =
+    externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+  const setIsEditing =
+    externalSetIsEditing !== undefined
+      ? externalSetIsEditing
+      : setInternalIsEditing;
 
-  const [editValue, setEditValue] = useState(() => value ? value.replace(/\\n/g, '\n') : '');
+  const [editValue, setEditValue] = useState(() =>
+    value ? value.replace(/\\n/g, "\n") : "",
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isManualResized, setIsManualResized] = useState(false);
 
   useEffect(() => {
-    setEditValue(value ? value.replace(/\\n/g, '\n') : '');
+    setEditValue(value ? value.replace(/\\n/g, "\n") : "");
   }, [value]);
 
   useEffect(() => {
@@ -63,7 +69,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
 
   const adjustHeight = () => {
     if (textareaRef.current && !isManualResized) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   };
@@ -75,17 +81,17 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = editValue.substring(start, end);
-    
+
     const textToInsert = prefix + selectedText + suffix;
 
     // Try to use execCommand to preserve native undo stack
     textarea.focus();
     try {
       // This is deprecated but widely used for textarea formatting to preserve undo history
-      const success = document.execCommand('insertText', false, textToInsert);
+      const success = document.execCommand("insertText", false, textToInsert);
 
       if (!success) {
-        throw new Error('execCommand failed');
+        throw new Error("execCommand failed");
       }
 
       // Sync React state with updated textarea value
@@ -96,24 +102,19 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
       // Restore selection around the original text
       textarea.setSelectionRange(
         start + prefix.length,
-        start + prefix.length + selectedText.length
+        start + prefix.length + selectedText.length,
       );
     } catch (err) {
       // Fallback to manual state update if execCommand fails
-      const newValue = 
-        editValue.substring(0, start) + 
-        textToInsert + 
-        editValue.substring(end);
-      
+      const newValue =
+        editValue.substring(0, start) + textToInsert + editValue.substring(end);
+
       setEditValue(newValue);
       if (onChange) onChange(newValue);
-      
+
       setTimeout(() => {
         textarea.focus();
-        textarea.setSelectionRange(
-          start + prefix.length,
-          end + prefix.length
-        );
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
       }, 0);
     }
   };
@@ -123,34 +124,34 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
 
     if (isMod) {
       switch (e.key.toLowerCase()) {
-        case 'b':
+        case "b":
           e.preventDefault();
-          applyFormatting('**', '**');
+          applyFormatting("**", "**");
           break;
-        case 'i':
+        case "i":
           e.preventDefault();
-          applyFormatting('*', '*');
+          applyFormatting("*", "*");
           break;
-        case 'u':
+        case "u":
           e.preventDefault();
-          applyFormatting('<u>', '</u>');
+          applyFormatting("<u>", "</u>");
           break;
-        case 'k':
+        case "k":
           e.preventDefault();
-          applyFormatting('[', '](https://)');
+          applyFormatting("[", "](https://)");
           break;
-        case 'x':
+        case "x":
           if (e.shiftKey) {
             e.preventDefault();
-            applyFormatting('~~', '~~');
+            applyFormatting("~~", "~~");
           }
           break;
-        case 'enter':
+        case "enter":
           e.preventDefault();
           handleSave();
           break;
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleCancel();
     }
   };
@@ -172,27 +173,27 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     // Detect manual resize start
     const handleMouseUp = () => {
       setIsManualResized(true);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener("mouseup", handleMouseUp);
   };
 
   if (isEditing) {
     return (
       <div className={`space-y-3 ${className}`}>
-          <textarea
-            ref={textareaRef}
-            value={editValue}
-            onChange={(e) => {
-              setEditValue(e.target.value);
-              adjustHeight();
-              if (onChange) onChange(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-            onMouseDown={handleMouseDown}
-            placeholder={placeholder}
-            className={`w-full text-[13px] text-slate-700 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 p-4 ${minHeight} transition-all resize-y`}
-          />
+        <textarea
+          ref={textareaRef}
+          value={editValue}
+          onChange={(e) => {
+            setEditValue(e.target.value);
+            adjustHeight();
+            if (onChange) onChange(e.target.value);
+          }}
+          onKeyDown={handleKeyDown}
+          onMouseDown={handleMouseDown}
+          placeholder={placeholder}
+          className={`w-full text-[13px] text-slate-700 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 p-4 ${minHeight} transition-all resize-y`}
+        />
         {showControls && (
           <div className="flex items-center justify-end gap-2">
             <button
@@ -214,12 +215,15 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   }
 
   return (
-    <div 
+    <div
       className={`group relative rounded-xl hover:bg-slate-50/50 transition-all p-1 -m-1 ${className}`}
     >
       {!hideEditButton && !disabled && (
-        <button 
-          onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 bg-white rounded-xl border border-slate-200 shadow-sm z-10"
           title="Edit"
         >
@@ -227,19 +231,23 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
         </button>
       )}
       {value ? (
-        <ClinicalMarkdown 
-          content={value} 
+        <ClinicalMarkdown
+          content={value}
           groundingSources={groundingSources}
           showReferences={showReferences}
           searchQuery={searchQuery}
         />
       ) : (
-        <div 
-          onClick={() => { if (!disabled) setIsEditing(true); }}
-          className={`py-1 ${!disabled ? 'cursor-pointer hover:text-teal-600 transition-colors' : ''}`}
+        <div
+          onClick={() => {
+            if (!disabled) setIsEditing(true);
+          }}
+          className={`py-1 ${!disabled ? "cursor-pointer hover:text-teal-600 transition-colors" : ""}`}
         >
           <span className="text-slate-400 italic text-[13px]">
-            {disabled ? "No data recorded." : (placeholder || "No data recorded. Click to edit.")}
+            {disabled
+              ? "No data recorded."
+              : placeholder || "No data recorded. Click to edit."}
           </span>
         </div>
       )}

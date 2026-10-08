@@ -1,118 +1,200 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import PatientHeader from './components/PatientHeader';
-import InputSection from './components/InputSection';
-import SoapView from './components/SoapView';
-import CourseView from './components/CourseView';
-import SummaryView from './components/SummaryView';
-import NotesView from './components/NotesView';
-import OrdersView from './components/OrdersView';
-import ProfileView from './components/ProfileView';
-import SettingsView from './components/SettingsView';
-import LandingPage from './components/LandingPage';
-import LoginPage from './components/LoginPage';
-import LoadingOverlay from './components/LoadingOverlay';
-import ChatPanel from './components/ChatPanel';
-import PrivacyPolicyModal from './components/PrivacyPolicyModal';
-import TermsOfServiceModal from './components/TermsOfServiceModal';
-import Toast from './components/Toast';
-import { Icons } from './components/ui/Icons';
-import DashboardView from './components/DashboardView';
-import { MedicalChartResponse, ViewMode, FileUpload, SoapNote, GeneralData, ChartEntry, HandoffSummary, PatientNote, PatientOrder, OrderStatus, MedicationOrder, PatientStatus, EncounterType, DeceasedInfo, CauseOfDeath } from './types';
-import { useFileUpload } from './hooks/useFileUpload';
-import { usePatientStore } from './hooks/usePatientStore';
-import { generateMedicalChart, reassessSoapNote, generateProgressNote, refreshPatientSummary } from './services/geminiService';
-import { requestNotificationPermission, sendNotification } from './services/notificationService';
-import { DEFAULT_MODEL } from './config/appConfig';
-import { getLocalDateString, getTodayLocalDateString, createId, getTodayDate, getCurrentTime24, getLocalDateTimeParts, normalizeDateInput, safeStorage, normalizePatientAgeSex } from './utils';
-import { loadPersistedPatients, PATIENTS_STORAGE_KEY } from './services/patientPersistence';
-import { appendCourseEvent, prependNote, reactivateEncounter, updateCourse, updateEntry, updateEntrySoap, updateHandoff, updateMedications, updateNotes, updateOrder, updateOrders, updatePatientInfo, updatePatientStatus, withPatientId } from './domain/patientTransitions';
-import { createGeneratedPatient, createManualPatient } from './domain/patientFactories';
+import React, { useState, useRef, useEffect } from "react";
+import Sidebar from "./app/shell/Sidebar";
+import Header from "./app/shell/Header";
+import PatientHeader from "./app/shell/PatientHeader";
+import InputSection from "./features/input/InputSection";
+import SoapView from "./features/chart/SoapView";
+import CourseView from "./features/course/CourseView";
+import SummaryView from "./features/handoff/SummaryView";
+import NotesView from "./features/notes/NotesView";
+import OrdersView from "./features/orders/OrdersView";
+import ProfileView from "./features/profile/ProfileView";
+import SettingsView from "./features/settings/SettingsView";
+import LandingPage from "./features/access/LandingPage";
+import LoginPage from "./features/access/LoginPage";
+import LoadingOverlay from "./components/LoadingOverlay";
+import ChatPanel from "./features/chat/ChatPanel";
+import PrivacyPolicyModal from "./components/PrivacyPolicyModal";
+import TermsOfServiceModal from "./components/TermsOfServiceModal";
+import Toast from "./components/Toast";
+import { Icons } from "./components/ui/Icons";
+import DashboardView from "./features/dashboard/DashboardView";
+import {
+  MedicalChartResponse,
+  ViewMode,
+  FileUpload,
+  SoapNote,
+  GeneralData,
+  ChartEntry,
+  HandoffSummary,
+  PatientNote,
+  PatientOrder,
+  MedicationOrder,
+  PatientStatus,
+  EncounterType,
+  DeceasedInfo,
+  CauseOfDeath,
+  GroundingSource,
+  CourseEvent,
+} from "./types";
+import { useFileUpload } from "./hooks/useFileUpload";
+import { usePatientStore } from "./hooks/usePatientStore";
+import { geminiGateway } from "./services/ai/geminiGateway";
+import {
+  requestNotificationPermission,
+  sendNotification,
+} from "./services/notificationService";
+import { DEFAULT_MODEL } from "./config/appConfig";
+import { getErrorMessageCompat } from "./services/appErrors";
+import {
+  getTodayLocalDateString,
+  getTodayDate,
+  getCurrentTime24,
+  getLocalDateTimeParts,
+  normalizeDateInput,
+} from "./utils/date";
+import { createId } from "./utils/ids";
+import { safeStorage } from "./utils/storage";
+import { normalizePatientAgeSex } from "./utils/patient";
+import {
+  loadPersistedPatients,
+  PATIENTS_STORAGE_KEY,
+} from "./services/patientPersistence";
+import {
+  appendAssessedEntry,
+  appendCourseEvent,
+  applyEntryReassessment,
+  prependEntryWithCourseEvent,
+  prependNote,
+  reactivateEncounter,
+  removeEntry,
+  updateCourse,
+  updateEntry,
+  updateEntrySoap,
+  updateHandoff,
+  updateMedications,
+  updateNotes,
+  updateOrder,
+  updateOrders,
+  updatePatientInfo,
+  updatePatientStatus,
+  withPatientId,
+} from "./domain/patientTransitions";
+import {
+  createGeneratedPatient,
+  createManualPatient,
+} from "./domain/patientFactories";
+import { carryOverUndoneOrderDates } from "./domain/orders";
+import {
+  collectAttachmentPreviewUrls,
+  hydrateAttachments,
+  serializeAttachments,
+} from "./services/attachmentPersistence";
+import { logDiagnostic } from "./services/diagnosticLogger";
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
-  const { 
-    files: inputFiles, 
-    setFiles: setInputFiles, 
-    addFiles: addInputFiles, 
-    removeFile: removeInputFile, 
-    clear: clearInputFiles 
+  const {
+    files: inputFiles,
+    setFiles: setInputFiles,
+    addFiles: addInputFiles,
+    removeFile: removeInputFile,
+    clear: clearInputFiles,
   } = useFileUpload();
   const [inputText, setInputText] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isReassessing, setIsReassessing] = useState<boolean>(false);
-  
+
   // Multi-patient state
-  const { patients, updatePatients, addPatient, addPatients, updatePatient, removePatient } = usePatientStore(() =>
-    loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY))
+  const {
+    patients,
+    updatePatients,
+    addPatient,
+    addPatients,
+    updatePatient,
+    removePatient,
+  } = usePatientStore(() =>
+    loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY)),
   );
+  const patientPreviewUrls = useRef<Set<string>>(new Set());
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
-  
+
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [defaultModel, setDefaultModel] = useState<string>(() => safeStorage.getItem('clinsight_default_model') || DEFAULT_MODEL);
-  const [defaultSpecialization, setDefaultSpecialization] = useState<string>(() => safeStorage.getItem('clinsight_default_specialization') || 'General Practice');
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+  const [defaultModel, setDefaultModel] = useState<string>(
+    () => safeStorage.getItem("clinsight_default_model") || DEFAULT_MODEL,
+  );
+  const [defaultSpecialization, setDefaultSpecialization] = useState<string>(
+    () =>
+      safeStorage.getItem("clinsight_default_specialization") ||
+      "General Practice",
+  );
   const [model, setModel] = useState<string>(defaultModel);
-  const [specialization, setSpecialization] = useState<string>(defaultSpecialization);
-  
+  const [specialization, setSpecialization] = useState<string>(
+    defaultSpecialization,
+  );
+
   // Derived active patient
-  const activePatient = patients.find(p => p.id === activePatientId) || null;
+  const activePatient = patients.find((p) => p.id === activePatientId) || null;
+
+  const updateActivePatient = (
+    update: (patient: MedicalChartResponse) => MedicalChartResponse,
+  ) => {
+    if (activePatientId) updatePatient(activePatientId, update);
+  };
 
   // Persistence: Save to localStorage whenever patients change
   useEffect(() => {
-    safeStorage.setItem(PATIENTS_STORAGE_KEY, JSON.stringify(patients));
+    safeStorage.setItem(
+      PATIENTS_STORAGE_KEY,
+      JSON.stringify(serializeAttachments(patients)),
+    );
   }, [patients]);
+
+  useEffect(() => {
+    const nextUrls = collectAttachmentPreviewUrls(patients);
+    patientPreviewUrls.current.forEach((url) => {
+      if (!nextUrls.has(url)) URL.revokeObjectURL(url);
+    });
+    patientPreviewUrls.current = nextUrls;
+  }, [patients]);
+
+  useEffect(
+    () => () => {
+      patientPreviewUrls.current.forEach((url) => URL.revokeObjectURL(url));
+      patientPreviewUrls.current.clear();
+    },
+    [],
+  );
 
   // Carry over undone orders for all patients
   useEffect(() => {
-    const today = getTodayLocalDateString();
-    const undoneStatuses = [OrderStatus.PENDING, OrderStatus.ONGOING, OrderStatus.WAITING, OrderStatus.PAUSED];
-    
-    let hasChanges = false;
-    const updatedPatients = patients.map(patient => {
-      if (!patient.orders) return patient;
-      
-      let patientHasChanges = false;
-      const updatedOrders = patient.orders.map(order => {
-        const orderDate = getLocalDateString(order.targetDate);
-        if (undoneStatuses.includes(order.status) && orderDate < today) {
-          hasChanges = true;
-          patientHasChanges = true;
-          const oldDate = new Date(order.targetDate);
-          const newDate = new Date();
-          if (!isNaN(oldDate.getTime())) {
-            newDate.setHours(oldDate.getHours(), oldDate.getMinutes(), oldDate.getSeconds(), oldDate.getMilliseconds());
-          }
-          return { ...order, targetDate: newDate.toISOString() };
-        }
-        return order;
-      });
-      
-      if (patientHasChanges) {
-        return { ...patient, orders: updatedOrders };
-      }
-      return patient;
-    });
-
-    if (hasChanges) {
-      updatePatients(() => updatedPatients);
-    }
+    const updatedPatients = carryOverUndoneOrderDates(
+      patients,
+      getTodayLocalDateString(),
+      new Date(),
+    );
+    if (updatedPatients !== patients) updatePatients(() => updatedPatients);
   }, [patients]);
 
   useEffect(() => {
-    safeStorage.setItem('clinsight_default_model', defaultModel);
+    safeStorage.setItem("clinsight_default_model", defaultModel);
     setModel(defaultModel);
   }, [defaultModel]);
 
   useEffect(() => {
-    safeStorage.setItem('clinsight_default_specialization', defaultSpecialization);
+    safeStorage.setItem(
+      "clinsight_default_specialization",
+      defaultSpecialization,
+    );
     setSpecialization(defaultSpecialization);
   }, [defaultSpecialization]);
-  
+
   // Chat Panel State
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatSessionId, setChatSessionId] = useState<number>(0);
@@ -127,32 +209,34 @@ function App() {
   // Close chat and reset session when active patient changes or is cleared
   useEffect(() => {
     setIsChatOpen(false);
-    setChatSessionId(prev => prev + 1);
+    setChatSessionId((prev) => prev + 1);
   }, [activePatientId]);
 
   // Ref to track the current generation request ID to handle cancellations
   const generationRequestId = useRef<number>(0);
-  
+
   // Ref for the main scrollable container
   const mainContentRef = useRef<HTMLElement>(null);
 
   const [showMobileNav, setShowMobileNav] = useState(true);
   const lastScrollY = useRef(0);
-  
+
   // Handle mobile nav visibility on scroll
   useEffect(() => {
     const handleScroll = (e: Event) => {
       const target = e.target as HTMLElement;
       if (!target || target.scrollTop === undefined) return;
-      
+
       // Check if the target is the main container or an internal main scroll container
       const isMainContent = target === mainContentRef.current;
-      const isInternalScroll = target.classList.contains('main-scroll-container');
-      
+      const isInternalScroll = target.classList.contains(
+        "main-scroll-container",
+      );
+
       if (!isMainContent && !isInternalScroll) return;
 
       const currentScrollY = target.scrollTop;
-      
+
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
         setShowMobileNav(false);
       } else {
@@ -162,8 +246,8 @@ function App() {
     };
 
     // Use capture to catch scroll events from children (since scroll doesn't bubble)
-    window.addEventListener('scroll', handleScroll, true);
-    return () => window.removeEventListener('scroll', handleScroll, true);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
   }, [currentView]);
 
   // Scroll to top whenever view changes
@@ -189,7 +273,7 @@ function App() {
       ViewMode.HANDOFF,
       ViewMode.ORDERS,
       ViewMode.NOTES,
-      ViewMode.APPEND_ENTRY
+      ViewMode.APPEND_ENTRY,
     ];
 
     if (!patientSpecificViews.includes(currentView)) {
@@ -206,7 +290,7 @@ function App() {
       ViewMode.HANDOFF,
       ViewMode.ORDERS,
       ViewMode.NOTES,
-      ViewMode.APPEND_ENTRY
+      ViewMode.APPEND_ENTRY,
     ];
 
     if (!patientSpecificViews.includes(view)) {
@@ -223,36 +307,49 @@ function App() {
   const handleGenerate = async (isConsultBase: boolean = false) => {
     const requestId = Date.now();
     generationRequestId.current = requestId;
-    
+
     setIsGenerating(true);
     setError(null);
 
     try {
-      const filesToUpload = inputFiles.map(f => f.file);
-      
+      const filesToUpload = inputFiles.map((f) => f.file);
+
       if (activePatient) {
         // Progress Note flow
-        const result = await generateProgressNote(
-          inputText,
-          filesToUpload,
+        const result = await geminiGateway.generateProgressNote({
+          text: inputText,
+          files: filesToUpload,
           model,
           specialization,
-          true,
-          activePatient.entries
-        );
+          useSearch: true,
+          history: activePatient.entries,
+        });
 
         if (generationRequestId.current === requestId) {
-          const newEntryId = createId('entry');
-          const { date: currentSystemDate, time: currentSystemTime } = getLocalDateTimeParts();
-          
-          const finalDate = result.inferredDate ? (normalizeDateInput(result.inferredDate) || currentSystemDate) : currentSystemDate;
-          const finalTime = result.inferredTime ? result.inferredTime : currentSystemTime;
+          const newEntryId = createId("entry");
+          const { date: currentSystemDate, time: currentSystemTime } =
+            getLocalDateTimeParts();
+
+          const finalDate = result.inferredDate
+            ? normalizeDateInput(result.inferredDate) || currentSystemDate
+            : currentSystemDate;
+          const finalTime = result.inferredTime
+            ? result.inferredTime
+            : currentSystemTime;
           const effectiveDate = `${finalDate} ${finalTime}`;
-          
-          const activeEncounter = activePatient.encounters?.find(e => e.status === 'ACTIVE');
+
+          const activeEncounter = activePatient.encounters?.find(
+            (e) => e.status === "ACTIVE",
+          );
           const isConsult = activeEncounter?.type === EncounterType.CONSULT;
-          const isFirstEntryInEncounter = !activePatient.entries?.some(e => e.encounterId === activeEncounter?.id);
-          const finalTitle = isConsult ? "Consult Note" : (isFirstEntryInEncounter ? "Admission Note" : "Progress Note");
+          const isFirstEntryInEncounter = !activePatient.entries?.some(
+            (e) => e.encounterId === activeEncounter?.id,
+          );
+          const finalTitle = isConsult
+            ? "Consult Note"
+            : isFirstEntryInEncounter
+              ? "Admission Note"
+              : "Progress Note";
 
           const newEntry: ChartEntry = {
             id: newEntryId,
@@ -260,88 +357,103 @@ function App() {
             date: effectiveDate,
             title: finalTitle,
             type: "SOAP",
-            entryType: 'structured',
+            entryType: "structured",
             soap: result.soap,
             originalNote: inputText,
             specialization: specialization,
             attachments: [...inputFiles],
             references: result.references,
-            groundingSources: result.groundingSources
+            groundingSources: result.groundingSources,
           };
 
           const newCourseEvent = {
             encounterId: activeEncounter?.id,
             date: finalDate,
             time: finalTime,
-            event: isFirstEntryInEncounter ? finalTitle : result.courseEvent.event,
-            details: result.courseEvent.details
+            event: isFirstEntryInEncounter
+              ? finalTitle
+              : result.courseEvent.event,
+            details: result.courseEvent.details,
           };
 
-          updatePatient(activePatient.id, p => ({
-            ...p,
-            entries: [newEntry, ...p.entries],
-            course: [...(p.course || []), newCourseEvent].sort((a, b) => new Date(`${b.date} ${b.time || '00:00'}`).getTime() - new Date(`${a.date} ${a.time || '00:00'}`).getTime()),
-          }));
+          updatePatient(activePatient.id, (p) =>
+            prependEntryWithCourseEvent(p, newEntry, newCourseEvent),
+          );
 
           setActiveEntryId(newEntryId);
           handleNavigate(ViewMode.CHART);
-          setChatSessionId(prev => prev + 1);
-          
-          sendNotification(isFirstEntryInEncounter ? (isConsult ? "Consult Note Generated" : "Admission Note Generated") : "Progress Note Generated", {
-            body: `A new ${isFirstEntryInEncounter ? (isConsult ? "consult" : "admission") : "progress"} note has been added for ${activePatient.patientInfo.patientName}.`,
-            tag: "chart-generation"
-          });
+          setChatSessionId((prev) => prev + 1);
+
+          sendNotification(
+            isFirstEntryInEncounter
+              ? isConsult
+                ? "Consult Note Generated"
+                : "Admission Note Generated"
+              : "Progress Note Generated",
+            {
+              body: `A new ${isFirstEntryInEncounter ? (isConsult ? "consult" : "admission") : "progress"} note has been added for ${activePatient.patientInfo.patientName}.`,
+              tag: "chart-generation",
+            },
+          );
 
           setInputText("");
           clearInputFiles();
         }
       } else {
         // Admission Note flow
-        const data = await generateMedicalChart(
-          inputText, 
-          filesToUpload, 
-          model, 
-          specialization, 
-          true, 
-          [],
-          null
-        );
-        
+        const data = await geminiGateway.generateChart({
+          text: inputText,
+          files: filesToUpload,
+          model,
+          specialization,
+          useSearch: true,
+          history: [],
+          currentPatientInfo: null,
+        });
+
         if (generationRequestId.current === requestId) {
-          const newEntryId = createId('entry');
-          
+          const newEntryId = createId("entry");
+
           // Helper to ensure yyyy-mm-dd format
           const toYYYYMMDD = (dateStr: string | undefined | null): string => {
-            if (!dateStr || dateStr.toLowerCase() === 'not recorded') return 'Not Recorded';
+            if (!dateStr || dateStr.toLowerCase() === "not recorded")
+              return "Not Recorded";
             return normalizeDateInput(dateStr) || dateStr;
           };
 
           const getTodayISO = () => getTodayDate();
           const getNowTime24 = () => getCurrentTime24();
-          
+
           const rawAdmissionDate = data.patientInfo.admissionDate;
-          const isAdmissionMissing = !rawAdmissionDate || rawAdmissionDate.toLowerCase() === 'not recorded';
-          
+          const isAdmissionMissing =
+            !rawAdmissionDate ||
+            rawAdmissionDate.toLowerCase() === "not recorded";
+
           // Ensure date defaults to today if "Not Recorded" is returned from the analysis
-          const effectiveDate = isAdmissionMissing ? `${getTodayISO()} ${getNowTime24()}` : `${toYYYYMMDD(rawAdmissionDate)} ${getNowTime24()}`;
+          const effectiveDate = isAdmissionMissing
+            ? `${getTodayISO()} ${getNowTime24()}`
+            : `${toYYYYMMDD(rawAdmissionDate)} ${getNowTime24()}`;
 
           // Normalize Patient Info dates for the Face Sheet
           data.patientInfo.dob = toYYYYMMDD(data.patientInfo.dob);
-          
+
           // Normalize course event dates
           if (data.course) {
-            data.course = data.course.map(ev => ({
+            data.course = data.course.map((ev) => ({
               ...ev,
               encounterId: newEntryId,
-              date: toYYYYMMDD(ev.date) === 'Not Recorded' ? getTodayISO() : toYYYYMMDD(ev.date),
-              time: ev.time || getNowTime24()
+              date:
+                toYYYYMMDD(ev.date) === "Not Recorded"
+                  ? getTodayISO()
+                  : toYYYYMMDD(ev.date),
+              time: ev.time || getNowTime24(),
             }));
           }
 
           if (data.orders) {
-            data.orders = data.orders.map(o => ({
+            data.orders = data.orders.map((o) => ({
               ...o,
-              encounterId: newEntryId
+              encounterId: newEntryId,
             }));
           }
 
@@ -350,26 +462,26 @@ function App() {
           const isConsult = isConsultBase;
 
           const newEntry: ChartEntry = {
-              id: newEntryId,
-              encounterId: newEntryId, // Using newEntryId as encounterId for simplicity
-              date: effectiveDate,
-              title: isConsult ? "Consult Note" : "Admission Note",
-              type: "SOAP",
-              entryType: 'structured',
-              soap: data.soap,
-              originalNote: inputText,
-              specialization: specialization,
-              attachments: [...inputFiles],
-              references: data.references,
-              groundingSources: data.groundingSources
+            id: newEntryId,
+            encounterId: newEntryId, // Using newEntryId as encounterId for simplicity
+            date: effectiveDate,
+            title: isConsult ? "Consult Note" : "Admission Note",
+            type: "SOAP",
+            entryType: "structured",
+            soap: data.soap,
+            originalNote: inputText,
+            specialization: specialization,
+            attachments: [...inputFiles],
+            references: data.references,
+            groundingSources: data.groundingSources,
           };
 
           const newCourseEvent = {
             encounterId: newEntryId,
             date: getTodayISO(),
             time: getNowTime24(),
-            event: isConsult ? 'Start Consult' : 'Admission',
-            details: `Patient registered under ${specialization}`
+            event: isConsult ? "Start Consult" : "Admission",
+            details: `Patient registered under ${specialization}`,
           };
 
           const newPatient = {
@@ -382,29 +494,36 @@ function App() {
             }),
             patientInfo: normalizePatientAgeSex({
               ...data.patientInfo,
-              status: isConsult ? PatientStatus.OUTPATIENT : PatientStatus.ADMITTED
+              status: isConsult
+                ? PatientStatus.OUTPATIENT
+                : PatientStatus.ADMITTED,
             }),
           };
           addPatient(newPatient);
           setActivePatientId(newPatient.id);
-          
+
           setActiveEntryId(newEntryId);
           handleNavigate(ViewMode.CHART);
-          setChatSessionId(prev => prev + 1);
-          
+          setChatSessionId((prev) => prev + 1);
+
           sendNotification("Chart Generated", {
-            body: `The ${isConsult ? 'Consult' : 'Admission'} Note for ${newPatient.patientInfo.patientName} is ready.`,
-            tag: "chart-generation"
+            body: `The ${isConsult ? "Consult" : "Admission"} Note for ${newPatient.patientInfo.patientName} is ready.`,
+            tag: "chart-generation",
           });
 
           setInputText("");
           clearInputFiles();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (generationRequestId.current === requestId) {
-        console.error(err);
-        setError(err.message || "An unexpected error occurred while generating the chart. Please try again.");
+        logDiagnostic("error", "Chart generation failed.");
+        setError(
+          getErrorMessageCompat(
+            err,
+            "An unexpected error occurred while generating the chart. Please try again.",
+          ),
+        );
       }
     } finally {
       if (generationRequestId.current === requestId) {
@@ -418,15 +537,33 @@ function App() {
 
     const newEntryId = Date.now().toString();
     const now = new Date();
-    const today = now.toLocaleDateString('en-CA');
-    const time = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const today = now.toLocaleDateString("en-CA");
+    const time = now.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
 
     const isFirstEntry = !activePatient;
-    const activeEnc = activePatient?.encounters?.find(e => e.status === 'ACTIVE');
-    const isConsult = isFirstEntry ? isConsultBase : activeEnc?.type === EncounterType.CONSULT;
-    const isFirstEntryInEncounter = activePatient ? !activePatient.entries?.some(e => e.encounterId === activeEnc?.id) : true;
-    const finalTitle = isConsult ? "Consult Note" : ((isFirstEntry || isFirstEntryInEncounter) ? "Admission Note" : "Progress Note");
-    const finalType = isConsult ? "Consult" : ((isFirstEntry || isFirstEntryInEncounter) ? "Admission" : "Progress");
+    const activeEnc = activePatient?.encounters?.find(
+      (e) => e.status === "ACTIVE",
+    );
+    const isConsult = isFirstEntry
+      ? isConsultBase
+      : activeEnc?.type === EncounterType.CONSULT;
+    const isFirstEntryInEncounter = activePatient
+      ? !activePatient.entries?.some((e) => e.encounterId === activeEnc?.id)
+      : true;
+    const finalTitle = isConsult
+      ? "Consult Note"
+      : isFirstEntry || isFirstEntryInEncounter
+        ? "Admission Note"
+        : "Progress Note";
+    const finalType = isConsult
+      ? "Consult"
+      : isFirstEntry || isFirstEntryInEncounter
+        ? "Admission"
+        : "Progress";
 
     const newEntry: ChartEntry = {
       id: newEntryId,
@@ -434,18 +571,19 @@ function App() {
       date: `${today} ${time}`,
       title: finalTitle,
       type: finalType,
-      entryType: 'raw',
+      entryType: "raw",
       rawText: inputText,
       originalNote: inputText,
       specialization: specialization,
-      attachments: [...inputFiles]
+      attachments: [...inputFiles],
     };
 
     const newEvent = {
       date: today,
       time: time,
       event: finalTitle,
-      details: inputText.substring(0, 200) + (inputText.length > 200 ? "..." : "")
+      details:
+        inputText.substring(0, 200) + (inputText.length > 200 ? "..." : ""),
     };
 
     if (isFirstEntry) {
@@ -456,18 +594,18 @@ function App() {
 
       const newEventWithEncounter = {
         ...newEvent,
-        encounterId
+        encounterId,
       };
 
       const manualPatient = createManualPatient({
-          id: newPatientId,
-          encounterId,
-          now,
-          today,
-          isConsult,
-          entry: newEntry,
-          courseEvent: newEventWithEncounter,
-        });
+        id: newPatientId,
+        encounterId,
+        now,
+        today,
+        isConsult,
+        entry: newEntry,
+        courseEvent: newEventWithEncounter,
+      });
       const newPatient: MedicalChartResponse = {
         ...manualPatient,
         patientInfo: normalizePatientAgeSex(manualPatient.patientInfo),
@@ -475,34 +613,36 @@ function App() {
       addPatient(newPatient);
       setActivePatientId(newPatientId);
     } else {
-      const activeEnc = activePatient?.encounters?.find(e => e.status === 'ACTIVE');
+      const activeEnc = activePatient?.encounters?.find(
+        (e) => e.status === "ACTIVE",
+      );
       const newEventWithEncounter = {
         ...newEvent,
-        encounterId: activeEnc?.id
+        encounterId: activeEnc?.id,
       };
-      
-      updatePatient(activePatientId, p => ({
-        ...p,
-        entries: [newEntry, ...p.entries],
-        course: [...p.course, newEventWithEncounter]
-      }));
+
+      updateActivePatient((p) =>
+        prependEntryWithCourseEvent(p, newEntry, newEventWithEncounter, false),
+      );
     }
 
     setActiveEntryId(newEntryId);
     handleNavigate(ViewMode.CHART);
     setInputText("");
     clearInputFiles();
-    
+
     sendNotification("Manual Note Saved", {
       body: `A manual ${isFirstEntry || isFirstEntryInEncounter ? (isConsult ? "consult" : "admission") : "progress"} note has been saved.`,
-      tag: "manual-note"
+      tag: "manual-note",
     });
   };
 
   const handleReassess = async () => {
     if (!activePatient || !activeEntryId || isReassessing) return;
 
-    const activeEntry = activePatient.entries.find(e => e.id === activeEntryId);
+    const activeEntry = activePatient.entries.find(
+      (e) => e.id === activeEntryId,
+    );
     if (!activeEntry || !activeEntry.soap) return;
 
     setIsReassessing(true);
@@ -511,35 +651,41 @@ function App() {
     try {
       // Get the most recent 2 historical entries
       const recentHistory = activePatient.entries
-        .filter(e => e.id !== activeEntryId)
+        .filter((e) => e.id !== activeEntryId)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 2);
 
       // Always use search grounding
-      const result = await reassessSoapNote(activeEntry.soap, recentHistory, model, specialization, true);
-      
-      updatePatient(activePatientId, p => ({
-        ...p,
-        entries: p.entries.map(e => e.id === activeEntryId ? {
-           ...e,
-           soap: {
-               ...e.soap,
-               assessment: result.assessment,
-               plan: result.plan
-           },
-           references: result.references || e.references,
-           groundingSources: result.groundingSources || e.groundingSources
-        } : e),
-      }));
+      const result = await geminiGateway.reassessNote({
+        soap: activeEntry.soap,
+        history: recentHistory,
+        model,
+        specialization,
+        useSearch: true,
+      });
+
+      updateActivePatient((p) =>
+        applyEntryReassessment(p, activeEntryId, {
+          assessment: result.assessment,
+          plan: result.plan,
+          references: result.references,
+          groundingSources: result.groundingSources,
+        }),
+      );
 
       // Send notification
       sendNotification("Reassessment Complete", {
         body: `The SOAP note reassessment for ${activePatient?.patientInfo.patientName || "the patient"} is finished.`,
-        tag: "reassessment"
+        tag: "reassessment",
       });
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to reassess the patient based on current data.");
+    } catch (err: unknown) {
+      logDiagnostic("error", "SOAP reassessment failed.");
+      setError(
+        getErrorMessageCompat(
+          err,
+          "Failed to reassess the patient based on current data.",
+        ),
+      );
     } finally {
       setIsReassessing(false);
     }
@@ -548,60 +694,66 @@ function App() {
   const handleAssess = async () => {
     if (!activePatient || !activeEntryId || isReassessing) return;
 
-    const activeEntry = activePatient.entries.find(e => e.id === activeEntryId);
-    if (!activeEntry || activeEntry.entryType !== 'raw') return;
+    const activeEntry = activePatient.entries.find(
+      (e) => e.id === activeEntryId,
+    );
+    if (!activeEntry || activeEntry.entryType !== "raw") return;
 
     setIsReassessing(true);
     setError(null);
 
     try {
       const rawText = activeEntry.rawText || activeEntry.originalNote || "";
-      
+
       // Get history up to this entry
-      const entryIndex = activePatient.entries.findIndex(e => e.id === activeEntryId);
+      const entryIndex = activePatient.entries.findIndex(
+        (e) => e.id === activeEntryId,
+      );
       const history = activePatient.entries.slice(entryIndex + 1); // Older entries are after this one in the array (newest first)
 
-      const result = await generateProgressNote(
-        rawText, 
-        activeEntry.attachments?.map(a => a.file) || [], 
-        model, 
-        specialization, 
-        true, 
-        history
-      );
-      
+      const result = await geminiGateway.generateProgressNote({
+        text: rawText,
+        files: activeEntry.attachments?.map((a) => a.file) || [],
+        model,
+        specialization,
+        useSearch: true,
+        history,
+      });
+
       const getTodayISO = () => getTodayDate();
       const getNowTime24 = () => getCurrentTime24();
 
-      updatePatient(activePatientId, p => {
-        const newCourseEvent = {
-          date: activeEntry.date.split(' ')[0] || getTodayISO(),
-          time: activeEntry.date.split(' ')[1] || getNowTime24(),
-          event: result.courseEvent.event,
-          details: result.courseEvent.details,
-          encounterId: activeEntry.encounterId
-        };
+      const newCourseEvent = {
+        date: activeEntry.date.split(" ")[0] || getTodayISO(),
+        time: activeEntry.date.split(" ")[1] || getNowTime24(),
+        event: result.courseEvent.event,
+        details: result.courseEvent.details,
+        encounterId: activeEntry.encounterId,
+      };
 
-        return {
-          ...p,
-          entries: p.entries.map(e => e.id === activeEntryId ? {
-             ...e,
-             entryType: 'structured',
-             soap: result.soap,
-             references: result.references,
-             groundingSources: result.groundingSources
-          } : e),
-          course: [...(p.course || []), newCourseEvent].sort((a, b) => new Date(`${b.date} ${b.time || '00:00'}`).getTime() - new Date(`${a.date} ${a.time || '00:00'}`).getTime()),
-        };
-      });
+      updateActivePatient((p) =>
+        appendAssessedEntry(
+          p,
+          activeEntryId,
+          result.soap,
+          newCourseEvent,
+          result.references,
+          result.groundingSources,
+        ),
+      );
 
       sendNotification("Assessment Complete", {
         body: `The clinical assessment for ${activePatient?.patientInfo.patientName || "the patient"} is finished.`,
-        tag: "assessment"
+        tag: "assessment",
       });
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to generate assessment based on the clinical note.");
+    } catch (err: unknown) {
+      logDiagnostic("error", "Clinical assessment failed.");
+      setError(
+        getErrorMessageCompat(
+          err,
+          "Failed to generate assessment based on the clinical note.",
+        ),
+      );
     } finally {
       setIsReassessing(false);
     }
@@ -628,7 +780,7 @@ function App() {
     generationRequestId.current = 0;
     handleNavigate(ViewMode.DASHBOARD);
     setIsChatOpen(false);
-    setChatSessionId(prev => prev + 1);
+    setChatSessionId((prev) => prev + 1);
   };
 
   const handleLogout = () => {
@@ -643,31 +795,33 @@ function App() {
   };
 
   const handleUpdateEntrySoap = (entryId: string, updatedSoap: SoapNote) => {
-    updatePatient(activePatientId, p => updateEntrySoap(p, entryId, updatedSoap));
+    updateActivePatient((p) => updateEntrySoap(p, entryId, updatedSoap));
   };
 
   const handleUpdateEntry = (entryId: string, updatedEntry: ChartEntry) => {
-    updatePatient(activePatientId, p => updateEntry(p, entryId, updatedEntry));
+    updateActivePatient((p) => updateEntry(p, entryId, updatedEntry));
   };
 
   const handleUpdatePatientInfo = (updatedInfo: GeneralData) => {
-    updatePatient(activePatientId, p => updatePatientInfo(p, normalizePatientAgeSex(updatedInfo)));
+    updateActivePatient((p) =>
+      updatePatientInfo(p, normalizePatientAgeSex(updatedInfo)),
+    );
   };
-  
-  const handleUpdateCourse = (updatedCourse: any[]) => {
-    updatePatient(activePatientId, p => updateCourse(p, updatedCourse));
+
+  const handleUpdateCourse = (updatedCourse: CourseEvent[]) => {
+    updateActivePatient((p) => updateCourse(p, updatedCourse));
   };
 
   const handleUpdateHandoff = (updatedHandoff: HandoffSummary) => {
-    updatePatient(activePatientId, p => updateHandoff(p, updatedHandoff));
+    updateActivePatient((p) => updateHandoff(p, updatedHandoff));
   };
 
   const handleUpdateOrders = (updatedOrders: PatientOrder[]) => {
-    updatePatient(activePatientId, p => updateOrders(p, updatedOrders));
+    updateActivePatient((p) => updateOrders(p, updatedOrders));
   };
 
   const handleUpdateMedications = (updatedMeds: MedicationOrder[]) => {
-    updatePatient(activePatientId, p => updateMedications(p, updatedMeds));
+    updateActivePatient((p) => updateMedications(p, updatedMeds));
   };
 
   const handleRefreshSummary = async () => {
@@ -676,55 +830,64 @@ function App() {
     try {
       const recentEntries = activePatient.entries.slice(0, 3);
       const recentCourse = (activePatient.course || []).slice(0, 5);
-      
-      const updatedSummary = await refreshPatientSummary(
-        activePatient.handoff,
-        activePatient.patientInfo,
+
+      const updatedSummary = await geminiGateway.refreshSummary({
+        currentSummary: activePatient.handoff,
+        patientInfo: activePatient.patientInfo,
         recentEntries,
         recentCourse,
         model,
-        specialization
-      );
-      
+        specialization,
+      });
+
       handleUpdateHandoff(updatedSummary);
       sendNotification("Summary Updated", {
         body: `The patient summary has been refreshed with the latest clinical data.`,
-        tag: "summary-refresh"
+        tag: "summary-refresh",
       });
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to refresh patient summary.");
+    } catch (err: unknown) {
+      logDiagnostic("error", "Patient summary refresh failed.");
+      setError(
+        getErrorMessageCompat(err, "Failed to refresh patient summary."),
+      );
     } finally {
       setIsRefreshingSummary(false);
     }
   };
 
   const handleUpdateNotes = (updatedNotes: PatientNote[]) => {
-    updatePatient(activePatientId, p => updateNotes(p, updatedNotes));
+    updateActivePatient((p) => updateNotes(p, updatedNotes));
   };
 
-  const handleUpdateGlobalOrder = (patientId: string, updatedOrder: PatientOrder) => {
-    updatePatient(patientId, p => updateOrder(p, updatedOrder));
+  const handleUpdateGlobalOrder = (
+    patientId: string,
+    updatedOrder: PatientOrder,
+  ) => {
+    updatePatient(patientId, (p) => updateOrder(p, updatedOrder));
   };
 
-  const handleSaveChatAsNote = (content: string, groundingSources?: any[], title?: string) => {
+  const handleSaveChatAsNote = (
+    content: string,
+    groundingSources?: GroundingSource[],
+    title?: string,
+  ) => {
     if (!activePatientId) return;
-    
+
     const newNote: PatientNote = {
       id: Date.now().toString(),
       title: title || "Assistant Response",
       content: content,
-      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      createdAt: new Date().toISOString().replace("T", " ").substring(0, 16),
+      updatedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
       isAssistant: true,
-      groundingSources: groundingSources
+      groundingSources: groundingSources,
     };
-    
-    updatePatient(activePatientId, p => prependNote(p, newNote));
-    
+
+    updateActivePatient((p) => prependNote(p, newNote));
+
     sendNotification("Note Saved", {
       body: "The assistant response has been saved to patient notes.",
-      tag: "chat-to-note"
+      tag: "chat-to-note",
     });
   };
 
@@ -732,9 +895,11 @@ function App() {
     if (!activePatientId || !activePatient) return;
     const today = getTodayDate();
     const now = getCurrentTime24();
-    
+
     // Find active encounter
-    const activeEncounter = activePatient.encounters?.find(e => e.status === 'ACTIVE');
+    const activeEncounter = activePatient.encounters?.find(
+      (e) => e.status === "ACTIVE",
+    );
 
     const newEvent = {
       id: createId(),
@@ -742,15 +907,18 @@ function App() {
       date: today,
       time: now,
       event: "New Clinical Event",
-      details: "Enter clinical details here..."
+      details: "Enter clinical details here...",
     };
-    
-    updatePatient(activePatientId, p => appendCourseEvent(p, newEvent));
+
+    updateActivePatient((p) => appendCourseEvent(p, newEvent));
   };
 
-  const handleSelectPatient = (id: string, initialView: ViewMode = ViewMode.CHART) => {
+  const handleSelectPatient = (
+    id: string,
+    initialView: ViewMode = ViewMode.CHART,
+  ) => {
     setActivePatientId(id);
-    const patient = patients.find(p => p.id === id);
+    const patient = patients.find((p) => p.id === id);
     if (patient && patient.entries.length > 0) {
       setActiveEntryId(patient.entries[0].id);
     }
@@ -764,42 +932,54 @@ function App() {
     }
   };
 
-  const handleUpdatePatientStatus = (id: string, status: PatientStatus, dischargeDateTime?: string, deceasedInfo?: DeceasedInfo) => {
-    updatePatient(id, p => {
+  const handleUpdatePatientStatus = (
+    id: string,
+    status: PatientStatus,
+    dischargeDateTime?: string,
+    deceasedInfo?: DeceasedInfo,
+  ) => {
+    updatePatient(id, (p) => {
       const now = new Date().toISOString();
       const { date, time } = getLocalDateTimeParts();
       const updated = updatePatientStatus(p, status, {
         now,
-        dischargeDateTime: dischargeDateTime || (status === PatientStatus.DISCHARGED ? `${getTodayDate()} ${getCurrentTime24()}` : undefined),
+        dischargeDateTime:
+          dischargeDateTime ||
+          (status === PatientStatus.DISCHARGED
+            ? `${getTodayDate()} ${getCurrentTime24()}`
+            : undefined),
         deceasedInfo,
         nextEncounterId: createId(),
         admissionDateTime: `${date} ${time}`,
       });
-      return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
+      return {
+        ...updated,
+        patientInfo: normalizePatientAgeSex(updated.patientInfo),
+      };
     });
   };
 
   const handleReactivateEncounter = (id: string, encounterId: string) => {
-    updatePatient(id, p => {
+    updatePatient(id, (p) => {
       const updated = reactivateEncounter(p, encounterId);
-      return { ...updated, patientInfo: normalizePatientAgeSex(updated.patientInfo) };
+      return {
+        ...updated,
+        patientInfo: normalizePatientAgeSex(updated.patientInfo),
+      };
     });
   };
 
   const handleDeleteEntry = (id: string) => {
     if (!activePatient) return;
-    
-    const updatedEntries = activePatient.entries.filter(e => e.id !== id);
-    
+
+    const updatedEntries = activePatient.entries.filter((e) => e.id !== id);
+
     if (updatedEntries.length === 0) {
       handleDeletePatient(activePatient.id);
       return;
     }
 
-    updatePatient(activePatientId, p => ({
-      ...p,
-      entries: updatedEntries
-    }));
+    updateActivePatient((p) => removeEntry(p, id));
 
     if (activeEntryId === id) {
       setActiveEntryId(updatedEntries[0].id);
@@ -807,12 +987,12 @@ function App() {
   };
 
   const handleExportCase = (patient: MedicalChartResponse) => {
-    const fileName = `Clinsight_Case_${patient.patientInfo.patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
-    const jsonString = JSON.stringify(patient, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const fileName = `Clinsight_Case_${patient.patientInfo.patientName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.json`;
+    const jsonString = JSON.stringify(serializeAttachments(patient), null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
+
+    const link = document.createElement("a");
     link.href = url;
     link.download = fileName;
     document.body.appendChild(link);
@@ -821,37 +1001,46 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleImportCase = (data: MedicalChartResponse | MedicalChartResponse[]) => {
-    if (Array.isArray(data)) {
-      if (data.length === 0) return;
-      if (data.length === 1) {
-        const singleCase = data[0];
-        const identifiedCase = singleCase.id ? singleCase : withPatientId(singleCase, createId());
+  const handleImportCase = (
+    data: MedicalChartResponse | MedicalChartResponse[],
+  ) => {
+    const importedData = hydrateAttachments(data);
+    if (Array.isArray(importedData)) {
+      if (importedData.length === 0) return;
+      if (importedData.length === 1) {
+        const singleCase = importedData[0];
+        const identifiedCase = singleCase.id
+          ? singleCase
+          : withPatientId(singleCase, createId());
         addPatient(identifiedCase);
         setActivePatientId(identifiedCase.id);
         if (identifiedCase.entries.length > 0) {
           setActiveEntryId(identifiedCase.entries[0].id);
         }
         handleNavigate(ViewMode.CHART);
-        setChatSessionId(prev => prev + 1);
+        setChatSessionId((prev) => prev + 1);
       } else {
-        const processedCases = data.map(c => c.id ? c : withPatientId(c, createId()));
+        const processedCases = importedData.map((c) =>
+          c.id ? c : withPatientId(c, createId()),
+        );
         addPatients(processedCases);
         handleNavigate(ViewMode.DASHBOARD);
         setToast({
-          message: `Successfully uploaded ${data.length} patient cases`,
-          type: 'success'
+          message: `Successfully uploaded ${importedData.length} patient cases`,
+          type: "success",
         });
       }
     } else {
-      const identifiedCase = data.id ? data : withPatientId(data, createId());
+      const identifiedCase = importedData.id
+        ? importedData
+        : withPatientId(importedData, createId());
       addPatient(identifiedCase);
       setActivePatientId(identifiedCase.id);
       if (identifiedCase.entries.length > 0) {
-          setActiveEntryId(identifiedCase.entries[0].id);
+        setActiveEntryId(identifiedCase.entries[0].id);
       }
       handleNavigate(ViewMode.CHART);
-      setChatSessionId(prev => prev + 1);
+      setChatSessionId((prev) => prev + 1);
     }
   };
 
@@ -860,35 +1049,62 @@ function App() {
   }
 
   if (currentView === ViewMode.LOGIN) {
-    return <LoginPage onLogin={handleLoginSuccess} onGoToAbout={() => handleNavigate(ViewMode.ABOUT)} />;
+    return (
+      <LoginPage
+        onLogin={handleLoginSuccess}
+        onGoToAbout={() => handleNavigate(ViewMode.ABOUT)}
+      />
+    );
   }
 
-  const activeEntry = activePatient?.entries.find(e => e.id === activeEntryId);
+  const activeEntry = activePatient?.entries.find(
+    (e) => e.id === activeEntryId,
+  );
 
   return (
     <div className="min-h-screen flex bg-slate-50 font-sans relative overflow-hidden">
       {isGenerating && <LoadingOverlay onCancel={handleCancelGeneration} />}
-      
-      {error && <Toast message={error} onClose={() => setError(null)} />}
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <Sidebar 
-        currentView={currentView} 
-        onNavigate={handleNavigate} 
+      {error && <Toast message={error} onClose={() => setError(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      <Sidebar
+        currentView={currentView}
+        onNavigate={handleNavigate}
         onLogout={handleLogout}
         showMobileNav={showMobileNav}
       />
 
-      <div id="working-view" className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-        <div className={`md:h-auto md:max-h-none md:opacity-100 md:pointer-events-auto transition-all duration-300 ease-in-out overflow-hidden shrink-0 z-40 bg-white ${
-          showMobileNav 
-            ? 'max-h-[145px] opacity-100' 
-            : 'max-h-0 opacity-0 pointer-events-none'
-        }`}>
-          {activePatient && (currentView === ViewMode.CHART || currentView === ViewMode.COURSE || currentView === ViewMode.HANDOFF || currentView === ViewMode.PROFILE || currentView === ViewMode.APPEND_ENTRY || currentView === ViewMode.NOTES || currentView === ViewMode.ORDERS) ? (
-            <PatientHeader 
+      <div
+        id="working-view"
+        className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative"
+      >
+        <div
+          className={`md:h-auto md:max-h-none md:opacity-100 md:pointer-events-auto transition-all duration-300 ease-in-out overflow-hidden shrink-0 z-40 bg-white ${
+            showMobileNav
+              ? "max-h-[145px] opacity-100"
+              : "max-h-0 opacity-0 pointer-events-none"
+          }`}
+        >
+          {activePatient &&
+          (currentView === ViewMode.CHART ||
+            currentView === ViewMode.COURSE ||
+            currentView === ViewMode.HANDOFF ||
+            currentView === ViewMode.PROFILE ||
+            currentView === ViewMode.APPEND_ENTRY ||
+            currentView === ViewMode.NOTES ||
+            currentView === ViewMode.ORDERS) ? (
+            <PatientHeader
               patientInfo={activePatient.patientInfo}
-              activeEncounter={activePatient.encounters?.find(e => e.status === 'ACTIVE')}
+              activeEncounter={activePatient.encounters?.find(
+                (e) => e.status === "ACTIVE",
+              )}
               currentView={currentView}
               onNavigate={handleNavigate}
               onExport={() => handleExportCase(activePatient)}
@@ -897,24 +1113,30 @@ function App() {
               }}
             />
           ) : (
-            <Header 
-              activePatient={activePatient ? {
-                name: activePatient.patientInfo.patientName,
-                mrn: activePatient.patientInfo.mrn,
-                ageSex: activePatient.patientInfo.ageSex
-              } : null}
+            <Header
+              activePatient={
+                activePatient
+                  ? {
+                      name: activePatient.patientInfo.patientName,
+                      mrn: activePatient.patientInfo.mrn,
+                      ageSex: activePatient.patientInfo.ageSex,
+                    }
+                  : null
+              }
               currentView={currentView}
             />
           )}
         </div>
 
-        <main 
+        <main
           ref={mainContentRef}
-          className={`flex-1 bg-slate-50/50 flex flex-col min-h-0 relative ${currentView === ViewMode.CHART ? 'overflow-hidden' : 'overflow-y-auto'}`}
+          className={`flex-1 bg-slate-50/50 flex flex-col min-h-0 relative ${currentView === ViewMode.CHART ? "overflow-hidden" : "overflow-y-auto"}`}
         >
-          <div className={`flex-1 ${currentView === ViewMode.CHART ? 'h-full' : ''}`}>
+          <div
+            className={`flex-1 ${currentView === ViewMode.CHART ? "h-full" : ""}`}
+          >
             {currentView === ViewMode.DASHBOARD && (
-              <DashboardView 
+              <DashboardView
                 patients={patients}
                 onSelectPatient={handleSelectPatient}
                 onUpdatePatientStatus={handleUpdatePatientStatus}
@@ -927,7 +1149,7 @@ function App() {
             )}
 
             {currentView === ViewMode.PROFILE && activePatient && (
-              <ProfileView 
+              <ProfileView
                 patientInfo={activePatient.patientInfo}
                 onUpdatePatient={handleUpdatePatientInfo}
                 onUpdatePatientStatus={handleUpdatePatientStatus}
@@ -936,7 +1158,8 @@ function App() {
               />
             )}
 
-            {(currentView === ViewMode.INPUT || currentView === ViewMode.APPEND_ENTRY) && (
+            {(currentView === ViewMode.INPUT ||
+              currentView === ViewMode.APPEND_ENTRY) && (
               <InputSection
                 textInput={inputText}
                 setTextInput={setInputText}
@@ -956,12 +1179,22 @@ function App() {
                 activePatient={activePatient}
                 onCancelAppend={() => handleNavigate(ViewMode.CHART)}
                 onSaveRaw={handleSaveRawEntry}
-                isFirstEntryInEncounter={activePatient ? !activePatient.entries?.some(e => e.encounterId === activePatient.encounters?.find(enc => enc.status === 'ACTIVE')?.id) : true}
+                isFirstEntryInEncounter={
+                  activePatient
+                    ? !activePatient.entries?.some(
+                        (e) =>
+                          e.encounterId ===
+                          activePatient.encounters?.find(
+                            (enc) => enc.status === "ACTIVE",
+                          )?.id,
+                      )
+                    : true
+                }
               />
             )}
 
             {currentView === ViewMode.CHART && activePatient && activeEntry && (
-              <SoapView 
+              <SoapView
                 key={activePatient.id}
                 activeEntry={activeEntry}
                 history={activePatient.entries}
@@ -969,13 +1202,21 @@ function App() {
                 onSelectEntry={setActiveEntryId}
                 patientInfo={activePatient.patientInfo}
                 patientStatus={activePatient.patientInfo.status}
-                onUpdatePatientStatus={(status) => handleUpdatePatientStatus(activePatient.id, status)}
-                onReactivateEncounter={(encounterId) => handleReactivateEncounter(activePatient.id, encounterId)}
+                onUpdatePatientStatus={(status) =>
+                  handleUpdatePatientStatus(activePatient.id, status)
+                }
+                onReactivateEncounter={(encounterId) =>
+                  handleReactivateEncounter(activePatient.id, encounterId)
+                }
                 selectedModel={model}
-                groundingSources={activeEntry.groundingSources} 
-                references={activeEntry.references} 
-                onUpdate={(updatedSoap) => handleUpdateEntrySoap(activeEntryId!, updatedSoap)} 
-                onUpdateEntry={(updatedEntry) => handleUpdateEntry(updatedEntry.id, updatedEntry)}
+                groundingSources={activeEntry.groundingSources}
+                references={activeEntry.references}
+                onUpdate={(updatedSoap) =>
+                  handleUpdateEntrySoap(activeEntryId!, updatedSoap)
+                }
+                onUpdateEntry={(updatedEntry) =>
+                  handleUpdateEntry(updatedEntry.id, updatedEntry)
+                }
                 onUpdatePatient={handleUpdatePatientInfo}
                 onExport={() => handleExportCase(activePatient)}
                 onReassess={handleReassess}
@@ -987,8 +1228,13 @@ function App() {
                 medications={activePatient.medications || []}
                 onAddOrder={(newOrder) => {
                   const currentOrders = activePatient.orders || [];
-                  const activeEncounter = activePatient.encounters?.find(e => e.status === 'ACTIVE');
-                  const orderWithEncounter = { ...newOrder, encounterId: activeEncounter?.id };
+                  const activeEncounter = activePatient.encounters?.find(
+                    (e) => e.status === "ACTIVE",
+                  );
+                  const orderWithEncounter = {
+                    ...newOrder,
+                    encounterId: activeEncounter?.id,
+                  };
                   handleUpdateOrders([orderWithEncounter, ...currentOrders]);
                 }}
                 onUpdateMedications={handleUpdateMedications}
@@ -996,17 +1242,19 @@ function App() {
             )}
 
             {currentView === ViewMode.COURSE && activePatient && (
-              <CourseView 
-                events={activePatient.course} 
+              <CourseView
+                events={activePatient.course}
                 encounters={activePatient.encounters}
-                onUpdateEvents={(updatedCourse) => handleUpdateCourse(updatedCourse)}
+                onUpdateEvents={(updatedCourse) =>
+                  handleUpdateCourse(updatedCourse)
+                }
                 onAddEvent={handleAddCourseEvent}
               />
             )}
 
             {currentView === ViewMode.HANDOFF && activePatient && (
-              <SummaryView 
-                data={activePatient.handoff} 
+              <SummaryView
+                data={activePatient.handoff}
                 patientInfo={activePatient.patientInfo}
                 onUpdate={handleUpdateHandoff}
                 onRefresh={handleRefreshSummary}
@@ -1015,7 +1263,7 @@ function App() {
             )}
 
             {currentView === ViewMode.ORDERS && activePatient && (
-              <OrdersView 
+              <OrdersView
                 orders={activePatient.orders || []}
                 medications={activePatient.medications || []}
                 encounters={activePatient.encounters}
@@ -1026,7 +1274,7 @@ function App() {
             )}
 
             {currentView === ViewMode.NOTES && activePatient && (
-              <NotesView 
+              <NotesView
                 notes={activePatient.notes || []}
                 onUpdateNotes={handleUpdateNotes}
                 chartContext={activePatient}
@@ -1034,7 +1282,7 @@ function App() {
             )}
 
             {currentView === ViewMode.SETTINGS && (
-              <SettingsView 
+              <SettingsView
                 defaultSpecialization={defaultSpecialization}
                 setDefaultSpecialization={setDefaultSpecialization}
                 defaultModel={defaultModel}
@@ -1042,15 +1290,30 @@ function App() {
               />
             )}
           </div>
-          
-        <footer className="py-6 border-t border-slate-200 mt-auto bg-white/50 shrink-0">
+
+          <footer className="py-6 border-t border-slate-200 mt-auto bg-white/50 shrink-0">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-center items-center gap-8 text-xs text-slate-400">
-               <p>&copy; {new Date().getFullYear()} Clinsight</p>
-               <div className="flex space-x-6">
-                 <button onClick={() => handleNavigate(ViewMode.ABOUT)} className="hover:text-teal-600 transition-colors font-medium">About</button>
-                 <button onClick={() => setIsPrivacyOpen(true)} className="hover:text-teal-600 transition-colors font-medium">Privacy</button>
-                 <button onClick={() => setIsTermsOpen(true)} className="hover:text-teal-600 transition-colors font-medium">Terms</button>
-               </div>
+              <p>&copy; {new Date().getFullYear()} Clinsight</p>
+              <div className="flex space-x-6">
+                <button
+                  onClick={() => handleNavigate(ViewMode.ABOUT)}
+                  className="hover:text-teal-600 transition-colors font-medium"
+                >
+                  About
+                </button>
+                <button
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="hover:text-teal-600 transition-colors font-medium"
+                >
+                  Privacy
+                </button>
+                <button
+                  onClick={() => setIsTermsOpen(true)}
+                  className="hover:text-teal-600 transition-colors font-medium"
+                >
+                  Terms
+                </button>
+              </div>
             </div>
           </footer>
         </main>
@@ -1059,25 +1322,31 @@ function App() {
       {activePatient && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className={`fixed right-6 h-14 w-14 bg-teal-600 text-white rounded-full shadow-xl hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-300 transition-all transform hover:scale-105 flex items-center justify-center z-40 ${isChatOpen ? 'scale-0 opacity-0 pointer-events-none' : 'scale-100 opacity-100'} ${showMobileNav ? 'bottom-24 md:bottom-6' : 'bottom-6'}`}
+          className={`fixed right-6 h-14 w-14 bg-teal-600 text-white rounded-full shadow-xl hover:bg-teal-700 focus:outline-none focus:ring-4 focus:ring-teal-300 transition-all transform hover:scale-105 flex items-center justify-center z-40 ${isChatOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"} ${showMobileNav ? "bottom-24 md:bottom-6" : "bottom-6"}`}
           title="Open Clinical Assistant"
         >
           <Icons.Chat className="w-7 h-7" />
         </button>
       )}
 
-      <ChatPanel 
+      <ChatPanel
         key={chatSessionId}
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-        chartData={activePatient} 
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        chartData={activePatient}
         onSaveAsNote={handleSaveChatAsNote}
         model={model}
         onModelChange={setModel}
       />
 
-      <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
-      <TermsOfServiceModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+      <PrivacyPolicyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+      />
+      <TermsOfServiceModal
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+      />
     </div>
   );
 }

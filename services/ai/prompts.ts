@@ -1,8 +1,15 @@
-import { ChartHistoryEntry, SoapNote } from '../../types';
-import { formatChartHistory, arrayToMarkdownBullets, keyValueToString } from '../../utils';
-import { SCHEMA_DESCRIPTIONS } from './schemaDescriptions';
+import {
+  ChartHistoryEntry,
+  MedicalChartResponse,
+  PlanItem,
+  SoapNote,
+} from "../../types";
+import { formatChartHistory, keyValueToString } from "../../utils/clinicalText";
+import { arrayToMarkdownBullets } from "../../utils/markdown";
+import { SCHEMA_DESCRIPTIONS } from "./schemaDescriptions";
 
-export const GROUNDING_INSTRUCTION = "When using Search Grounding, you MUST reference ONLY the latest, most relevant, and most reputable clinical practice guidelines (e.g., from major societies like ACC, AHA, GOLD, KDIGO, NICE, ASCO, IDSA), landmark clinical trials, and authoritative medical textbooks (e.g., Harrison's, Nelson's, Sabiston's). DO NOT reference unreliable sources, blogs, patient-facing websites (e.g., WebMD, Healthline), or unverified AI-generated content. Please answer with high accuracy and include in-text citations like [1] where appropriate to support your claims. FOR EVERY SOURCE USED, provide a full bibliographic reference in AMA format in the 'references' array.";
+export const GROUNDING_INSTRUCTION =
+  "When using Search Grounding, you MUST reference ONLY the latest, most relevant, and most reputable clinical practice guidelines (e.g., from major societies like ACC, AHA, GOLD, KDIGO, NICE, ASCO, IDSA), landmark clinical trials, and authoritative medical textbooks (e.g., Harrison's, Nelson's, Sabiston's). DO NOT reference unreliable sources, blogs, patient-facing websites (e.g., WebMD, Healthline), or unverified AI-generated content. Please answer with high accuracy and include in-text citations like [1] where appropriate to support your claims. FOR EVERY SOURCE USED, provide a full bibliographic reference in AMA format in the 'references' array.";
 
 export const REFRESH_SUMMARY_SYSTEM_INSTRUCTION = `You are an expert attending physician updating a patient's clinical summary based on recent developments.
 You will be provided with:
@@ -18,9 +25,8 @@ Follow these rules:
 4. **Clinical Pearl:** Optionally provide a brief, high-yield educational point relevant to the case.
 Output strictly in the requested JSON format.`;
 
-
-
-export const TRANSCRIBE_PROMPT = "Please transcribe the following audio recording of a doctor-patient interaction verbatim. The conversation may be in English, Filipino (Tagalog), or a mix (Taglish). Do not summarize, just provide the exact transcription.";
+export const TRANSCRIBE_PROMPT =
+  "Please transcribe the following audio recording of a doctor-patient interaction verbatim. The conversation may be in English, Filipino (Tagalog), or a mix (Taglish). Do not summarize, just provide the exact transcription.";
 
 export const CLINICAL_PHOTO_PROMPT = (currentPhysicalExam: string) => `
     Analyze the provided clinical photos of a patient.
@@ -38,7 +44,10 @@ export const CLINICAL_PHOTO_PROMPT = (currentPhysicalExam: string) => `
     - ONLY return the revised/updated physical exam content.
   `;
 
-export const LAB_PHOTO_PROMPT = (currentLabs: string, currentInterpretation: string) => `
+export const LAB_PHOTO_PROMPT = (
+  currentLabs: string,
+  currentInterpretation: string,
+) => `
     Analyze the provided laboratory result photos.
     
     TASK: Extract Laboratory Data and Provide Interpretation
@@ -57,7 +66,10 @@ export const LAB_PHOTO_PROMPT = (currentLabs: string, currentInterpretation: str
     Do NOT include conversational filler.
   `;
 
-export const IMAGING_PHOTO_PROMPT = (currentImaging: string, currentCorrelation: string) => `
+export const IMAGING_PHOTO_PROMPT = (
+  currentImaging: string,
+  currentCorrelation: string,
+) => `
     Analyze the provided imaging/diagnostic test photos (e.g., X-ray, CT, MRI, ECG, Ultrasound).
     
     TASK: Extract Imaging Results and Provide Clinical Correlation
@@ -102,7 +114,12 @@ export const OBJECTIVE_SUGGESTIONS_PROMPT = (contextData: string) => `
     - Keep it concise.
   `;
 
-export const INTEGRATE_DATA_PROMPT = (sectionTitle: string, currentContent: string, suggestions: string[], userInput: string) => `
+export const INTEGRATE_DATA_PROMPT = (
+  sectionTitle: string,
+  currentContent: string,
+  suggestions: string[],
+  userInput: string,
+) => `
     You are an expert medical scribe. Your task is to update a specific subsection of a SOAP note by integrating new pieces of information provided by the clinician.
 
     SUBSECTION: ${sectionTitle}
@@ -110,7 +127,7 @@ export const INTEGRATE_DATA_PROMPT = (sectionTitle: string, currentContent: stri
     "${currentContent}"
 
     CLINICAL SUGGESTIONS BEING ADDRESSED:
-    ${suggestions.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+    ${suggestions.map((s, i) => `${i + 1}. ${s}`).join("\n")}
 
     USER RESPONSE/INPUT:
     "${userInput}"
@@ -141,9 +158,11 @@ export const MEDICAL_LOOKUP_PROMPT = `
     ${GROUNDING_INSTRUCTION}
 `;
 
-export const HOME_INSTRUCTIONS_PROMPT = (soapData: any) => `Generate discharge instructions based on: ${JSON.stringify(soapData)}`;
+export const HOME_INSTRUCTIONS_PROMPT = (soapData: SoapNote) =>
+  `Generate discharge instructions based on: ${JSON.stringify(soapData)}`;
 
-export const PRESCRIPTION_PARSE_PROMPT = (plan: any) => `Extract pharmaceutical prescriptions from: ${JSON.stringify(plan)}`;
+export const PRESCRIPTION_PARSE_PROMPT = (plan: PlanItem[]) =>
+  `Extract pharmaceutical prescriptions from: ${JSON.stringify(plan)}`;
 
 export const INPUT_SUGGESTIONS_PROMPT = `
 You are an expert Senior Attending Physician. Review the clinical notes draft provided by the user below.
@@ -177,31 +196,36 @@ export const PLAN_RULES = `
      - **Action items MUST be placed in their specific categories (Diagnostics, Therapeutics, Other) instead of a generic action list whenever possible.**
 `;
 
-export const REASSESS_SOAP_PROMPT = (currentSoap: SoapNote, history: ChartHistoryEntry[], specialization: string, useGoogleSearch: boolean) => {
+export const REASSESS_SOAP_PROMPT = (
+  currentSoap: SoapNote,
+  history: ChartHistoryEntry[],
+  specialization: string,
+  useGoogleSearch: boolean,
+) => {
   const subjectiveText = `SUBJECTIVE: 
-    Chief Complaint: ${currentSoap.subjective.chiefComplaint || 'N/A'}, 
+    Chief Complaint: ${currentSoap.subjective.chiefComplaint || "N/A"},\x20
     HPI: ${currentSoap.subjective.hpi}, 
     ROS: ${keyValueToString(currentSoap.subjective.ros)}, 
     PMH: ${currentSoap.subjective.pmh}, 
     Meds/Allergies: ${currentSoap.subjective.meds}, 
     Social: ${currentSoap.subjective.social}, 
-    Anamnesis: ${currentSoap.subjective.anamnesis || 'N/A'},
+    Anamnesis: ${currentSoap.subjective.anamnesis || "N/A"},
     Family: ${currentSoap.subjective.family},
-    Sexual History: ${currentSoap.subjective.sexualHistory || 'N/A'},
-    Birth/Maternal: ${currentSoap.subjective.birthMaternal || 'N/A'},
-    Immunizations: ${currentSoap.subjective.immunizations || 'N/A'},
-    Nutrition: ${currentSoap.subjective.nutrition || 'N/A'},
-    Developmental: ${currentSoap.subjective.developmental || 'N/A'},
-    HEEADSSSS: ${keyValueToString(currentSoap.subjective.headsss) || 'N/A'}`;
-    
+    Sexual History: ${currentSoap.subjective.sexualHistory || "N/A"},
+    Birth/Maternal: ${currentSoap.subjective.birthMaternal || "N/A"},
+    Immunizations: ${currentSoap.subjective.immunizations || "N/A"},
+    Nutrition: ${currentSoap.subjective.nutrition || "N/A"},
+    Developmental: ${currentSoap.subjective.developmental || "N/A"},
+    HEEADSSSS: ${keyValueToString(currentSoap.subjective.headsss) || "N/A"}`;
+
   const objectiveText = `OBJECTIVE: 
     Vitals: ${currentSoap.objective.vitals}, 
-    Anthropometrics: ${currentSoap.objective.anthropometrics || 'N/A'},
+    Anthropometrics: ${currentSoap.objective.anthropometrics || "N/A"},
     Physical Exam: ${keyValueToString(currentSoap.objective.physicalExam)}, 
     Labs: ${currentSoap.objective.labs}, 
-    Lab Interpretation: ${arrayToMarkdownBullets(currentSoap.objective.labInterpretation) || 'N/A'},
+    Lab Interpretation: ${arrayToMarkdownBullets(currentSoap.objective.labInterpretation) || "N/A"},
     Imaging: ${currentSoap.objective.imaging},
-    Imaging Correlation: ${arrayToMarkdownBullets(currentSoap.objective.imagingCorrelation) || 'N/A'}`;
+    Imaging Correlation: ${arrayToMarkdownBullets(currentSoap.objective.imagingCorrelation) || "N/A"}`;
 
   let historyText = "";
   if (history && history.length > 0) {
@@ -232,15 +256,22 @@ ${PLAN_RULES}
   return prompt;
 };
 
-
-export const CHAT_SYSTEM_INSTRUCTION = (chartContext: any, useGoogleSearch: boolean) => {
+export const CHAT_SYSTEM_INSTRUCTION = (
+  chartContext: MedicalChartResponse | null,
+  useGoogleSearch: boolean,
+) => {
   let context = "You are a professional medical knowledge utility. ";
-  context += "You are assisting a physician. Answer questions in a detailed, accurate, and comprehensive manner based on in-depth medical knowledge and search results. ";
-  context += "Always use exact values/numbers and dates/times when possible. Avoid repeating the question/prompt, conversational filler, and too much verbosity. Do not mention or give disclaimers about your credibility and do not use emdashes. Focus on evidence-based, data-driven, and search-grounded facts. ";
-  context += "When helping with diagnosis, always mention and analyze any official diagnostic criteria, and compute official diagnostic and prognostic scoring systems. ";
-  context += "When mentioning drug regimens and diagnostic tests, mention exact values and cutoffs.";
-  context += "\n\nCRITICAL: At the absolute beginning of your response, you MUST generate and include a short, clinical-record-appropriate title of 2 to 5 words for this interaction (e.g., 'Hypertension Counseling', 'Lab Results Review', 'Pediatric Feeding Guide', 'Insulin Dose Adjustment'). Wrap this title inside <note_title>...</note_title> tags. Do not use quotes, asterisks, punctuation, or emdashes inside these tags. Example:\n<note_title>Hypertension Counseling</note_title>";
-  
+  context +=
+    "You are assisting a physician. Answer questions in a detailed, accurate, and comprehensive manner based on in-depth medical knowledge and search results. ";
+  context +=
+    "Always use exact values/numbers and dates/times when possible. Avoid repeating the question/prompt, conversational filler, and too much verbosity. Do not mention or give disclaimers about your credibility and do not use emdashes. Focus on evidence-based, data-driven, and search-grounded facts. ";
+  context +=
+    "When helping with diagnosis, always mention and analyze any official diagnostic criteria, and compute official diagnostic and prognostic scoring systems. ";
+  context +=
+    "When mentioning drug regimens and diagnostic tests, mention exact values and cutoffs.";
+  context +=
+    "\n\nCRITICAL: At the absolute beginning of your response, you MUST generate and include a short, clinical-record-appropriate title of 2 to 5 words for this interaction (e.g., 'Hypertension Counseling', 'Lab Results Review', 'Pediatric Feeding Guide', 'Insulin Dose Adjustment'). Wrap this title inside <note_title>...</note_title> tags. Do not use quotes, asterisks, punctuation, or emdashes inside these tags. Example:\n<note_title>Hypertension Counseling</note_title>";
+
   if (chartContext) {
     context += `\n\nIMPORTANT: You have access to the following patient chart data. Use this to answer specific questions about the case:\n${JSON.stringify(chartContext)}`;
   }
@@ -248,53 +279,67 @@ export const CHAT_SYSTEM_INSTRUCTION = (chartContext: any, useGoogleSearch: bool
   if (useGoogleSearch) {
     context += `\n\n${GROUNDING_INSTRUCTION}`;
   }
-  
+
   return context;
 };
 
 export const NOTE_THREAD_SYSTEM_INSTRUCTION = (
-  chartContext: any,
+  chartContext: MedicalChartResponse | null,
   originalNoteContent: string,
   originalNoteTitle: string,
-  highlightedContext?: string
+  highlightedContext?: string,
 ) => {
   let context = "You are a professional medical knowledge utility. ";
-  context += "You are helping a physician dive deeper into a patient note thread, also considered a clinical topic notebook page.\n";
-  context += `The notebook topic is: "${originalNoteTitle || 'Untitled'}"\n`;
+  context +=
+    "You are helping a physician dive deeper into a patient note thread, also considered a clinical topic notebook page.\n";
+  context += `The notebook topic is: "${originalNoteTitle || "Untitled"}"\n`;
   context += `The primary content of this clinical note/topic is:\n"""\n${originalNoteContent}\n"""\n\n`;
-  
+
   if (highlightedContext) {
     context += `The clinician has highlighted the following exact excerpt in the note to ask about specifically:\n"""\n${highlightedContext}\n"""\n`;
-    context += "Please structure your clinical response and insights to directly address and contextualize this highlighted text.\n\n";
+    context +=
+      "Please structure your clinical response and insights to directly address and contextualize this highlighted text.\n\n";
   }
-  
+
   context += "Guidelines:\n";
-  context += "1. Answer questions in a detailed, clear, highly accurate, and comprehensive medical manner. Always use exact values/numbers and dates/times when possible.\n";
-  context += "2. Ground your clinical suggestions and rationale heavily on both the note contents above and any medical records provided.\n";
-  context += "3. Avoid repeating the prompt or question, conversational filler, or overly verbose language. Do not use emdashes.\n";
-  context += "4. Do not mention or include general disclaimers about your credibility or assistant nature, nor state your lack of hands-on physical access.\n";
+  context +=
+    "1. Answer questions in a detailed, clear, highly accurate, and comprehensive medical manner. Always use exact values/numbers and dates/times when possible.\n";
+  context +=
+    "2. Ground your clinical suggestions and rationale heavily on both the note contents above and any medical records provided.\n";
+  context +=
+    "3. Avoid repeating the prompt or question, conversational filler, or overly verbose language. Do not use emdashes.\n";
+  context +=
+    "4. Do not mention or include general disclaimers about your credibility or assistant nature, nor state your lack of hands-on physical access.\n";
   context += "5. Focus on evidence-based, data-driven medicine.\n";
-  context += "6. When helping with diagnosis, always mention and analyze any official diagnostic criteria, and compute official diagnostic and prognostic scoring systems.\n";
-  context += "7. When mentioning drug regimens and diagnostic tests, mention exact values and cutoffs.";
-  
+  context +=
+    "6. When helping with diagnosis, always mention and analyze any official diagnostic criteria, and compute official diagnostic and prognostic scoring systems.\n";
+  context +=
+    "7. When mentioning drug regimens and diagnostic tests, mention exact values and cutoffs.";
+
   if (chartContext) {
     context += `\n\nAccess to full longitudinal Patient Chart is provided below for comprehensive clinical correlation:\n${JSON.stringify(chartContext)}`;
   }
-  
+
   context += `\n\n${GROUNDING_INSTRUCTION}`;
-  
+
   return context;
 };
 
-
-
-
-export const GET_CHART_SYSTEM_INSTRUCTION = (specialization: string = 'General Practice', useGoogleSearch: boolean = false) => {
+export const GET_CHART_SYSTEM_INSTRUCTION = (
+  specialization: string = "General Practice",
+  useGoogleSearch: boolean = false,
+) => {
   let instruction = SYSTEM_INSTRUCTION;
-  if (specialization === 'General Practice') {
-    instruction = instruction.replace(" specializing in the user's selected field", "");
+  if (specialization === "General Practice") {
+    instruction = instruction.replace(
+      " specializing in the user's selected field",
+      "",
+    );
   } else {
-    instruction = instruction.replace("the user's selected field", specialization);
+    instruction = instruction.replace(
+      "the user's selected field",
+      specialization,
+    );
   }
 
   if (useGoogleSearch) {
@@ -304,7 +349,10 @@ export const GET_CHART_SYSTEM_INSTRUCTION = (specialization: string = 'General P
   return instruction;
 };
 
-export const PROGRESS_NOTE_SYSTEM_INSTRUCTION = (specialization: string = 'General Practice', useGoogleSearch: boolean = false) => {
+export const PROGRESS_NOTE_SYSTEM_INSTRUCTION = (
+  specialization: string = "General Practice",
+  useGoogleSearch: boolean = false,
+) => {
   let instruction = `You are an expert Senior Attending Physician specializing in ${specialization}.
 Your task is to analyze new patient data (text notes, transcripts, images) and generate a professional, hospital-grade SOAP Progress Note.
 
@@ -336,7 +384,6 @@ Adhere to the following principles:
 
   return instruction;
 };
-
 
 export const SYSTEM_INSTRUCTION = `
 You are an expert Senior Attending Physician specializing in the user's selected field. 

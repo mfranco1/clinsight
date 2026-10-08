@@ -1,35 +1,37 @@
-import { useState, useCallback, useEffect } from 'react';
-import { FileUpload, PhotoCategory } from '../types';
-import { createFileUpload, revokeUrl } from '../services/fileService';
+import { useState, useCallback, useEffect, useRef } from "react";
+import { FileUpload, PhotoCategory } from "../types";
+import { createFileUploads, revokeUrl } from "../services/fileService";
 
 /**
  * Custom hook to manage file uploads and their lifecycle
  */
 export const useFileUpload = (initialFiles: FileUpload[] = []) => {
   const [files, setFiles] = useState<FileUpload[]>(initialFiles);
+  const filesRef = useRef(files);
+  filesRef.current = files;
 
-  // Cleanup preview URLs on unmount
+  // Cleanup only the URLs still owned by this hook when its owner unmounts.
   useEffect(() => {
     return () => {
-      files.forEach(file => {
+      filesRef.current.forEach((file) => {
         if (file.previewUrl) {
           revokeUrl(file.previewUrl);
         }
       });
     };
-  }, [files]);
-
-  const addFiles = useCallback(async (newFiles: FileList | File[], category?: PhotoCategory) => {
-    const filesArray = Array.from(newFiles);
-    const processedFiles = await Promise.all(
-      filesArray.map(file => createFileUpload(file, category))
-    );
-    setFiles(prev => [...prev, ...processedFiles]);
-    return processedFiles;
   }, []);
 
+  const addFiles = useCallback(
+    async (newFiles: FileList | File[], category?: PhotoCategory) => {
+      const processedFiles = await createFileUploads(newFiles, category);
+      setFiles((prev) => [...prev, ...processedFiles]);
+      return processedFiles;
+    },
+    [],
+  );
+
   const removeFile = useCallback((index: number) => {
-    setFiles(prev => {
+    setFiles((prev) => {
       const newFiles = [...prev];
       const removed = newFiles.splice(index, 1)[0];
       if (removed.previewUrl) {
@@ -40,19 +42,19 @@ export const useFileUpload = (initialFiles: FileUpload[] = []) => {
   }, []);
 
   const clear = useCallback(() => {
-    files.forEach(file => {
+    filesRef.current.forEach((file) => {
       if (file.previewUrl) {
         revokeUrl(file.previewUrl);
       }
     });
     setFiles([]);
-  }, [files]);
+  }, []);
 
   return {
     files,
     setFiles,
     addFiles,
     removeFile,
-    clear
+    clear,
   };
 };

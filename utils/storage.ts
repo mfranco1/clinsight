@@ -24,7 +24,7 @@ const createSafeStorage = () => {
         console.warn("Storage item delete error:", e);
         delete mem[key];
       }
-    }
+    },
   };
 };
 

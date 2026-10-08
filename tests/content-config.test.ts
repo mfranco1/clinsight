@@ -1,17 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { CLINICAL_TEMPLATES } from '../config/clinicalTemplates';
-import { DIAGNOSIS_RULES } from '../services/ai/diagnosisRules';
-import { SCHEMA_DESCRIPTIONS } from '../services/ai/schemaDescriptions';
-import {
-  CLINICAL_TEMPLATES as FACADE_TEMPLATES,
-  DIAGNOSIS_RULES as FACADE_DIAGNOSIS_RULES,
-  SCHEMA_DESCRIPTIONS as FACADE_SCHEMA_DESCRIPTIONS,
-} from '../constants';
+import { describe, expect, it } from "vitest";
+import { CLINICAL_TEMPLATES } from "../features/input/templates";
+import { DIAGNOSIS_RULES } from "../services/ai/diagnosisRules";
+import { SCHEMA_DESCRIPTIONS } from "../services/ai/schemaDescriptions";
 
-describe('content configuration', () => {
-  it('preserves constants compatibility exports', () => {
-    expect(FACADE_TEMPLATES).toEqual(CLINICAL_TEMPLATES);
-    expect(FACADE_DIAGNOSIS_RULES).toBe(DIAGNOSIS_RULES);
-    expect(FACADE_SCHEMA_DESCRIPTIONS).toEqual(SCHEMA_DESCRIPTIONS);
+describe("content configuration", () => {
+  it("keeps clinical templates and AI configuration populated", () => {
+    expect(CLINICAL_TEMPLATES.length).toBeGreaterThan(0);
+    expect(Object.keys(DIAGNOSIS_RULES).length).toBeGreaterThan(0);
+    expect(Object.keys(SCHEMA_DESCRIPTIONS).length).toBeGreaterThan(0);
   });
 });

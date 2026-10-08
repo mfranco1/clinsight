@@ -1,17 +1,16 @@
-
 export enum ViewMode {
-  DASHBOARD = 'DASHBOARD',
-  INPUT = 'INPUT',
-  APPEND_ENTRY = 'APPEND_ENTRY',
-  PROFILE = 'PROFILE',
-  CHART = 'CHART',
-  COURSE = 'COURSE',
-  HANDOFF = 'HANDOFF',
-  ORDERS = 'ORDERS',
-  NOTES = 'NOTES',
-  SETTINGS = 'SETTINGS',
-  ABOUT = 'ABOUT',
-  LOGIN = 'LOGIN',
+  DASHBOARD = "DASHBOARD",
+  INPUT = "INPUT",
+  APPEND_ENTRY = "APPEND_ENTRY",
+  PROFILE = "PROFILE",
+  CHART = "CHART",
+  COURSE = "COURSE",
+  HANDOFF = "HANDOFF",
+  ORDERS = "ORDERS",
+  NOTES = "NOTES",
+  SETTINGS = "SETTINGS",
+  ABOUT = "ABOUT",
+  LOGIN = "LOGIN",
 }
 
 /** Branded aliases make cross-module identifiers self-documenting without changing runtime values. */
@@ -20,23 +19,23 @@ export type EncounterId = string;
 export type OrderId = string;
 
 export enum PatientStatus {
-  ADMITTED = 'ADMITTED',
-  OUTPATIENT = 'OUTPATIENT',
-  DISCHARGED = 'DISCHARGED',
-  DECEASED = 'DECEASED',
+  ADMITTED = "ADMITTED",
+  OUTPATIENT = "OUTPATIENT",
+  DISCHARGED = "DISCHARGED",
+  DECEASED = "DECEASED",
 }
 
 export enum EncounterType {
-  ADMISSION = 'ADMISSION',
-  CONSULT = 'CONSULT'
+  ADMISSION = "ADMISSION",
+  CONSULT = "CONSULT",
 }
 
 export interface Encounter {
   id: string;
   type: EncounterType;
-  status: 'ACTIVE' | 'COMPLETED';
+  status: "ACTIVE" | "COMPLETED";
   startDate: string; // ISO string Date/Time
-  endDate?: string;  // ISO string Date/Time
+  endDate?: string; // ISO string Date/Time
 }
 
 export interface CauseOfDeath {
@@ -104,7 +103,7 @@ export interface GroundingSource {
 
 export interface SoapNote {
   subjective: {
-    chiefComplaint?: string; 
+    chiefComplaint?: string;
     hpi: string;
     ros: Record<string, string> | string; // We can keep both or allow string/Record during transitions, but let's make it Record<string, string> and handle string in a robust utility
     pmh: string;
@@ -134,13 +133,15 @@ export interface SoapNote {
     summary: string;
     rationale: string[];
     icdCodes?: string[];
-    differentialDiagnosis?: DifferentialDiagnosisItem[]; 
+    differentialDiagnosis?: DifferentialDiagnosisItem[];
   };
   plan: PlanItem[];
   broaderManagement?: BroaderManagement;
 }
 
-export type EntryType = 'structured' | 'raw';
+export type ClinicalSectionTitle = "Subjective" | "Objective";
+
+export type EntryType = "structured" | "raw";
 
 export interface ChartEntry {
   id: string;
@@ -159,8 +160,8 @@ export interface ChartEntry {
 }
 
 /** Minimal shape accepted by chart-history rendering, including legacy/raw records. */
-export type ChartHistoryEntry = Pick<ChartEntry, 'date' | 'title'> &
-  Partial<Pick<ChartEntry, 'entryType' | 'soap' | 'rawText'>>;
+export type ChartHistoryEntry = Pick<ChartEntry, "date" | "title"> &
+  Partial<Pick<ChartEntry, "entryType" | "soap" | "rawText">>;
 
 export interface CourseEvent {
   id?: string; // Adding id for easier deletion/updates if needed
@@ -203,10 +204,10 @@ export interface PatientNote {
 }
 
 export enum MedicationStatus {
-  ACTIVE = 'ACTIVE',
-  HOLD = 'HOLD',
-  DISCONTINUED = 'DISCONTINUED',
-  COMPLETED = 'COMPLETED',
+  ACTIVE = "ACTIVE",
+  HOLD = "HOLD",
+  DISCONTINUED = "DISCONTINUED",
+  COMPLETED = "COMPLETED",
 }
 
 export interface MedicationOrder {
@@ -228,7 +229,7 @@ export interface MedicalChartResponse {
   id: string; // Unique identifier for the patient chart
   patientInfo: GeneralData; // Persistent Face Sheet data
   encounters?: Encounter[];
-  entries: ChartEntry[];    // Longitudinal history
+  entries: ChartEntry[]; // Longitudinal history
   course: CourseEvent[];
   handoff: HandoffSummary;
   orders?: PatientOrder[];
@@ -238,7 +239,7 @@ export interface MedicalChartResponse {
   references?: string[];
 }
 
-export type PhotoCategory = 'Physical Exam' | 'Laboratory' | 'Imaging';
+export type PhotoCategory = "Physical Exam" | "Laboratory" | "Imaging";
 
 export interface FileUpload {
   file: File;
@@ -249,7 +250,7 @@ export interface FileUpload {
 }
 
 export interface ChatMessage {
-  role: 'user' | 'model';
+  role: "user" | "model";
   text: string;
   isError?: boolean;
   groundingSources?: GroundingSource[];
@@ -278,17 +279,18 @@ export interface SuggestionsData {
 }
 
 export enum OrderStatus {
-  PENDING = 'PENDING',
-  ONGOING = 'ONGOING',
-  DONE = 'DONE',
-  DEFERRED = 'DEFERRED',
-  FAILED = 'FAILED',
-  WAITING = 'WAITING',
-  PAUSED = 'PAUSED'
+  PENDING = "PENDING",
+  ONGOING = "ONGOING",
+  DONE = "DONE",
+  DEFERRED = "DEFERRED",
+  FAILED = "FAILED",
+  WAITING = "WAITING",
+  PAUSED = "PAUSED",
 }
 
-export type OrderCategory = 'Lab' | 'Imaging' | 'Medication' | 'Procedure' | 'Blood' | 'Papers' | 'Other';
-export type OrderStatusFilter = OrderStatus | 'ALL';
+export type OrderCategory =
+  "Lab" | "Imaging" | "Medication" | "Procedure" | "Blood" | "Papers" | "Other";
+export type OrderStatusFilter = OrderStatus | "ALL";
 
 export interface PatientOrder {
   id: string;

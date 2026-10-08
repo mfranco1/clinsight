@@ -3,13 +3,18 @@ import { FileUpload, PhotoCategory } from "../types";
 /**
  * Utility to convert a File object to a FileUpload object
  */
-export const createFileUpload = async (file: File, category?: PhotoCategory): Promise<FileUpload> => {
+export const createFileUpload = async (
+  file: File,
+  category?: PhotoCategory,
+): Promise<FileUpload> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
-      
+      const base64 = (reader.result as string).split(",")[1];
+      const previewUrl = file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : undefined;
+
       resolve({
         file,
         previewUrl,
@@ -23,13 +28,19 @@ export const createFileUpload = async (file: File, category?: PhotoCategory): Pr
   });
 };
 
+export const createFileUploads = (
+  files: FileList | File[],
+  category?: PhotoCategory,
+): Promise<FileUpload[]> =>
+  Promise.all(Array.from(files, (file) => createFileUpload(file, category)));
+
 /**
  * Utility to open an attachment in a new tab
  */
 export const openAttachment = (attachment: FileUpload) => {
   // If we have a fresh previewUrl (Blob URL), use it
   if (attachment.file && attachment.previewUrl) {
-    window.open(attachment.previewUrl, '_blank');
+    window.open(attachment.previewUrl, "_blank");
     return;
   }
 
@@ -44,9 +55,9 @@ export const openAttachment = (attachment: FileUpload) => {
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: attachment.mimeType });
       const blobUrl = URL.createObjectURL(blob);
-      
-      const newWindow = window.open(blobUrl, '_blank');
-      
+
+      const newWindow = window.open(blobUrl, "_blank");
+
       // Cleanup the temporary Blob URL after the window is opened
       if (newWindow) {
         // We can't easily know when the tab is closed, but we can revoke after a delay
@@ -55,7 +66,10 @@ export const openAttachment = (attachment: FileUpload) => {
     } catch (e) {
       console.error("Error opening base64 attachment:", e);
       // Last resort: data URL
-      window.open(`data:${attachment.mimeType};base64,${attachment.base64}`, '_blank');
+      window.open(
+        `data:${attachment.mimeType};base64,${attachment.base64}`,
+        "_blank",
+      );
     }
   }
 };
@@ -64,7 +78,7 @@ export const openAttachment = (attachment: FileUpload) => {
  * Utility to revoke a URL
  */
 export const revokeUrl = (url?: string) => {
-  if (url && url.startsWith('blob:')) {
+  if (url && url.startsWith("blob:")) {
     URL.revokeObjectURL(url);
   }
 };

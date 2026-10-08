@@ -1,14 +1,14 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React from "react";
+import { motion } from "motion/react";
 
 interface EmptyStateProps {
-  icon: React.ComponentType<{ className?: string }> | any;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   action?: {
     onClick: () => void;
     label: string;
-    icon?: React.ComponentType<{ className?: string }> | any;
+    icon?: React.ComponentType<{ className?: string }>;
   };
   className?: string;
 }
@@ -21,7 +21,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   className = "",
 }) => {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
