@@ -9,10 +9,7 @@ import SectionCard from "../../../components/ui/SectionCard";
 import EditableSubsection from "./EditableSubsection";
 import ClinicalAssistance from "./ClinicalAssistance";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
-import {
-  renderBulletedContent,
-  formatLinks,
-} from "../../../components/clinical/formatting";
+import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import { Icons } from "../../../components/ui/Icons";
 import { generateClinicalSuggestions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
@@ -129,38 +126,12 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
   };
 
   const renderPhysicalExam = (examContent: string) => {
-    const lines = examContent
-      .split("\n")
-      .filter((line) => line.trim().length > 0);
     return (
-      <div className="text-sm text-neutral-800 divide-y divide-neutral-100">
-        {lines.map((line, i) => {
-          const cleanLine = line.replace(/^[-*•]\s+/, "");
-          const colonIndex = cleanLine.indexOf(":");
-          if (colonIndex > -1 && colonIndex < 40) {
-            const label = cleanLine.substring(0, colonIndex);
-            const value = cleanLine.substring(colonIndex + 1);
-            return (
-              <div
-                key={i}
-                className="py-2 first:pt-0 last:pb-0 grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-1 sm:gap-4"
-              >
-                <span className="font-bold text-content-default uppercase text-xs tracking-wide self-start mt-0.5">
-                  {label}
-                </span>
-                <span className="leading-relaxed text-neutral-800">
-                  {formatLinks(value, groundingSources)}
-                </span>
-              </div>
-            );
-          }
-          return (
-            <div key={i} className="py-2 first:pt-0 last:pb-0">
-              {formatLinks(cleanLine, groundingSources)}
-            </div>
-          );
-        })}
-      </div>
+      <ClinicalMarkdown
+        content={examContent}
+        groundingSources={groundingSources}
+        className="text-sm"
+      />
     );
   };
 

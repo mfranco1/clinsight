@@ -4,10 +4,6 @@ import SectionCard from "../../../components/ui/SectionCard";
 import EditableSubsection from "./EditableSubsection";
 import DifferentialDiagnosis from "./DifferentialDiagnosis";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
-import {
-  renderBulletedContent,
-  formatLinks,
-} from "../../../components/clinical/formatting";
 import { Icons } from "../../../components/ui/Icons";
 import {
   arrayToMarkdownBullets,

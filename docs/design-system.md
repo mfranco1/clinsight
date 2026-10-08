@@ -8,13 +8,13 @@ The light theme defines canvas, surface, content, border, action, focus, clinica
 
 Spacing and typography use Tailwind's shared spacing and type scales; do not add one-off values when an existing scale fits. Use the semantic radius and shadow tokens for shared controls and cards. Workflow-specific dimensions remain local where they express layout constraints rather than design language.
 
-Clinical information must remain readable and statuses distinct. Preserve meaningful medical formatting, numbers, and units in editable text, Markdown, print, and clipboard views. Use the existing Clinical Markdown renderer for source-aware rendering.
+Clinical information must remain readable and statuses distinct. Preserve meaningful medical formatting, numbers, and units in editable text, Markdown, print, and clipboard views. `src/components/ui/RichContent.tsx` owns generic safe rendering for plain text, Markdown, and explicit HTML fragments; `src/components/clinical/ClinicalMarkdown.tsx` adds clinical references, citations, and search decoration. Markdown supports GFM, KaTeX math, and a sanitized semantic HTML subset. Footnote syntax is outside the GFM contract and remains literal text. Source disclosure is opt-in so ordinary displays do not repeat their content. HTML is sanitized before rendering, generated element IDs are scoped, links are restricted to safe schemes, and images render as alt text to avoid remote requests. Do not preprocess and persist display content or use raw HTML injection.
 
 ## Component ownership and reuse
 
 - Generic controls belong in `src/components/ui/`. Use `Button`, `Badge`, `TextInput`, `TextArea`, `FieldLabel`, status selectors, toolbar controls, file-upload controls, and empty states where their contracts fit.
 - Shared dialogs live in `src/components/dialogs/` and compose through `ModalShell`. Dialog focus, Escape handling, and close behavior use Radix Dialog. Status selectors use Radix Select, while order and medication status meanings remain in their feature/domain adapters.
-- Clinical Markdown and chat input live in `src/components/clinical/`; keep source references and clinical workflow semantics there.
+- Clinical Markdown and chat input live in `src/components/clinical/`; keep source references and clinical workflow semantics there. Generic content parsing and rendering belongs in `src/components/ui/RichContent.tsx`.
 - Feature-specific views and components stay under their owning `src/features/` directory. Shared controls accept typed values and callbacks rather than clinical workflow decisions.
 - Navigation and application chrome belong in `src/app/shell/`.
 

@@ -199,17 +199,17 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
     const clonedInputs = clone.querySelectorAll("input, textarea");
 
     originalInputs.forEach((input, index) => {
-      const clonedInput = clonedInputs[index] as
-        HTMLInputElement | HTMLTextAreaElement;
+      const clonedInput = clonedInputs[index];
 
-      // Sync Value
-      clonedInput.value = (input as HTMLInputElement).value;
-
-      // For textarea, explicit innerHTML sometimes helps for print renderers
-      if (clonedInput.tagName === "TEXTAREA") {
-        clonedInput.innerHTML = (input as HTMLTextAreaElement).value;
-        // Sync the computed height so it doesn't clip
-        clonedInput.style.height = (input as HTMLElement).style.height;
+      if (input instanceof HTMLTextAreaElement) {
+        const printedText = document.createElement("div");
+        printedText.className = "print-textarea";
+        printedText.textContent = input.value;
+        printedText.style.minHeight = input.style.height;
+        clonedInput.replaceWith(printedText);
+      } else {
+        const clonedTextInput = clonedInput as HTMLInputElement;
+        clonedTextInput.value = (input as HTMLInputElement).value;
       }
 
       // Sync Checkbox state
@@ -226,7 +226,7 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
       }
 
       // Sync explicit value attribute for text inputs so it renders
-      if (clonedInput.tagName === "INPUT") {
+      if (clonedInput instanceof HTMLInputElement) {
         clonedInput.setAttribute("value", (input as HTMLInputElement).value);
       }
     });
@@ -279,6 +279,7 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
                 resize: none;
                 box-shadow: none !important;
             }
+            .print-textarea { white-space: pre-wrap; overflow-wrap: anywhere; border: none; background: transparent; }
             /* Hide placeholders on print */
             ::placeholder { color: transparent; }
             

@@ -23,7 +23,7 @@ describe("formatChartRecordForClipboard", () => {
     expect(output).toContain("ASSESSMENT\nStable test patient");
   });
 
-  it("preserves the raw-note early return and markdown-marker cleanup", () => {
+  it("preserves the raw-note source text in clipboard output", () => {
     const patient = structuredPatientCase;
     const entry = {
       ...patient.entries[0],
@@ -37,8 +37,8 @@ describe("formatChartRecordForClipboard", () => {
       entry,
     );
 
-    expect(output).toContain("MANUAL PROGRESS NOTE\nManual note");
+    expect(output).toContain("MANUAL PROGRESS NOTE\n**Manual** note");
     expect(output).not.toContain("CLINICAL NOTE (SOAP)");
-    expect(output).not.toContain("**");
+    expect(entry.rawText).toBe("**Manual** note");
   });
 });

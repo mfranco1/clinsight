@@ -74,15 +74,20 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
     const clonedInputs = clone.querySelectorAll("input, textarea");
 
     originalInputs.forEach((input, index) => {
-      const clonedInput = clonedInputs[index] as
-        HTMLInputElement | HTMLTextAreaElement;
-      clonedInput.value = (input as HTMLInputElement).value;
-
-      if (clonedInput.tagName === "TEXTAREA") {
-        clonedInput.innerHTML = (input as HTMLTextAreaElement).value;
-        clonedInput.style.height = (input as HTMLElement).style.height; // Persist auto-height
+      const clonedInput = clonedInputs[index];
+      if (input instanceof HTMLTextAreaElement) {
+        const printedText = document.createElement("div");
+        printedText.className = "print-textarea";
+        printedText.textContent = input.value;
+        printedText.style.minHeight = input.style.height;
+        clonedInput.replaceWith(printedText);
       } else {
-        clonedInput.setAttribute("value", (input as HTMLInputElement).value);
+        const clonedTextInput = clonedInput as HTMLInputElement;
+        clonedTextInput.value = (input as HTMLInputElement).value;
+        clonedTextInput.setAttribute(
+          "value",
+          (input as HTMLInputElement).value,
+        );
       }
     });
 
@@ -92,7 +97,7 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Home Instructions - ${patientInfo.patientName}</title>
+          <title>Home Instructions</title>
           <script src="https://cdn.tailwindcss.com"></script>
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
           <style>
@@ -108,6 +113,7 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
                 overflow: hidden; 
                 box-shadow: none !important;
             }
+            .print-textarea { white-space: pre-wrap; overflow-wrap: anywhere; border: none; background: transparent; }
             
             /* Clean placeholder text for print */
             ::placeholder { color: transparent; }
@@ -135,6 +141,7 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
         </body>
       </html>
     `);
+    doc.title = `Home Instructions - ${patientInfo.patientName}`;
     doc.close();
   };
 

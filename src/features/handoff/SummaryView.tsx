@@ -5,6 +5,7 @@ import StickyToolbar from "../../components/ui/StickyToolbar";
 import { ToolbarButton } from "../../components/ui/ToolbarSections";
 
 import EditableTextArea from "../../components/ui/EditableTextArea";
+import ClinicalMarkdown from "../../components/clinical/ClinicalMarkdown";
 
 interface SummaryViewProps {
   data: HandoffSummary;
@@ -165,9 +166,9 @@ const SummaryView: React.FC<SummaryViewProps> = ({
                       className="p-4 flex items-start hover:bg-canvas transition-colors"
                     >
                       <span className="flex-shrink-0 h-2 w-2 mt-2 rounded-full bg-danger-400 mr-3"></span>
-                      <span className="text-xs text-content-primary font-medium">
-                        {issue}
-                      </span>
+                      <div className="min-w-0 text-xs font-medium text-content-primary">
+                        <ClinicalMarkdown content={issue} />
+                      </div>
                     </li>
                   ))}
                   {data.activeIssues.length === 0 && (
@@ -201,16 +202,17 @@ const SummaryView: React.FC<SummaryViewProps> = ({
                         <input
                           id={`todo-${i}`}
                           name={`todo-${i}`}
+                          aria-labelledby={`todo-label-${i}`}
                           type="checkbox"
                           className="focus:ring-focus-ring h-4 w-4 text-action border-neutral-300 rounded cursor-pointer"
                         />
                       </div>
-                      <label
-                        htmlFor={`todo-${i}`}
-                        className="ml-3 text-xs text-content-primary group-hover:text-content-strong cursor-pointer select-none"
+                      <div
+                        id={`todo-label-${i}`}
+                        className="ml-3 text-xs text-content-primary group-hover:text-content-strong"
                       >
-                        {todo}
-                      </label>
+                        <ClinicalMarkdown content={todo} />
+                      </div>
                     </li>
                   ))}
                   {data.toDoList.length === 0 && (
@@ -232,9 +234,10 @@ const SummaryView: React.FC<SummaryViewProps> = ({
                   <h4 className="text-sm font-bold text-action-900 uppercase tracking-wide mb-1">
                     Clinical Pearl
                   </h4>
-                  <p className="text-xs text-action-800 italic">
-                    "{data.clinicalPearl}"
-                  </p>
+                  <ClinicalMarkdown
+                    content={data.clinicalPearl}
+                    className="text-xs text-action-800 italic"
+                  />
                 </div>
               </div>
             </div>

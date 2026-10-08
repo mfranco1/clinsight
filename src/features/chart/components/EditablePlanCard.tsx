@@ -230,7 +230,9 @@ const EditablePlanCard: React.FC<{
               >
                 <span className="mr-2 text-action-500 mt-1">•</span>
                 <span className="flex-1 flex items-center justify-between">
-                  <span>{formatLinks(action, groundingSources)}</span>
+                  <div className="min-w-0 flex-1">
+                    {formatLinks(action, groundingSources)}
+                  </div>
                   {isDiagnostics && (
                     <div className="ml-2 flex-shrink-0 flex items-center">
                       {isOrdered ? (

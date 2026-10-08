@@ -1,14 +1,9 @@
-import React, { useState, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
+import React, { useMemo, useState } from "react";
 import type { Components } from "react-markdown";
-import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import rehypeKatex from "rehype-katex";
 import { GroundingSource } from "../../types";
-import { formatLinks } from "./formatting";
+import RichContent from "../ui/RichContent";
+import type { RichContentFormat } from "../ui/RichContent";
 import { Icons } from "../ui/Icons";
-import "katex/dist/katex.min.css";
 
 interface ClinicalMarkdownProps {
   content: string;
@@ -16,121 +11,17 @@ interface ClinicalMarkdownProps {
   groundingSources?: GroundingSource[];
   showReferences?: boolean;
   searchQuery?: string;
+  format?: RichContentFormat;
+  showSource?: boolean;
 }
 
-const preprocessLaTeX = (content: string) => {
-  if (!content) return "";
-
-  // Convert literal \n sequences to actual newline characters
-  const normalized = content.replace(/\\n/g, "\n");
-
-  const commands = [
-    "textit",
-    "textbf",
-    "text",
-    "frac",
-    "lim",
-    "mathbb",
-    "sum",
-    "oint",
-    "gamma",
-    "pi",
-    "alpha",
-    "beta",
-    "delta",
-    "epsilon",
-    "zeta",
-    "eta",
-    "theta",
-    "iota",
-    "kappa",
-    "lambda",
-    "mu",
-    "nu",
-    "xi",
-    "omicron",
-    "rho",
-    "sigma",
-    "tau",
-    "upsilon",
-    "phi",
-    "chi",
-    "psi",
-    "omega",
-    "Gamma",
-    "Delta",
-    "Theta",
-    "Lambda",
-    "Xi",
-    "Pi",
-    "Sigma",
-    "Phi",
-    "Psi",
-    "Omega",
-    "times",
-    "cdot",
-    "pm",
-    "approx",
-    "neq",
-    "le",
-    "ge",
-    "leq",
-    "geq",
-    "rightarrow",
-    "Rightarrow",
-    "leftarrow",
-    "Leftarrow",
-    "infty",
-    "partial",
-    "nabla",
-    "degree",
-    "perp",
-    "parallel",
-    "exists",
-    "forall",
-  ];
-
-  // 1. Identify all existing math blocks using a robust regex
-  // This covers $...$, $$...$$, \(...\), and \[...\]
-  const mathBlockRegex =
-    /(\$\$[\s\S]*?\$\$|\$[^\$]+?\$|\\\(.*?\\\)|\\\[.*?\\\])/g;
-
-  // 2. Commands and symbols that should be wrapped in $...$ if found naked in plain text
-  const nakedCmdPattern = new RegExp(
-    `\\\\(?:${commands.join("|")})(?:\\s*\\{[^{}]*\\}|(?![a-zA-Z]))`,
-  );
-  // Better subscript pattern: captures the full alphanumeric prefix (e.g., FiO_2, p_{plat}, V_T)
-  // to ensure the entire symbol is wrapped in math mode ($FiO_2$) instead of just the subscript parts ($SpO$_2$).
-  const subscriptPattern =
-    /([a-zA-Z0-9]+(?:[_^](?:\{[^{}]*\}|[a-zA-Z0-9+-]+))+)/;
-
-  // Pattern for "naked" symbols and subscripts
-  const combinedNakedPattern = new RegExp(
-    `${nakedCmdPattern.source}|${subscriptPattern.source}`,
-    "g",
-  );
-
-  // 3. Segment the content by math blocks to avoid touching already-formatted math
-  const segments = normalized.split(mathBlockRegex);
-
-  const processedSegments = segments.map((segment, i) => {
-    if (i % 2 === 1) {
-      // This segment is a valid math block (captured by groups in split)
-      // Normalize common clinical symbols that might break KaTeX
-      return segment.replace(/[—–]/g, "-");
-    }
-
-    // This segment is plain text - safely wrap naked symbols
-    return segment.replace(combinedNakedPattern, (match) => {
-      // If the match is already partially wrapped (unlikely but safe check)
-      if (match.startsWith("$") || match.endsWith("$")) return match;
-
-      const cleaned = match.trim().replace(/[—–]/g, "-");
-      return `$${cleaned}$`;
-    });
-  });
-
-  return processedSegments.join("");
+const isSafeReferenceUri = (value: string) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
 };
 
 const ClinicalMarkdown: React.FC<ClinicalMarkdownProps> = ({
@@ -139,163 +30,260 @@ const ClinicalMarkdown: React.FC<ClinicalMarkdownProps> = ({
   groundingSources,
   showReferences = false,
   searchQuery,
+  format = "markdown",
+  showSource = false,
 }) => {
   const [isReferencesExpanded, setIsReferencesExpanded] = useState(false);
 
-  // Custom components for ReactMarkdown to handle citations and styling
-  const components = useMemo<Components>(
-    () => ({
-      p: ({ children }) => (
-        <p className="mb-3 last:mb-0 leading-relaxed text-[13px] text-content-default">
-          {React.Children.map(children, (child) => {
-            if (typeof child === "string") {
-              return formatLinks(child, groundingSources, false, searchQuery);
+  const components = useMemo<Components>(() => {
+    const decorateText = (
+      node: React.ReactNode,
+      keyPrefix = "text",
+    ): React.ReactNode => {
+      if (typeof node === "string") {
+        const tokens = node.split(/(https?:\/\/[^\s<>]+|\[[\d.,\s]+\])/g);
+        return tokens.map((token, index) => {
+          const key = `${keyPrefix}-${index}`;
+          let rendered: React.ReactNode = token;
+          if (/^https?:\/\//.test(token)) {
+            const trailing = token.match(/[),.;!?]+$/)?.[0] ?? "";
+            const href = trailing ? token.slice(0, -trailing.length) : token;
+            rendered = isSafeReferenceUri(href) ? (
+              <a
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="break-all font-medium text-action hover:text-action-hover hover:underline"
+              >
+                {href}
+              </a>
+            ) : (
+              token
+            );
+            if (trailing)
+              rendered = (
+                <React.Fragment key={key}>
+                  {rendered}
+                  {trailing}
+                </React.Fragment>
+              );
+          } else if (/^\[[\d.,\s]+\]$/.test(token)) {
+            const sourceIndex = Number(token.slice(1, -1)) - 1;
+            const source = groundingSources?.[sourceIndex];
+            rendered =
+              source && isSafeReferenceUri(source.uri) ? (
+                <a
+                  key={key}
+                  href={source.uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={source.title}
+                  className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-action-border bg-action-subtle px-1.5 align-middle text-[10px] font-bold text-action-hover"
+                >
+                  {token.slice(1, -1)}
+                </a>
+              ) : (
+                token
+              );
+          }
+
+          if (searchQuery?.trim() && typeof rendered === "string") {
+            const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const pieces = rendered.split(new RegExp(`(${escaped})`, "gi"));
+            if (pieces.length > 1) {
+              return pieces.map((piece, pieceIndex) =>
+                piece.toLowerCase() === searchQuery.toLowerCase() ? (
+                  <mark
+                    key={`${key}-${pieceIndex}`}
+                    className="rounded-sm bg-action-200 px-0.5 font-medium text-action-900"
+                  >
+                    {piece}
+                  </mark>
+                ) : (
+                  piece
+                ),
+              );
             }
-            return child;
-          })}
+          }
+          return rendered;
+        });
+      }
+      if (Array.isArray(node))
+        return node.map((child, index) =>
+          decorateText(child, `${keyPrefix}-${index}`),
+        );
+      if (
+        React.isValidElement<{
+          children?: React.ReactNode;
+          className?: string;
+        }>(node)
+      ) {
+        const tag =
+          typeof node.type === "string"
+            ? node.type
+            : typeof node.type === "function"
+              ? node.type.name.toLowerCase()
+              : "";
+        const className = node.props.className ?? "";
+        if (["a", "code", "pre"].includes(tag) || className.includes("katex"))
+          return node;
+        return React.cloneElement(node, {
+          children: decorateText(node.props.children, `${keyPrefix}-child`),
+        });
+      }
+      return node;
+    };
+
+    return {
+      p: ({ children }) => (
+        <p className="mb-3 last:mb-0 text-[13px] leading-relaxed">
+          {decorateText(children)}
         </p>
       ),
       li: ({ children }) => (
-        <li className="mb-1.5 last:mb-0 leading-relaxed text-[13px] text-content-default">
-          {React.Children.map(children, (child) => {
-            if (typeof child === "string") {
-              return formatLinks(child, groundingSources, false, searchQuery);
-            }
-            return child;
-          })}
+        <li className="mb-1.5 text-[13px] leading-relaxed">
+          {decorateText(children)}
         </li>
       ),
       ul: ({ children }) => (
-        <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>
+        <ul className="mb-3 list-disc space-y-1 pl-5">{children}</ul>
       ),
-      ol: ({ children }) => (
-        <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>
+      ol: ({ children, start }) => (
+        <ol start={start} className="mb-3 list-decimal space-y-1 pl-5">
+          {children}
+        </ol>
       ),
       h1: ({ children }) => (
-        <h1 className="text-base font-bold text-content-strong mt-6 mb-3 border-b border-border-subtle pb-1.5">
+        <h1 className="mb-3 mt-6 border-b border-border-subtle pb-1.5 text-base font-bold text-content-strong">
           {children}
         </h1>
       ),
       h2: ({ children }) => (
-        <h2 className="text-sm font-bold text-neutral-800 mt-5 mb-2">
+        <h2 className="mb-2 mt-5 text-sm font-bold text-content-strong">
           {children}
         </h2>
       ),
       h3: ({ children }) => (
-        <h3 className="text-[13px] font-bold text-neutral-800 mt-4 mb-1.5">
+        <h3 className="mb-1.5 mt-4 text-[13px] font-bold text-content-strong">
           {children}
         </h3>
+      ),
+      h4: ({ children }) => (
+        <h4 className="mb-1 mt-3 text-[13px] font-semibold text-content-strong">
+          {children}
+        </h4>
+      ),
+      h5: ({ children }) => (
+        <h5 className="mb-1 mt-3 text-xs font-semibold text-content-strong">
+          {children}
+        </h5>
+      ),
+      h6: ({ children }) => (
+        <h6 className="mb-1 mt-3 text-xs font-medium text-content-secondary">
+          {children}
+        </h6>
       ),
       strong: ({ children }) => (
         <strong className="font-bold text-content-strong">{children}</strong>
       ),
-
-      // Table components for better styling
       table: ({ children }) => (
-        <div className="my-4 overflow-x-auto rounded-xl border border-border-default">
-          <table className="w-full text-[12px] text-left border-collapse">
+        <div className="my-4 max-w-full overflow-x-auto rounded-xl border border-border-default">
+          <table className="w-full border-collapse text-left text-[12px]">
             {children}
           </table>
         </div>
       ),
       thead: ({ children }) => (
-        <thead className="bg-canvas border-b border-border-default">
+        <thead className="border-b border-border-default bg-canvas">
           {children}
         </thead>
       ),
-      th: ({ children }) => (
-        <th className="px-4 py-3 font-bold text-content-primary uppercase tracking-wider text-[10px]">
-          {children}
+      th: ({ children, align, colSpan, rowSpan, scope }) => (
+        <th
+          align={align}
+          colSpan={colSpan}
+          rowSpan={rowSpan}
+          scope={scope}
+          className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-content-primary"
+        >
+          {decorateText(children)}
         </th>
       ),
-      td: ({ children }) => (
-        <td className="px-4 py-3 text-content-default border-b border-border-subtle last:border-b-0">
-          {React.Children.map(children, (child) => {
-            if (typeof child === "string") {
-              return formatLinks(child, groundingSources, false, searchQuery);
-            }
-            return child;
-          })}
+      td: ({ children, align, colSpan, rowSpan }) => (
+        <td
+          align={align}
+          colSpan={colSpan}
+          rowSpan={rowSpan}
+          className="border-b border-border-subtle px-3 py-2 text-content-default"
+        >
+          {decorateText(children)}
         </td>
       ),
       tr: ({ children }) => (
-        <tr className="hover:bg-canvas/50 transition-colors">{children}</tr>
+        <tr className="transition-colors hover:bg-canvas/50">{children}</tr>
       ),
-    }),
-    [groundingSources, searchQuery],
-  );
+    };
+  }, [groundingSources, searchQuery]);
 
   return (
-    <div
-      className={`prose prose-xs max-w-none prose-neutral prose-headings:text-content-strong prose-p:text-content-default prose-a:text-action prose-strong:text-content-strong ${className}`}
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-        rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false }]]}
+    <div className={className}>
+      <RichContent
+        content={content}
+        format={format}
         components={components}
-      >
-        {preprocessLaTeX(content)}
-      </ReactMarkdown>
-
+        showSource={showSource}
+      />
       {showReferences && groundingSources && groundingSources.length > 0 && (
-        <div className="mt-10 pt-8 border-t border-border-default">
+        <div className="mt-8 border-t border-border-default pt-5">
           <button
-            onClick={() => setIsReferencesExpanded(!isReferencesExpanded)}
-            className="flex items-center justify-between w-full group/ref-header mb-4"
+            type="button"
+            aria-expanded={isReferencesExpanded}
+            onClick={() => setIsReferencesExpanded((expanded) => !expanded)}
+            className="mb-3 flex w-full items-center justify-between text-left text-[10px] font-bold uppercase tracking-[0.2em] text-content-muted hover:text-action"
           >
-            <h4 className="text-[10px] font-bold text-content-muted uppercase tracking-[0.2em] group-hover/ref-header:text-action transition-colors">
-              References
-            </h4>
+            References
             <Icons.ChevronDown
-              className={`w-4 h-4 text-neutral-300 group-hover/ref-header:text-action-500 transition-all duration-200 ${isReferencesExpanded ? "rotate-180" : ""}`}
+              className={`h-4 w-4 transition-transform ${isReferencesExpanded ? "rotate-180" : ""}`}
             />
           </button>
-
           {isReferencesExpanded && (
-            <div className="grid grid-cols-1 gap-3 animate-fade-in">
-              {groundingSources.map((source, idx) => (
-                <a
-                  key={idx}
-                  href={source.uri}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-3.5 rounded-2xl border border-border-subtle bg-canvas/30 hover:bg-surface hover:border-action-border hover:shadow-md hover:shadow-action-900/5 transition-all group"
-                >
-                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-surface border border-border-default flex items-center justify-center text-[11px] font-bold text-content-secondary group-hover:bg-action group-hover:text-white group-hover:border-action-600 transition-all shadow-sm">
-                    {idx + 1}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-content-primary truncate group-hover:text-action-hover">
-                      {source.title}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[9px] font-bold text-action uppercase tracking-wider">
-                        View Source
-                      </span>
-                      <div className="w-1 h-1 rounded-full bg-neutral-300" />
-                      <span className="text-[9px] text-content-muted truncate max-w-[200px]">
-                        {new URL(source.uri).hostname}
-                      </span>
+            <ol className="grid grid-cols-1 gap-3">
+              {groundingSources.map((source, index) => {
+                const safeUri = isSafeReferenceUri(source.uri);
+                return (
+                  <li
+                    key={`${source.uri}-${index}`}
+                    className="flex min-w-0 items-center gap-3 rounded-xl border border-border-subtle bg-canvas/30 p-3"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-default bg-surface text-[11px] font-bold text-content-secondary">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      {safeUri ? (
+                        <a
+                          href={source.uri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="truncate text-xs font-bold text-content-primary hover:text-action"
+                        >
+                          {source.title || source.uri}
+                        </a>
+                      ) : (
+                        <span className="truncate text-xs font-bold text-content-primary">
+                          {source.title || "Reference"}
+                        </span>
+                      )}
+                      <div className="truncate text-[10px] text-content-muted">
+                        {safeUri
+                          ? new URL(source.uri).hostname
+                          : "Invalid source URL"}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg
-                      className="w-4 h-4 text-action-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </div>
-                </a>
-              ))}
-            </div>
+                  </li>
+                );
+              })}
+            </ol>
           )}
         </div>
       )}

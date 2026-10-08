@@ -3,6 +3,7 @@ import { Icons } from "../../../components/ui/Icons";
 import { SuggestionsData } from "../../../types";
 import { generateInputSuggestions } from "../../../services/ai/actions";
 import { getErrorMessageCompat } from "../../../services/appErrors";
+import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 
 interface SuggestionsDrawerProps {
   isOpen: boolean;
@@ -115,14 +116,20 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
                         key={i}
                         className="bg-surface border text-sm border-border-default shadow-sm rounded-xl p-4 hover:border-action-300 transition-colors group"
                       >
-                        <p className="font-semibold text-neutral-800 leading-snug mb-3 pr-2">
-                          {q.text}
-                        </p>
+                        <div className="mb-3 pr-2 font-semibold leading-snug text-neutral-800">
+                          <ClinicalMarkdown
+                            content={q.text}
+                            showSource={false}
+                          />
+                        </div>
                         <div className="bg-canvas p-3 rounded-lg border border-border-subtle flex items-start gap-2 group-hover:bg-action-subtle/50 transition-colors">
                           <Icons.Rationale className="w-4 h-4 text-action mt-0.5 shrink-0" />
-                          <p className="text-xs text-content-default italic leading-relaxed">
-                            {q.rationale}
-                          </p>
+                          <div className="text-xs italic leading-relaxed text-content-default">
+                            <ClinicalMarkdown
+                              content={q.rationale}
+                              showSource={false}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -148,14 +155,20 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
                         key={i}
                         className="bg-surface border text-sm border-border-default shadow-sm rounded-xl p-4 hover:border-action-300 transition-colors group"
                       >
-                        <p className="font-semibold text-neutral-800 leading-snug mb-3 pr-2">
-                          {t.text}
-                        </p>
+                        <div className="mb-3 pr-2 font-semibold leading-snug text-neutral-800">
+                          <ClinicalMarkdown
+                            content={t.text}
+                            showSource={false}
+                          />
+                        </div>
                         <div className="bg-canvas p-3 rounded-lg border border-border-subtle flex items-start gap-2 group-hover:bg-action-subtle/50 transition-colors">
                           <Icons.Rationale className="w-4 h-4 text-action mt-0.5 shrink-0" />
-                          <p className="text-xs text-content-default italic leading-relaxed">
-                            {t.rationale}
-                          </p>
+                          <div className="text-xs italic leading-relaxed text-content-default">
+                            <ClinicalMarkdown
+                              content={t.rationale}
+                              showSource={false}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}

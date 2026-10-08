@@ -30,12 +30,19 @@ test("opens a structured chart and preserves its SOAP presentation", async ({
 
   await page.goto("/");
   await page.getByText("Test Patient").first().click();
-  await expect(page.getByText("Stable test presentation.")).toBeVisible();
-  await expect(page.getByText("Well appearing")).toBeVisible();
+  await expect(
+    page.getByRole("paragraph").filter({
+      hasText: "Stable test presentation.",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("paragraph").filter({ hasText: "Well appearing" }),
+  ).toBeVisible();
   await expect(
     page
       .locator("#soap-view-scroll-container")
-      .getByText("Stable test patient"),
+      .getByRole("paragraph")
+      .filter({ hasText: "Stable test patient" }),
   ).toBeVisible();
 });
 
@@ -77,7 +84,20 @@ test("selects order and medication statuses through the shared desktop/mobile po
     },
     JSON.stringify([patientWithOrders]),
   );
-
+  await page.addInitScript(() => {
+    const parent = window as Window & { __capturedPrint?: string };
+    window.open = (() => {
+      const printDocument = {
+        title: "",
+        open: () => undefined,
+        write: (html: string) => {
+          parent.__capturedPrint = html;
+        },
+        close: () => undefined,
+      };
+      return { document: printDocument } as unknown as Window;
+    }) as typeof window.open;
+  });
   await page.goto("/");
   await page.getByText("Test Patient").first().click();
   await page.getByRole("button", { name: "Orders" }).last().click();
@@ -99,7 +119,66 @@ test("selects order and medication statuses through the shared desktop/mobile po
   await expect(
     page.getByRole("heading", { name: "Prescription" }),
   ).toBeVisible();
-  await expect(page.getByText("Amoxicillin").last()).toBeVisible();
+  await page.getByPlaceholder("Medication Name").fill("Amoxicillin");
+  await page.getByPlaceholder("Dose").fill("500 mg");
+  await page.getByRole("button", { name: "Print Rx" }).last().click();
+  const printedHtml = await page.evaluate(
+    () => (window as Window & { __capturedPrint?: string }).__capturedPrint,
+  );
+  expect(printedHtml).toContain('value="Amoxicillin"');
+  expect(printedHtml).toContain("500 mg");
+});
+
+test("renders a long clinical note within the interactive budget", async ({
+  page,
+}) => {
+  const paragraphCount = 80;
+  const hpi = Array.from(
+    { length: paragraphCount },
+    (_, index) =>
+      `Finding ${index + 1}: synthetic review remains stable at 5 mg/L; estimated rate \\(x_${index + 1} + 1\\).`,
+  ).join("\n\n");
+  const largeCase = {
+    ...structuredPatientCase,
+    entries: [
+      {
+        ...structuredPatientCase.entries[0],
+        soap: {
+          ...structuredPatientCase.entries[0].soap!,
+          subjective: {
+            ...structuredPatientCase.entries[0].soap!.subjective,
+            hpi: `${hpi}\n\nEnd of rendered fixture marker.`,
+          },
+        },
+      },
+    ],
+  };
+
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([largeCase]),
+  );
+  await page.goto("/");
+  const start = await page.evaluate(() => performance.now());
+  await page.getByText("Test Patient").first().click();
+  await expect(page.getByText("End of rendered fixture marker.")).toBeVisible();
+  const elapsed = await page.evaluate(
+    (startTime) => performance.now() - startTime,
+    start,
+  );
+
+  expect(
+    await page
+      .locator("#soap-view-scroll-container")
+      .getByRole("paragraph")
+      .count(),
+  ).toBeGreaterThanOrEqual(paragraphCount);
+  expect(elapsed).toBeLessThan(10_000);
+  console.info(
+    `Rendered ${paragraphCount} paragraphs with inline math in ${elapsed.toFixed(0)} ms at ${page.viewportSize()?.width}px width`,
+  );
 });
 
 test("restores persisted attachment files and exports serializable attachment data", async ({

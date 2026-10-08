@@ -24,7 +24,7 @@ export const formatChartRecordForClipboard = (
     text += `${entry.rawText || entry.originalNote || "No content available."}\n\n`;
 
     if (!entry.soap?.assessment) {
-      return text.replace(/\*\*/g, "");
+      return text;
     }
   } else {
     text += `CLINICAL NOTE (SOAP)\n`;
@@ -76,5 +76,5 @@ export const formatChartRecordForClipboard = (
     });
   }
 
-  return text.replace(/\*\*/g, "");
+  return text;
 };

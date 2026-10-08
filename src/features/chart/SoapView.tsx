@@ -31,7 +31,7 @@ import ManageSectionsDropdown, {
   SectionVisibility,
 } from "./components/ManageSectionsDropdown";
 import EditableTextArea from "../../components/ui/EditableTextArea";
-import { formatLinks } from "../../components/clinical/formatting";
+import ClinicalMarkdown from "../../components/clinical/ClinicalMarkdown";
 import { keyValueToString } from "../../utils/clinicalText";
 import { integrateClinicalData } from "../../services/ai/actions";
 import { logDiagnostic } from "../../services/diagnosticLogger";
@@ -535,19 +535,23 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
                         >
                           {getDisplayEntryTitle(entry, encounters)}
                         </div>
-                        <p className="text-[11px] text-content-secondary line-clamp-1 mt-0.5 font-medium italic">
-                          {entry.entryType === "raw"
-                            ? entry.rawText ||
-                              (encounters?.find(
-                                (enc) =>
-                                  enc.id === (entry.encounterId || "unknown"),
-                              )?.type === EncounterType.CONSULT
-                                ? "Manual Consult Note"
-                                : entry.title.includes("Admission")
-                                  ? "Manual Admission Note"
-                                  : "Manual Progress Note")
-                            : entry.soap?.assessment.summary}
-                        </p>
+                        <ClinicalMarkdown
+                          content={
+                            entry.entryType === "raw"
+                              ? entry.rawText ||
+                                (encounters?.find(
+                                  (enc) =>
+                                    enc.id === (entry.encounterId || "unknown"),
+                                )?.type === EncounterType.CONSULT
+                                  ? "Manual Consult Note"
+                                  : entry.title.includes("Admission")
+                                    ? "Manual Admission Note"
+                                    : "Manual Progress Note")
+                              : entry.soap?.assessment.summary || ""
+                          }
+                          showSource={false}
+                          className="line-clamp-1 text-[11px] font-medium italic text-content-secondary"
+                        />
 
                         {activeEntryId === entry.id && (
                           <div className="absolute left-0 top-0 bottom-0 w-1 bg-action-subtle"></div>
@@ -1425,10 +1429,13 @@ const SoapView: React.FC<SoapViewProps> = ({
 
                 {/* Scrollable Content */}
                 <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                  <div className="text-xs text-content-default whitespace-pre-wrap leading-relaxed font-mono bg-canvas/30 p-4 rounded-lg border border-border-subtle">
-                    {activeEntry.originalNote ||
-                      "No original text available for this entry."}
-                  </div>
+                  <ClinicalMarkdown
+                    content={
+                      activeEntry.originalNote ||
+                      "No original text available for this entry."
+                    }
+                    className="text-xs font-mono bg-canvas/30 p-4 rounded-lg border border-border-subtle"
+                  />
                 </div>
               </div>
             </div>

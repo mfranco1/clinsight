@@ -5,6 +5,7 @@ import { GeneralDataInput, GeneralDataItem } from "./GeneralDataInput";
 import { Icons } from "../../../components/ui/Icons";
 import { calculateAge } from "../../../utils/date";
 import { normalizePatientAgeSex } from "../../../utils/patient";
+import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 
 interface GeneralDataSectionProps {
   data: GeneralData;
@@ -306,9 +307,10 @@ const GeneralDataSection: React.FC<GeneralDataSectionProps> = ({
                     <span className="text-[9px] font-bold text-content-muted uppercase tracking-wider block mb-1">
                       Notes
                     </span>
-                    <p className="text-xs text-content-default whitespace-pre-wrap bg-surface p-3 rounded-xl border border-border-subtle font-medium leading-relaxed">
-                      {normalizedData.deceasedInfo.notes}
-                    </p>
+                    <ClinicalMarkdown
+                      content={normalizedData.deceasedInfo.notes}
+                      className="bg-surface p-3 rounded-xl border border-border-subtle text-xs font-medium"
+                    />
                   </div>
                 )}
               </div>
