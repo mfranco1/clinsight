@@ -34,6 +34,24 @@ export default defineConfig(({ mode }) => {
               return "katex-vendor";
             }
             if (
+              id.includes("/node_modules/@tiptap/markdown/") ||
+              id.includes("/node_modules/marked/")
+            ) {
+              return "tiptap-markdown";
+            }
+            if (
+              id.includes("/node_modules/@tiptap/") ||
+              id.includes("/node_modules/prosemirror-")
+            ) {
+              return "tiptap-vendor";
+            }
+            if (id.includes("/node_modules/@lezer/")) {
+              return "codemirror-parser";
+            }
+            if (id.includes("/node_modules/@codemirror/")) {
+              return "codemirror-vendor";
+            }
+            if (
               id.includes("/node_modules/react/") ||
               id.includes("/node_modules/react-dom/") ||
               id.includes("/node_modules/scheduler/")

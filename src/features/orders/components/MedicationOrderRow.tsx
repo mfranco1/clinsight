@@ -5,7 +5,7 @@ import MedicationStatusDropdown from "../../../components/ui/MedicationStatusDro
 import ConfirmationModal from "../../../components/dialogs/ConfirmationModal";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import Badge from "../../../components/ui/Badge";
-import TextArea from "../../../components/ui/TextArea";
+import EditableTextArea from "../../../components/ui/EditableTextArea";
 import { motion } from "motion/react";
 
 interface MedicationOrderRowProps {
@@ -162,12 +162,15 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
             Notes
           </label>
-          <TextArea
-            variant="subtle"
-            className="min-h-[60px] font-medium"
+          <EditableTextArea
             value={editNotes}
-            onChange={(e) => setEditNotes(e.target.value)}
+            onChange={setEditNotes}
             placeholder="Sig or other notes..."
+            isEditing={true}
+            showControls={false}
+            editorMode="source"
+            minHeight="min-h-[60px]"
+            className="font-medium"
           />
         </div>
         <div className="flex justify-end gap-3 pt-4 border-t border-border-subtle">

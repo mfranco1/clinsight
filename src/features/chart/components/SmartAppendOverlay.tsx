@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Icons } from "../../../components/ui/Icons";
 import { transcribeAudio } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import { useAudioRecorder } from "../../../hooks/useAudioRecorder";
+import EditableTextArea from "../../../components/ui/EditableTextArea";
 
 interface SmartAppendOverlayProps {
   suggestions: string[];
@@ -37,12 +38,6 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
     },
     onError: () => setError("Microphone access required for dictation."),
   });
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
   const handleIntegrate = async () => {
     if (!userInput.trim() || isIntegrating) return;
     setIsIntegrating(true);
@@ -111,13 +106,17 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
               </button>
             </div>
           )}
-          <textarea
-            ref={inputRef}
+          <EditableTextArea
             value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
+            onChange={setUserInput}
             disabled={isIntegrating || isTranscribing}
-            className="w-full h-40 p-4 bg-canvas rounded-xl border border-border-default focus:ring-2 focus:ring-focus-ring focus:border-transparent outline-none resize-none text-neutral-800 text-sm leading-relaxed transition-all placeholder-neutral-400"
             placeholder="Type or dictate the response here..."
+            isEditing={true}
+            showControls={false}
+            autoFocus={true}
+            editorMode="source"
+            minHeight="min-h-[160px]"
+            className="bg-canvas text-neutral-800 text-sm leading-relaxed"
           />
 
           {isTranscribing && (

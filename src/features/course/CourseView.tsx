@@ -347,6 +347,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                       }
                       placeholder="Enter event details..."
                       className="text-xs"
+                      editorMode="document"
                       isEditing={editingId === uniqueId}
                       setIsEditing={(val) =>
                         setEditingId(val ? uniqueId : null)

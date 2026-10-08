@@ -140,6 +140,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({
               onChange={handleUpdateOneLiner}
               placeholder="Enter patient summary..."
               className="text-xs text-neutral-800 leading-relaxed"
+              editorMode="document"
               isEditing={isEditingSummary}
               setIsEditing={setIsEditingSummary}
               hideEditButton={true}

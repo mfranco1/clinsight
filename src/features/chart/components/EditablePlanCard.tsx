@@ -130,6 +130,7 @@ const EditablePlanCard: React.FC<{
               showControls={false}
               isEditing={true}
               autoFocus={false}
+              editorMode="source"
               className="border-neutral-300"
             />
           </div>
@@ -147,6 +148,7 @@ const EditablePlanCard: React.FC<{
                 showControls={false}
                 isEditing={true}
                 autoFocus={false}
+                editorMode="source"
                 className="border-neutral-300"
               />
             </div>
@@ -162,6 +164,7 @@ const EditablePlanCard: React.FC<{
                 showControls={false}
                 isEditing={true}
                 autoFocus={false}
+                editorMode="source"
                 className="border-neutral-300"
               />
             </div>
@@ -177,6 +180,7 @@ const EditablePlanCard: React.FC<{
                 showControls={false}
                 isEditing={true}
                 autoFocus={false}
+                editorMode="source"
                 className="border-neutral-300"
               />
             </div>

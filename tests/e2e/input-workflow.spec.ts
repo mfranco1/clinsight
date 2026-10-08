@@ -9,9 +9,11 @@ test("opens the input workflow and resets an unsaved draft", async ({
 
   await expect(page.locator("header").getByText("New Patient")).toBeVisible();
 
-  const editor = page.getByPlaceholder(/Patient is a 56-year-old male/);
+  const editor = page.getByRole("textbox", {
+    name: /Patient is a 56-year-old male/,
+  });
   await editor.fill("A test note that is long enough to save as a draft.");
-  await expect(editor).toHaveValue(
+  await expect(editor).toHaveText(
     "A test note that is long enough to save as a draft.",
   );
 
@@ -19,7 +21,7 @@ test("opens the input workflow and resets an unsaved draft", async ({
   await expect(page.getByText("Clear current data?")).toBeVisible();
   await page.getByRole("button", { name: "Confirm Reset" }).click();
 
-  await expect(editor).toHaveValue("");
+  await expect(editor).toHaveText("");
 
   await page.getByRole("button", { name: "Lookup" }).click();
   const lookupDialog = page.getByRole("dialog", { name: "Lookup" });

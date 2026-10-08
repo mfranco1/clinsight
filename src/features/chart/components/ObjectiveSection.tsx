@@ -438,6 +438,7 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
                     groundingSources={groundingSources}
                     className="text-sm text-content-primary border-none p-0 bg-transparent"
                     hideEditButton={true}
+                    editorMode="document"
                   />
                 </div>
               </div>
@@ -534,6 +535,7 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
                     groundingSources={groundingSources}
                     className="text-sm text-content-primary border-none p-0 bg-transparent"
                     hideEditButton={true}
+                    editorMode="document"
                   />
                 </div>
               </div>

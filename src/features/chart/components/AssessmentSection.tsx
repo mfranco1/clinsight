@@ -152,6 +152,7 @@ const AssessmentSection: React.FC<AssessmentSectionProps> = ({
                 groundingSources={groundingSources}
                 className="text-sm text-content-primary border-none p-0 bg-transparent"
                 hideEditButton={true}
+                editorMode="document"
               />
             </div>
           </div>

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { createPortal } from "react-dom";
 import { Icons } from "../../../components/ui/Icons";
+import EditableTextArea from "../../../components/ui/EditableTextArea";
 import { PatientOrder, OrderStatus } from "../../../types";
 import { getTodayLocalDateString } from "../../../utils/date";
 import { parseBulkOrdersText } from "../../../domain/orders";
@@ -126,12 +127,16 @@ const BulkOrderOverlay: React.FC<BulkOrderOverlayProps> = ({
                     />
                   </div>
                 </div>
-                <textarea
+                <EditableTextArea
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
+                  onChange={setInputText}
                   autoFocus
+                  isEditing={true}
+                  showControls={false}
+                  editorMode="source"
+                  minHeight="min-h-[200px]"
                   placeholder={`Example:\nPROCS\n[] CBC - 3/30\n[] Na K Cl Mg BUN Crea\n\nIMAGING\n[] Chest X-Ray\n\nBLOOD\n> 1u pRBC\n> Crossmatch`}
-                  className="flex-1 w-full bg-surface border border-border-default rounded-xl p-6 text-sm font-mono text-content-primary outline-none focus:ring-4 focus:ring-focus-ring/5 focus:border-action transition-all resize-none shadow-inner leading-relaxed"
+                  className="flex-1 w-full bg-surface text-sm font-mono text-content-primary shadow-inner leading-relaxed"
                 />
               </div>
 

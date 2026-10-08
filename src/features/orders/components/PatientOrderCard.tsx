@@ -214,6 +214,7 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
                 isEditing={true}
                 showControls={false}
                 placeholder="Additional instructions or notes..."
+                editorMode="source"
                 className="border-none p-0 bg-transparent"
               />
             </div>

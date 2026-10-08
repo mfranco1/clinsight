@@ -1189,6 +1189,7 @@ const SoapView: React.FC<SoapViewProps> = ({
                   className="w-full"
                   placeholder="Enter progress note details..."
                   hideEditButton={true}
+                  editorMode="document"
                   disabled={isHistorical}
                 />
               </SectionCard>
@@ -1380,6 +1381,7 @@ const SoapView: React.FC<SoapViewProps> = ({
                     isEditing={isEditingReferences}
                     setIsEditing={setIsEditingReferences}
                     hideEditButton={true}
+                    editorMode="source"
                     className="text-xs text-content-primary leading-relaxed border-none p-0 bg-transparent"
                     groundingSources={groundingSources}
                     minHeight="min-h-[100px]"

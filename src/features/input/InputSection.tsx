@@ -605,6 +605,7 @@ const InputSection: React.FC<InputSectionProps> = ({
               showControls={false}
               isEditing={true}
               autoFocus={false}
+              editorMode="source"
               minHeight="min-h-[400px]"
             />
           </div>

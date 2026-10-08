@@ -70,6 +70,7 @@ const FieldItem: React.FC<{
           hideEditButton={true}
           minHeight="min-h-[30px]"
           disabled={readOnly}
+          editorMode="source"
         />
       </div>
     </div>

@@ -3,6 +3,17 @@ import { Icons } from "./Icons";
 import ClinicalMarkdown from "../clinical/ClinicalMarkdown";
 import { GroundingSource } from "../../types";
 
+const LazySourceTextEditor = React.lazy(() =>
+  import("./editor/SourceTextEditor").then(({ SourceTextEditor }) => ({
+    default: SourceTextEditor,
+  })),
+);
+const LazyDocumentTextEditor = React.lazy(() =>
+  import("./editor/DocumentTextEditor").then(({ DocumentTextEditor }) => ({
+    default: DocumentTextEditor,
+  })),
+);
+
 interface EditableTextAreaProps {
   value: string;
   onSave?: (newValue: string) => void;
@@ -20,6 +31,7 @@ interface EditableTextAreaProps {
   minHeight?: string;
   searchQuery?: string;
   disabled?: boolean;
+  editorMode?: "native" | "source" | "document";
 }
 
 const EditableTextArea: React.FC<EditableTextAreaProps> = ({
@@ -39,6 +51,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   minHeight = "min-h-[120px]",
   searchQuery,
   disabled = false,
+  editorMode = "native",
 }) => {
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const isEditing =
@@ -48,15 +61,44 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
       ? externalSetIsEditing
       : setInternalIsEditing;
 
-  const [editValue, setEditValue] = useState(() =>
-    value ? value.replace(/\\n/g, "\n") : "",
-  );
+  // Persisted clinical text is source data. In particular, a literal backslash
+  // followed by `n` must not be rewritten when entering or leaving edit mode.
+  const [editValue, setEditValue] = useState(value);
+  const editSessionValueRef = useRef(value);
+  const wasEditingRef = useRef(isEditing);
+  const [hasExternalConflict, setHasExternalConflict] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isManualResized, setIsManualResized] = useState(false);
 
   useEffect(() => {
-    setEditValue(value ? value.replace(/\\n/g, "\n") : "");
-  }, [value]);
+    if (isEditing && !wasEditingRef.current) {
+      editSessionValueRef.current = value;
+      setEditValue(value);
+      setHasExternalConflict(false);
+    } else if (!isEditing) {
+      editSessionValueRef.current = value;
+      setEditValue(value);
+      setHasExternalConflict(false);
+    } else if (value === editValue) {
+      // A controlled parent's echo of our own keystroke is not a conflict.
+      setHasExternalConflict(false);
+    } else if (onChange) {
+      // Immediate-change consumers own the live draft, so their explicit reset
+      // or replacement is authoritative even after local typing.
+      editSessionValueRef.current = value;
+      setEditValue(value);
+      setHasExternalConflict(false);
+    } else if (editValue === editSessionValueRef.current) {
+      // The user has not changed this session yet, so accept the clean update.
+      editSessionValueRef.current = value;
+      setEditValue(value);
+      setHasExternalConflict(false);
+    } else {
+      // Keep the user's draft visible and require an explicit resolution.
+      setHasExternalConflict(true);
+    }
+    wasEditingRef.current = isEditing;
+  }, [value, isEditing, onChange]);
 
   useEffect(() => {
     if (isEditing && textareaRef.current && autoFocus) {
@@ -164,6 +206,8 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
 
   const handleCancel = () => {
     setEditValue(value);
+    editSessionValueRef.current = value;
+    setHasExternalConflict(false);
     setIsEditing(false);
     setIsManualResized(false);
     if (onCancel) onCancel();
@@ -181,19 +225,95 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   if (isEditing) {
     return (
       <div className={`space-y-3 ${className}`}>
-        <textarea
-          ref={textareaRef}
-          value={editValue}
-          onChange={(e) => {
-            setEditValue(e.target.value);
-            adjustHeight();
-            if (onChange) onChange(e.target.value);
-          }}
-          onKeyDown={handleKeyDown}
-          onMouseDown={handleMouseDown}
-          placeholder={placeholder}
-          className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl focus:ring-2 focus:ring-focus-ring focus:border-action p-4 ${minHeight} transition-all resize-y`}
-        />
+        {editorMode !== "native" ? (
+          <React.Suspense
+            fallback={
+              <textarea
+                value={editValue}
+                onChange={(event) => {
+                  setEditValue(event.target.value);
+                  onChange?.(event.target.value);
+                }}
+                aria-label={placeholder}
+                disabled={disabled}
+                autoFocus={autoFocus}
+                className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
+              />
+            }
+          >
+            {editorMode === "document" ? (
+              <LazyDocumentTextEditor
+                value={editValue}
+                onChange={(newValue) => {
+                  setEditValue(newValue);
+                  onChange?.(newValue);
+                }}
+                ariaLabel={placeholder}
+                disabled={disabled}
+                autoFocus={autoFocus}
+                minHeightClass={minHeight}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            ) : (
+              <LazySourceTextEditor
+                value={editValue}
+                onChange={(newValue) => {
+                  setEditValue(newValue);
+                  onChange?.(newValue);
+                }}
+                aria-label={placeholder}
+                disabled={disabled}
+                autoFocus={autoFocus}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            )}
+          </React.Suspense>
+        ) : (
+          <textarea
+            ref={textareaRef}
+            value={editValue}
+            onChange={(e) => {
+              setEditValue(e.target.value);
+              adjustHeight();
+              if (onChange) onChange(e.target.value);
+            }}
+            onKeyDown={handleKeyDown}
+            onMouseDown={handleMouseDown}
+            placeholder={placeholder}
+            aria-label={placeholder}
+            className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl focus:ring-2 focus:ring-focus-ring focus:border-action p-4 ${minHeight} transition-all resize-y`}
+          />
+        )}
+        {hasExternalConflict && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning-200 bg-warning-50 px-3 py-2 text-xs text-content-primary"
+            role="alert"
+          >
+            <span>This text changed elsewhere while you were editing.</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  editSessionValueRef.current = value;
+                  setEditValue(value);
+                  setHasExternalConflict(false);
+                }}
+                className="font-semibold text-action hover:underline"
+              >
+                Load updated text
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="font-semibold text-action hover:underline"
+              >
+                Save my version
+              </button>
+            </div>
+          </div>
+        )}
         {showControls && (
           <div className="flex items-center justify-end gap-2">
             <button

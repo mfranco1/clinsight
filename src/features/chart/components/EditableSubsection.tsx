@@ -67,6 +67,7 @@ const EditableSubsection: React.FC<{
         placeholder={`Enter ${title.toLowerCase()}...`}
         className="border-none p-0 bg-transparent"
         hideEditButton={true}
+        editorMode="document"
         disabled={!onSave}
       />
     </div>

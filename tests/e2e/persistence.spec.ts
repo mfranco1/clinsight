@@ -46,6 +46,98 @@ test("opens a structured chart and preserves its SOAP presentation", async ({
   ).toBeVisible();
 });
 
+test("switches source and visual modes without rewriting an untouched patient note", async ({
+  page,
+}) => {
+  const original = "## Clinical note\n\nVitals remain **stable**.";
+  const patientWithNote = {
+    ...structuredPatientCase,
+    notes: [
+      {
+        id: "note-editor-round-trip",
+        title: "Editor round trip",
+        content: original,
+        createdAt: "2026-08-26 09:00",
+        updatedAt: "2026-08-26 09:00",
+      },
+    ],
+  };
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([patientWithNote]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Notes" }).last().click();
+  await page.getByRole("button", { name: "Edit Note" }).click();
+  const editor = page.getByRole("textbox", {
+    name: "Start typing your note here... (Supports Markdown and LaTeX)",
+  });
+  await expect(editor).toContainText("Vitals remain");
+
+  await page.getByRole("button", { name: /source/i }).click();
+  await expect(page.getByTestId("source-text-editor")).toContainText(
+    "## Clinical note",
+  );
+  await page.getByRole("button", { name: /visual/i }).click();
+  await expect(editor).toContainText("Vitals remain");
+  await page.getByRole("button", { name: "Save" }).click();
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const records = JSON.parse(
+          window.localStorage.getItem("clinsight_patients") || "[]",
+        );
+        return records[0]?.notes[0]?.content;
+      }),
+    )
+    .toBe(original);
+});
+
+test("applies visual formatting and reflects it in Markdown source", async ({
+  page,
+}) => {
+  const patientWithNote = {
+    ...structuredPatientCase,
+    notes: [
+      {
+        id: "note-editor-formatting",
+        title: "Editor formatting",
+        content: "Vitals remain stable.",
+        createdAt: "2026-08-26 09:00",
+        updatedAt: "2026-08-26 09:00",
+      },
+    ],
+  };
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([patientWithNote]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Notes" }).last().click();
+  await page.getByRole("button", { name: "Edit Note" }).click();
+  const editor = page.getByRole("textbox", {
+    name: "Start typing your note here... (Supports Markdown and LaTeX)",
+  });
+  await expect(editor).toContainText("Vitals remain stable.");
+  await editor.press("ControlOrMeta+End");
+  await page.getByRole("button", { name: "Bold" }).click();
+  await page.keyboard.type(" bold");
+  await expect(editor.locator("strong")).toContainText("bold");
+  await page.getByRole("button", { name: /source/i }).click();
+  await expect(page.getByTestId("source-text-editor")).toContainText(
+    " **bold**Vitals remain stable.",
+  );
+});
+
 test("selects order and medication statuses through the shared desktop/mobile portal menus", async ({
   page,
 }) => {

@@ -42,6 +42,7 @@ const NoteContentArea = React.memo<NoteContentAreaProps>(
         placeholder="Start typing your note here... (Supports Markdown and LaTeX)"
         className="border-none p-0 bg-transparent"
         hideEditButton={true}
+        editorMode="document"
         searchQuery={searchQuery}
       />
 

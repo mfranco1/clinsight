@@ -4,6 +4,7 @@ import { generateHomeInstructions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import { Icons } from "../../../components/ui/Icons";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
+import { replaceSourceEditorsWithPrintText } from "./homeInstructionsPrint";
 
 interface HomeInstructionsModalProps {
   isOpen: boolean;
@@ -90,6 +91,8 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
         );
       }
     });
+
+    replaceSourceEditorsWithPrintText(printContent, clone);
 
     const doc = printWindow.document;
     doc.open();
@@ -455,6 +458,7 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
                   </h3>
                   <EditableTextArea
                     value={data.followUp}
+                    editorMode="source"
                     onSave={(v) => updateData("followUp", v)}
                     onChange={(v) => updateData("followUp", v)}
                     className="w-full bg-transparent border-none p-0"

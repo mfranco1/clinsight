@@ -303,6 +303,7 @@ const ThreadPairCard = React.memo<ThreadPairCardProps>(
                       groundingSources={assistantSub.groundingSources}
                       showReferences={true}
                       hideEditButton={true}
+                      editorMode="document"
                       className="text-xs text-content-primary"
                     />
                   </div>
@@ -596,6 +597,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
     if (
       target.closest("input") ||
       target.closest("textarea") ||
+      target.closest('[contenteditable="true"]') ||
       target.closest("button") ||
       target.closest("form") ||
       target.closest(".no-highlight-selection")
@@ -616,6 +618,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
         if (
           ancestorElement.closest("input") ||
           ancestorElement.closest("textarea") ||
+          ancestorElement.closest('[contenteditable="true"]') ||
           ancestorElement.closest("button") ||
           ancestorElement.closest("form") ||
           ancestorElement.closest(".no-highlight-selection")
