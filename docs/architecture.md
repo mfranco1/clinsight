@@ -5,6 +5,7 @@ This describes the current implementation. Future backend work remains explicitl
 ## Repository ownership
 
 - `src/App.tsx` composes the application, routes among views, owns cross-feature coordination, and wires patient-store and AI actions. Keep feature-specific state and presentation in the feature that owns it.
+- Non-dashboard views and access pages load on first navigation through `src/components/ui/LazyFeature.tsx`; it keeps loading/error recovery local to the selected view while `App` retains patient and workflow state. The chat panel and legal dialogs load on first open and retain their mounted state afterward.
 - `src/app/shell/` contains the application navigation, header, and patient header.
 - `src/features/` owns each product workflow and its view-specific components, hooks, and selectors: access, chart, chat, course, dashboard, handoff, input, notes, orders, profile, settings.
 - `src/domain/` contains framework-independent patient transitions, factories, and order rules. It should not import React or browser UI modules.

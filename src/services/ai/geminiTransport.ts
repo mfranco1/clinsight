@@ -124,7 +124,7 @@ export const callGemini = async (
     if (selectedModel && !selectedModel.supportsStructuredOutput) {
       logDiagnostic(
         "warn",
-        "Selected model does not support structured output; using the structudanger-output fallback.",
+        "Selected model does not support structured output; using the structured-output fallback.",
       );
       model = DEFAULT_STRUCTURED_MODEL;
     }

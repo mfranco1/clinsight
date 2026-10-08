@@ -2,20 +2,21 @@ import React, { useState, useRef, useEffect } from "react";
 import Sidebar from "./app/shell/Sidebar";
 import Header from "./app/shell/Header";
 import PatientHeader from "./app/shell/PatientHeader";
-import InputSection from "./features/input/InputSection";
-import SoapView from "./features/chart/SoapView";
-import CourseView from "./features/course/CourseView";
-import SummaryView from "./features/handoff/SummaryView";
-import NotesView from "./features/notes/NotesView";
-import OrdersView from "./features/orders/OrdersView";
-import ProfileView from "./features/profile/ProfileView";
-import SettingsView from "./features/settings/SettingsView";
-import LandingPage from "./features/access/LandingPage";
-import LoginPage from "./features/access/LoginPage";
+import type InputSectionComponent from "./features/input/InputSection";
+import type SoapViewComponent from "./features/chart/SoapView";
+import type CourseViewComponent from "./features/course/CourseView";
+import type SummaryViewComponent from "./features/handoff/SummaryView";
+import type NotesViewComponent from "./features/notes/NotesView";
+import type OrdersViewComponent from "./features/orders/OrdersView";
+import type ProfileViewComponent from "./features/profile/ProfileView";
+import type SettingsViewComponent from "./features/settings/SettingsView";
+import type LandingPageComponent from "./features/access/LandingPage";
+import type LoginPageComponent from "./features/access/LoginPage";
+import type ChatPanelComponent from "./features/chat/ChatPanel";
+import type PrivacyPolicyModalComponent from "./components/PrivacyPolicyModal";
+import type TermsOfServiceModalComponent from "./components/TermsOfServiceModal";
+import { createLazyFeature } from "./components/ui/LazyFeature";
 import LoadingOverlay from "./components/LoadingOverlay";
-import ChatPanel from "./features/chat/ChatPanel";
-import PrivacyPolicyModal from "./components/PrivacyPolicyModal";
-import TermsOfServiceModal from "./components/TermsOfServiceModal";
 import Toast from "./components/Toast";
 import { Icons } from "./components/ui/Icons";
 import DashboardView from "./features/dashboard/DashboardView";
@@ -91,6 +92,46 @@ import {
   serializeAttachments,
 } from "./services/attachmentPersistence";
 import { logDiagnostic } from "./services/diagnosticLogger";
+
+const InputSection = createLazyFeature<
+  React.ComponentProps<typeof InputSectionComponent>
+>(() => import("./features/input/InputSection"));
+const SoapView = createLazyFeature<
+  React.ComponentProps<typeof SoapViewComponent>
+>(() => import("./features/chart/SoapView"));
+const CourseView = createLazyFeature<
+  React.ComponentProps<typeof CourseViewComponent>
+>(() => import("./features/course/CourseView"));
+const SummaryView = createLazyFeature<
+  React.ComponentProps<typeof SummaryViewComponent>
+>(() => import("./features/handoff/SummaryView"));
+const NotesView = createLazyFeature<
+  React.ComponentProps<typeof NotesViewComponent>
+>(() => import("./features/notes/NotesView"));
+const OrdersView = createLazyFeature<
+  React.ComponentProps<typeof OrdersViewComponent>
+>(() => import("./features/orders/OrdersView"));
+const ProfileView = createLazyFeature<
+  React.ComponentProps<typeof ProfileViewComponent>
+>(() => import("./features/profile/ProfileView"));
+const SettingsView = createLazyFeature<
+  React.ComponentProps<typeof SettingsViewComponent>
+>(() => import("./features/settings/SettingsView"));
+const LandingPage = createLazyFeature<
+  React.ComponentProps<typeof LandingPageComponent>
+>(() => import("./features/access/LandingPage"));
+const LoginPage = createLazyFeature<
+  React.ComponentProps<typeof LoginPageComponent>
+>(() => import("./features/access/LoginPage"));
+const ChatPanel = createLazyFeature<
+  React.ComponentProps<typeof ChatPanelComponent>
+>(() => import("./features/chat/ChatPanel"));
+const PrivacyPolicyModal = createLazyFeature<
+  React.ComponentProps<typeof PrivacyPolicyModalComponent>
+>(() => import("./components/PrivacyPolicyModal"));
+const TermsOfServiceModal = createLazyFeature<
+  React.ComponentProps<typeof TermsOfServiceModalComponent>
+>(() => import("./components/TermsOfServiceModal"));
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
@@ -197,11 +238,14 @@ function App() {
 
   // Chat Panel State
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [hasChatMounted, setHasChatMounted] = useState(false);
   const [chatSessionId, setChatSessionId] = useState<number>(0);
 
   // Legal Modals State
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [hasPrivacyMounted, setHasPrivacyMounted] = useState(false);
+  const [hasTermsMounted, setHasTermsMounted] = useState(false);
 
   // Summary Refresh State
   const [isRefreshingSummary, setIsRefreshingSummary] = useState(false);
@@ -1302,13 +1346,19 @@ function App() {
                   About
                 </button>
                 <button
-                  onClick={() => setIsPrivacyOpen(true)}
+                  onClick={() => {
+                    setHasPrivacyMounted(true);
+                    setIsPrivacyOpen(true);
+                  }}
                   className="hover:text-action transition-colors font-medium"
                 >
                   Privacy
                 </button>
                 <button
-                  onClick={() => setIsTermsOpen(true)}
+                  onClick={() => {
+                    setHasTermsMounted(true);
+                    setIsTermsOpen(true);
+                  }}
                   className="hover:text-action transition-colors font-medium"
                 >
                   Terms
@@ -1321,7 +1371,10 @@ function App() {
 
       {activePatient && (
         <button
-          onClick={() => setIsChatOpen(true)}
+          onClick={() => {
+            setHasChatMounted(true);
+            setIsChatOpen(true);
+          }}
           className={`fixed right-6 h-14 w-14 bg-action text-white rounded-full shadow-xl hover:bg-action-hover focus:outline-none focus:ring-4 focus:ring-action-300 transition-all transform hover:scale-105 flex items-center justify-center z-40 ${isChatOpen ? "scale-0 opacity-0 pointer-events-none" : "scale-100 opacity-100"} ${showMobileNav ? "bottom-24 md:bottom-6" : "bottom-6"}`}
           title="Open Clinical Assistant"
         >
@@ -1329,24 +1382,30 @@ function App() {
         </button>
       )}
 
-      <ChatPanel
-        key={chatSessionId}
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        chartData={activePatient}
-        onSaveAsNote={handleSaveChatAsNote}
-        model={model}
-        onModelChange={setModel}
-      />
+      {hasChatMounted && (
+        <ChatPanel
+          key={chatSessionId}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          chartData={activePatient}
+          onSaveAsNote={handleSaveChatAsNote}
+          model={model}
+          onModelChange={setModel}
+        />
+      )}
 
-      <PrivacyPolicyModal
-        isOpen={isPrivacyOpen}
-        onClose={() => setIsPrivacyOpen(false)}
-      />
-      <TermsOfServiceModal
-        isOpen={isTermsOpen}
-        onClose={() => setIsTermsOpen(false)}
-      />
+      {hasPrivacyMounted && (
+        <PrivacyPolicyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+        />
+      )}
+      {hasTermsMounted && (
+        <TermsOfServiceModal
+          isOpen={isTermsOpen}
+          onClose={() => setIsTermsOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -227,7 +227,7 @@ const ClinicalMarkdown: React.FC<ClinicalMarkdownProps> = ({
 
   return (
     <div
-      className={`prose pcritical-xs max-w-none pcritical-slate pcritical-headings:text-content-strong pcritical-p:text-content-default pcritical-a:text-action pcritical-strong:text-content-strong ${className}`}
+      className={`prose prose-xs max-w-none prose-neutral prose-headings:text-content-strong prose-p:text-content-default prose-a:text-action prose-strong:text-content-strong ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}

@@ -1,134 +1,147 @@
-import {
-  generateMedicalChart,
-  generateProgressNote,
-  reassessSoapNote,
-} from "./tasks/chartGeneration";
-import {
-  analyzeClinicalPhotos,
-  analyzeImagingPhotos,
-  analyzeLabPhotos,
-  transcribeAudio,
-} from "./tasks/mediaAnalysis";
-import {
-  generateClinicalSuggestions,
-  integrateClinicalData,
-} from "./tasks/clinicalAssistance";
-import { sendChatMessage, sendNoteThreadMessage } from "./tasks/conversation";
-import {
-  generateInputSuggestions,
-  generateResponseTitle,
-  medicalLookup,
-} from "./tasks/inputAssistance";
-import { refreshPatientSummary } from "./tasks/summary";
-import {
-  generateHomeInstructions,
-  parsePrescriptions,
-} from "./tasks/discharge";
 import type { ClinicalAiGateway } from "./clinicalAiGateway";
 
-/** Adapts the existing direct Gemini service to the feature-facing task contract. */
+const throwIfAborted = (signal?: AbortSignal) => {
+  if (signal?.aborted) {
+    const error = new Error("AbortError");
+    error.name = "AbortError";
+    throw error;
+  }
+};
+
+/** Loads each provider task only when its typed gateway operation is requested. */
 export const geminiGateway: ClinicalAiGateway = {
-  generateChart: ({
-    text,
-    files,
-    model,
-    specialization,
-    useSearch,
-    history,
-    currentPatientInfo,
-  }) =>
-    generateMedicalChart(
-      text,
-      files,
-      model,
-      specialization,
-      useSearch,
-      history,
-      currentPatientInfo,
+  generateChart: async (request) =>
+    (await import("./tasks/chartGeneration")).generateMedicalChart(
+      request.text,
+      request.files,
+      request.model,
+      request.specialization,
+      request.useSearch,
+      request.history,
+      request.currentPatientInfo,
     ),
-  generateProgressNote: ({
-    text,
-    files,
-    model,
-    specialization,
-    useSearch,
-    history,
-  }) =>
-    generateProgressNote(
-      text,
-      files,
-      model,
-      specialization,
-      useSearch,
-      history,
+  generateProgressNote: async (request) =>
+    (await import("./tasks/chartGeneration")).generateProgressNote(
+      request.text,
+      request.files,
+      request.model,
+      request.specialization,
+      request.useSearch,
+      request.history,
     ),
-  reassessNote: ({ soap, history, model, specialization, useSearch }) =>
-    reassessSoapNote(soap, history, model, specialization, useSearch),
-  sendChatMessage: ({
-    model,
-    history,
-    message,
-    patient,
-    useSearch,
-    signal,
-    attachments,
-  }) =>
-    sendChatMessage(
-      model,
-      history,
-      message,
-      patient,
-      useSearch,
+  reassessNote: async (request) =>
+    (await import("./tasks/chartGeneration")).reassessSoapNote(
+      request.soap,
+      request.history,
+      request.model,
+      request.specialization,
+      request.useSearch,
+    ),
+  sendChatMessage: async (request) => {
+    throwIfAborted(request.signal);
+    const { sendChatMessage } = await import("./tasks/conversation");
+    throwIfAborted(request.signal);
+    return sendChatMessage(
+      request.model,
+      request.history,
+      request.message,
+      request.patient,
+      request.useSearch,
+      request.signal,
+      request.attachments,
+    );
+  },
+  sendNoteThreadMessage: async (request) => {
+    throwIfAborted(request.signal);
+    const { sendNoteThreadMessage } = await import("./tasks/conversation");
+    throwIfAborted(request.signal);
+    return sendNoteThreadMessage(
+      request.model,
+      request.history,
+      request.message,
+      request.noteContent,
+      request.noteTitle,
+      request.highlightedContext,
+      request.patient,
+      request.signal,
+      request.attachments,
+    );
+  },
+  transcribeAudio: async (audio) =>
+    (await import("./tasks/mediaAnalysis")).transcribeAudio(audio),
+  lookup: async (query, signal) => {
+    throwIfAborted(signal);
+    return (await import("./tasks/inputAssistance")).medicalLookup(
+      query,
       signal,
-      attachments,
+    );
+  },
+  generateClinicalSuggestions: async (section, context) =>
+    (await import("./tasks/clinicalAssistance")).generateClinicalSuggestions(
+      section,
+      context,
     ),
-  sendNoteThreadMessage: ({
+  integrateClinicalData: async (
+    section,
+    currentContent,
+    suggestions,
+    userInput,
     model,
-    history,
-    message,
-    noteContent,
-    noteTitle,
-    highlightedContext,
-    patient,
-    signal,
-    attachments,
-  }) =>
-    sendNoteThreadMessage(
+  ) =>
+    (await import("./tasks/clinicalAssistance")).integrateClinicalData(
+      section,
+      currentContent,
+      suggestions,
+      userInput,
       model,
-      history,
-      message,
-      noteContent,
-      noteTitle,
-      highlightedContext,
-      patient,
-      signal,
-      attachments,
     ),
-  transcribeAudio,
-  lookup: medicalLookup,
-  generateClinicalSuggestions,
-  integrateClinicalData,
-  analyzeClinicalPhotos,
-  analyzeLabPhotos,
-  analyzeImagingPhotos,
-  generateInputSuggestions,
-  generateResponseTitle,
-  refreshSummary: ({
-    currentSummary,
-    patientInfo,
-    recentEntries,
-    recentCourse,
+  analyzeClinicalPhotos: async (files, currentPhysicalExam, model) =>
+    (await import("./tasks/mediaAnalysis")).analyzeClinicalPhotos(
+      files,
+      currentPhysicalExam,
+      model,
+    ),
+  analyzeLabPhotos: async (files, currentLabs, currentInterpretation, model) =>
+    (await import("./tasks/mediaAnalysis")).analyzeLabPhotos(
+      files,
+      currentLabs,
+      currentInterpretation,
+      model,
+    ),
+  analyzeImagingPhotos: async (
+    files,
+    currentImaging,
+    currentCorrelation,
     model,
-    specialization,
-  }) =>
-    refreshPatientSummary(
-      currentSummary,
-      patientInfo,
-      recentEntries,
-      recentCourse,
+  ) =>
+    (await import("./tasks/mediaAnalysis")).analyzeImagingPhotos(
+      files,
+      currentImaging,
+      currentCorrelation,
       model,
-      specialization,
     ),
-  generateHomeInstructions,
-  parsePrescriptions,
+  generateInputSuggestions: async (notes, model) =>
+    (await import("./tasks/inputAssistance")).generateInputSuggestions(
+      notes,
+      model,
+    ),
+  generateResponseTitle: async (userMessage, responseContent, model) =>
+    (await import("./tasks/inputAssistance")).generateResponseTitle(
+      userMessage,
+      responseContent,
+      model,
+    ),
+  refreshSummary: async (request) =>
+    (await import("./tasks/summary")).refreshPatientSummary(
+      request.currentSummary,
+      request.patientInfo,
+      request.recentEntries,
+      request.recentCourse,
+      request.model,
+      request.specialization,
+    ),
+  generateHomeInstructions: async (soap) =>
+    (await import("./tasks/discharge")).generateHomeInstructions(soap),
+  parsePrescriptions: async (plan) =>
+    (await import("./tasks/discharge")).parsePrescriptions(plan),
 };

@@ -129,7 +129,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           <ClinicalMarkdown
             content={msg.text}
             groundingSources={msg.groundingSources}
-            className="pcritical-slate"
+            className="prose-neutral"
             showReferences={true}
           />
 

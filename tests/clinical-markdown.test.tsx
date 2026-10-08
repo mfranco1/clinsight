@@ -16,6 +16,10 @@ describe("ClinicalMarkdown", () => {
     ).toHaveClass("text-sm", "font-bold");
     expect(screen.getByText("Clinical summary").tagName).toBe("P");
     expect(container.querySelector("ul")).toHaveClass("list-disc", "pl-5");
-    expect(container.firstElementChild).toHaveClass("custom-prose");
+    expect(container.firstElementChild).toHaveClass(
+      "custom-prose",
+      "prose",
+      "prose-neutral",
+    );
   });
 });
