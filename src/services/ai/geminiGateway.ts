@@ -140,8 +140,6 @@ export const geminiGateway: ClinicalAiGateway = {
       request.model,
       request.specialization,
     ),
-  generateHomeInstructions: async (soap) =>
-    (await import("./tasks/discharge")).generateHomeInstructions(soap),
   parsePrescriptions: async (plan) =>
     (await import("./tasks/discharge")).parsePrescriptions(plan),
 };

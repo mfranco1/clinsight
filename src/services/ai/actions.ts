@@ -113,7 +113,5 @@ export const generateInputSuggestions = (
   notes: string,
   model = DEFAULT_MODEL,
 ) => geminiGateway.generateInputSuggestions(notes, model);
-export const generateHomeInstructions = (soap: SoapNote) =>
-  geminiGateway.generateHomeInstructions(soap);
 export const parsePrescriptions = (plan: PlanItem[]) =>
   geminiGateway.parsePrescriptions(plan);

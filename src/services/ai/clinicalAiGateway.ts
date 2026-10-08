@@ -139,14 +139,6 @@ export interface ClinicalAiGateway {
     model?: string,
   ): Promise<string>;
   refreshSummary(request: RefreshSummaryRequest): Promise<HandoffSummary>;
-  generateHomeInstructions(soap: SoapNote): Promise<{
-    diet: string[];
-    lifestyle: string[];
-    activity: string[];
-    redFlags: string[];
-    referrals: string[];
-    followUp: string;
-  }>;
   parsePrescriptions(plan: PlanItem[]): Promise<
     Array<{
       drug: string;

@@ -10,7 +10,6 @@ import type NotesViewComponent from "./features/notes/NotesView";
 import type OrdersViewComponent from "./features/orders/OrdersView";
 import type ProfileViewComponent from "./features/profile/ProfileView";
 import type SettingsViewComponent from "./features/settings/SettingsView";
-import type LandingPageComponent from "./features/access/LandingPage";
 import type LoginPageComponent from "./features/access/LoginPage";
 import type ChatPanelComponent from "./features/chat/ChatPanel";
 import type PrivacyPolicyModalComponent from "./components/PrivacyPolicyModal";
@@ -160,12 +159,6 @@ const SettingsView = createLazyFeature<
 >(
   () => import("./features/settings/SettingsView"),
   <ViewLoadingFallback title="Settings" />,
-);
-const LandingPage = createLazyFeature<
-  React.ComponentProps<typeof LandingPageComponent>
->(
-  () => import("./features/access/LandingPage"),
-  <LoadingScreen label="Loading ClinSight…" />,
 );
 const LoginPage = createLazyFeature<
   React.ComponentProps<typeof LoginPageComponent>
@@ -1192,17 +1185,8 @@ function App() {
     }
   };
 
-  if (currentView === ViewMode.ABOUT) {
-    return <LandingPage onLaunchApp={() => handleNavigate(ViewMode.LOGIN)} />;
-  }
-
   if (currentView === ViewMode.LOGIN) {
-    return (
-      <LoginPage
-        onLogin={handleLoginSuccess}
-        onGoToAbout={() => handleNavigate(ViewMode.ABOUT)}
-      />
-    );
+    return <LoginPage onLogin={handleLoginSuccess} />;
   }
 
   const activeEntry = activePatient?.entries.find(
@@ -1445,12 +1429,6 @@ function App() {
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-center items-center gap-8 text-xs text-content-muted">
               <p>&copy; {new Date().getFullYear()} Clinsight</p>
               <div className="flex space-x-6">
-                <button
-                  onClick={() => handleNavigate(ViewMode.ABOUT)}
-                  className="hover:text-action transition-colors font-medium"
-                >
-                  About
-                </button>
                 <button
                   onClick={() => {
                     setHasPrivacyMounted(true);

@@ -221,11 +221,6 @@ export const generateMedicalChart = async (
               items: { type: Type.STRING },
               description: SCHEMA_DESCRIPTIONS.handoff_toDoList,
             },
-            clinicalPearl: {
-              type: Type.STRING,
-              nullable: true,
-              description: SCHEMA_DESCRIPTIONS.handoff_clinicalPearl,
-            },
           },
           required: ["patientId", "oneLiner", "activeIssues", "toDoList"],
         },

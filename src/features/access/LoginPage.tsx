@@ -5,10 +5,9 @@ import Button from "../../components/ui/Button";
 
 interface LoginPageProps {
   onLogin: () => void;
-  onGoToAbout: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoToAbout }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

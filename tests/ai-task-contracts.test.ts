@@ -12,10 +12,7 @@ vi.mock("../src/services/ai/geminiTransport", () => ({
   sanitizeModelOutput: (text: string) => text,
 }));
 
-import {
-  generateHomeInstructions,
-  parsePrescriptions,
-} from "../src/services/ai/tasks/discharge";
+import { parsePrescriptions } from "../src/services/ai/tasks/discharge";
 import { refreshPatientSummary } from "../src/services/ai/tasks/summary";
 import { generateClinicalSuggestions } from "../src/services/ai/tasks/clinicalAssistance";
 import {
@@ -38,37 +35,6 @@ describe("AI task request and result contracts", () => {
     callGemini.mockReset();
     convertFilesToParts.mockClear();
     blobToBase64.mockClear();
-  });
-
-  it("keeps home-instruction schema and structured result shape", async () => {
-    const result = {
-      diet: ["Hydrate"],
-      lifestyle: [],
-      activity: [],
-      redFlags: [],
-      referrals: [],
-      followUp: "One week",
-    };
-    callGemini.mockResolvedValue({ text: JSON.stringify(result) });
-
-    await expect(generateHomeInstructions({} as never)).resolves.toEqual(
-      result,
-    );
-    expect(callGemini).toHaveBeenCalledWith(
-      expect.objectContaining({
-        responseMimeType: "application/json",
-        responseSchema: expect.objectContaining({
-          required: [
-            "diet",
-            "lifestyle",
-            "activity",
-            "redFlags",
-            "referrals",
-            "followUp",
-          ],
-        }),
-      }),
-    );
   });
 
   it("preserves prescription parsing result fields and empty-response fallback", async () => {
@@ -121,6 +87,30 @@ describe("AI task request and result contracts", () => {
           parts: [{ text: expect.stringContaining("Primary Care") }],
         },
       }),
+    );
+  });
+
+  it("omits legacy pearls from refresh requests and generated summary schemas", async () => {
+    const legacySummary = {
+      patientId: "patient-1",
+      oneLiner: "Stable",
+      activeIssues: [],
+      toDoList: [],
+      clinicalPearl: "Legacy education",
+    };
+    callGemini.mockResolvedValue({ text: JSON.stringify(legacySummary) });
+    await refreshPatientSummary(
+      legacySummary,
+      { patientName: "Fixture Patient" } as never,
+      [],
+      [],
+      "model-x",
+      "Primary Care",
+    );
+    const request = callGemini.mock.calls[0][0];
+    expect(request.contents.parts[0].text).not.toContain("Legacy education");
+    expect(request.responseSchema.properties).not.toHaveProperty(
+      "clinicalPearl",
     );
   });
 

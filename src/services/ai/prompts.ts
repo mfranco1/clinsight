@@ -22,7 +22,6 @@ Follow these rules:
 1. **One-Liner (Summary):** Update the comprehensive 2-3 paragraph summary of the patient's hospital course. Incorporate the new developments, procedures, or changes in status while maintaining the core context.
 2. **Active Issues:** Add any newly identified problems. Remove or mark as 'resolved' issues that have been definitively addressed.
 3. **To-Do List (Action Items):** Add new pending tasks (e.g., pending labs, consults, procedures). Remove tasks that the recent notes indicate have been completed.
-4. **Clinical Pearl:** Optionally provide a brief, high-yield educational point relevant to the case.
 Output strictly in the requested JSON format.`;
 
 export const TRANSCRIBE_PROMPT =
@@ -157,9 +156,6 @@ export const MEDICAL_LOOKUP_PROMPT = `
     
     ${GROUNDING_INSTRUCTION}
 `;
-
-export const HOME_INSTRUCTIONS_PROMPT = (soapData: SoapNote) =>
-  `Generate discharge instructions based on: ${JSON.stringify(soapData)}`;
 
 export const PRESCRIPTION_PARSE_PROMPT = (plan: PlanItem[]) =>
   `Extract pharmaceutical prescriptions from: ${JSON.stringify(plan)}`;

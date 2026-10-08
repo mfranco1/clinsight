@@ -22,4 +22,19 @@ describe("patient persistence boundary", () => {
     expect(loadPersistedPatients(JSON.stringify({ patients: [] }))).toEqual([]);
     expect(loadPersistedPatients("not-json")).toEqual([]);
   });
+
+  it("round-trips legacy clinical pearls", () => {
+    const legacyPatient = {
+      ...structuredPatientCase,
+      handoff: {
+        ...structuredPatientCase.handoff,
+        clinicalPearl: "Legacy note",
+      },
+    };
+    const [hydrated] = loadPersistedPatients(JSON.stringify([legacyPatient]));
+    expect(hydrated.handoff.clinicalPearl).toBe("Legacy note");
+    expect(JSON.parse(JSON.stringify(hydrated)).handoff.clinicalPearl).toBe(
+      "Legacy note",
+    );
+  });
 });

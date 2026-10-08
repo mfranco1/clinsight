@@ -131,8 +131,6 @@ export const SCHEMA_DESCRIPTIONS = {
     "A list of newly identified, active, or currently unresolved medical problems.",
   handoff_toDoList:
     "A prioritized list of pending actionable items, next-day diagnostics, pending labs, or procedures.",
-  handoff_clinicalPearl:
-    "Optionally prepare a brief, high-yield educational point or pearl highly relevant to the clinical presentation.",
 
   // References
   references:

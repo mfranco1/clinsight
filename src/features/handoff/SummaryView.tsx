@@ -15,6 +15,21 @@ interface SummaryViewProps {
   isRefreshing?: boolean;
 }
 
+export const formatSummaryForClipboard = (summary: HandoffSummary) => {
+  let text = `PATIENT SUMMARY\n`;
+  text += `Patient: ${summary.patientId}\n`;
+  text += `Date: ${new Date().toLocaleDateString()}\n\n`;
+  text += `SUMMARY:\n${summary.oneLiner}\n\n`;
+  text += `ACTIVE ISSUES:\n`;
+  if (summary.activeIssues.length === 0) text += `None listed.\n`;
+  summary.activeIssues.forEach((issue) => (text += `- ${issue}\n`));
+  text += `\n`;
+  text += `ACTION ITEMS:\n`;
+  if (summary.toDoList.length === 0) text += `Nothing pending.\n`;
+  summary.toDoList.forEach((item) => (text += `[ ] ${item}\n`));
+  return text;
+};
+
 const SummaryView: React.FC<SummaryViewProps> = ({
   data,
   patientInfo,
@@ -29,31 +44,8 @@ const SummaryView: React.FC<SummaryViewProps> = ({
     onUpdate?.({ ...data, oneLiner: value });
   };
 
-  const formatForClipboard = (summary: HandoffSummary) => {
-    let text = `PATIENT SUMMARY\n`;
-    text += `Patient: ${summary.patientId}\n`;
-    text += `Date: ${new Date().toLocaleDateString()}\n\n`;
-
-    text += `SUMMARY:\n${summary.oneLiner}\n\n`;
-
-    text += `ACTIVE ISSUES:\n`;
-    if (summary.activeIssues.length === 0) text += `None listed.\n`;
-    summary.activeIssues.forEach((issue) => (text += `- ${issue}\n`));
-    text += `\n`;
-
-    text += `ACTION ITEMS:\n`;
-    if (summary.toDoList.length === 0) text += `Nothing pending.\n`;
-    summary.toDoList.forEach((item) => (text += `[ ] ${item}\n`));
-
-    if (summary.clinicalPearl) {
-      text += `\nCLINICAL PEARL:\n${summary.clinicalPearl}\n`;
-    }
-
-    return text;
-  };
-
   const handleCopy = () => {
-    const text = formatForClipboard(data);
+    const text = formatSummaryForClipboard(data);
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -226,24 +218,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Clinical Pearl */}
-          {data.clinicalPearl && (
-            <div className="mt-10 pt-8 border-t border-border-subtle">
-              <div className="bg-action-subtle border border-action-100 rounded-lg p-5 flex items-start">
-                <Icons.Info className="w-5 h-5 text-action-500 mt-0.5 mr-3 flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-bold text-action-900 uppercase tracking-wide mb-1">
-                    Clinical Pearl
-                  </h4>
-                  <ClinicalMarkdown
-                    content={data.clinicalPearl}
-                    className="text-xs text-action-800 italic"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

@@ -11,7 +11,6 @@ const gateway = vi.hoisted(() => ({
   analyzeImagingPhotos: vi.fn(),
   lookup: vi.fn(),
   generateInputSuggestions: vi.fn(),
-  generateHomeInstructions: vi.fn(),
   parsePrescriptions: vi.fn(),
 }));
 

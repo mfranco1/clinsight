@@ -155,7 +155,13 @@ export const updateHandoff = (
   handoff: HandoffSummary,
 ): MedicalChartResponse => ({
   ...patient,
-  handoff,
+  handoff: {
+    ...handoff,
+    ...(handoff.clinicalPearl === undefined &&
+    patient.handoff.clinicalPearl !== undefined
+      ? { clinicalPearl: patient.handoff.clinicalPearl }
+      : {}),
+  },
 });
 
 export const updateOrders = (

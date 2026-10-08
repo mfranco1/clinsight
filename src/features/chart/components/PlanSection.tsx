@@ -21,7 +21,6 @@ interface PlanSectionProps {
   onUpdateBroaderManagement?: (data: BroaderManagement) => void;
   fullSoapNote?: SoapNote;
   onOpenRx?: () => void;
-  onOpenInstructions?: () => void;
   orders?: PatientOrder[];
   onAddOrder?: (order: PatientOrder) => void;
   readOnly?: boolean;
@@ -35,7 +34,6 @@ const PlanSection: React.FC<PlanSectionProps> = ({
   onUpdateBroaderManagement,
   fullSoapNote,
   onOpenRx,
-  onOpenInstructions,
   orders,
   onAddOrder,
   readOnly = false,
@@ -97,15 +95,6 @@ const PlanSection: React.FC<PlanSectionProps> = ({
                 className="text-action hover:text-action-hover text-xs font-bold flex items-center bg-action-subtle px-3 py-1.5 rounded-md border border-action-100 hover:border-action-border transition-colors shadow-sm"
               >
                 Generate Rx
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenInstructions?.();
-                }}
-                className="text-action hover:text-action-hover text-xs font-bold flex items-center bg-action-subtle px-3 py-1.5 rounded-md border border-action-100 hover:border-action-border transition-colors shadow-sm"
-              >
-                Home Instructions
               </button>
             </div>
           )

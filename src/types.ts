@@ -9,7 +9,6 @@ export enum ViewMode {
   ORDERS = "ORDERS",
   NOTES = "NOTES",
   SETTINGS = "SETTINGS",
-  ABOUT = "ABOUT",
   LOGIN = "LOGIN",
 }
 
@@ -172,6 +171,7 @@ export interface HandoffSummary {
   oneLiner: string;
   activeIssues: string[];
   toDoList: string[];
+  /** Legacy saved field retained for backward-compatible import/export. */
   clinicalPearl?: string;
 }
 

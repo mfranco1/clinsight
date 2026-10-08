@@ -22,7 +22,6 @@ import PlanSection from "./components/PlanSection";
 import SectionCard from "../../components/ui/SectionCard";
 import Badge from "../../components/ui/Badge";
 import GenerateRxModal from "./components/GenerateRxModal";
-import HomeInstructionsModal from "./components/HomeInstructionsModal";
 import PhotoGalleryModal from "../../components/dialogs/PhotoGalleryModal";
 import ConfirmationModal from "../../components/dialogs/ConfirmationModal";
 import DateRangeFields from "../../components/ui/DateRangeFields";
@@ -600,7 +599,6 @@ const SoapView: React.FC<SoapViewProps> = ({
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
   const [isEditingRaw, setIsEditingRaw] = useState(false);
   const [isRxOpen, setIsRxOpen] = useState(false);
-  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
   const [activeSuggestions, setActiveSuggestions] = useState<{
     texts: string[];
     sectionTitle: ClinicalSectionTitle;
@@ -1297,7 +1295,6 @@ const SoapView: React.FC<SoapViewProps> = ({
                       }
                       fullSoapNote={data}
                       onOpenRx={() => setIsRxOpen(true)}
-                      onOpenInstructions={() => setIsInstructionsOpen(true)}
                       orders={orders}
                       onAddOrder={onAddOrder}
                       readOnly={isHistorical}
@@ -1458,13 +1455,6 @@ const SoapView: React.FC<SoapViewProps> = ({
               );
             }
           }}
-        />
-
-        <HomeInstructionsModal
-          isOpen={isInstructionsOpen}
-          onClose={() => setIsInstructionsOpen(false)}
-          soapData={data}
-          patientInfo={patientInfo}
         />
 
         {activeSuggestions && (

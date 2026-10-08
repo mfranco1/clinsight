@@ -8,4 +8,6 @@ Patient charts are stored in browser local storage using the `clinsight_patients
 
 The app supports importing and exporting patient-case JSON through its existing workflows. Preserve serializable attachment content and test round trips when changing the shape. Imported data must be validated and normalized at the boundary; use only de-identified examples in tests and docs.
 
+Older handoff summaries may contain the optional `clinicalPearl` field. It remains in the typed persisted shape for backward-compatible import/export and is preserved during handoff edits and AI refreshes, but current summary screens, copied summaries, and AI generation omit it. Removing it from a future migration requires an explicitly scoped data migration.
+
 Drafts and selected feature preferences may use additional local-storage keys. Search the relevant feature hook before changing retention or key names; existing data can depend on them. There is no server-side backup or recovery workflow documented here because none is implemented in this repository.

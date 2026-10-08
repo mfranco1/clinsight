@@ -77,10 +77,17 @@ describe("patient entry transitions", () => {
     expect(appendCourseEvent(patient, course[0]).course).toHaveLength(
       (patient.course || []).length + 1,
     );
-    expect(
-      updateHandoff(patient, { ...patient.handoff, oneLiner: "Updated" })
-        .entries,
-    ).toBe(patient.entries);
+    const legacyPatient = {
+      ...patient,
+      handoff: { ...patient.handoff, clinicalPearl: "Legacy pearl" },
+    };
+    const updatedHandoff = updateHandoff(legacyPatient, {
+      ...legacyPatient.handoff,
+      oneLiner: "Updated",
+      clinicalPearl: undefined,
+    });
+    expect(updatedHandoff.entries).toBe(patient.entries);
+    expect(updatedHandoff.handoff.clinicalPearl).toBe("Legacy pearl");
     expect(updateOrders(patient, [order]).orders).toEqual([order]);
     expect(
       updateOrder(updateOrders(patient, [order]), {

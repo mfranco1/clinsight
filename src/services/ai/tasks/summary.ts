@@ -25,7 +25,16 @@ PATIENT INFO:
 ${JSON.stringify(patientInfo, null, 2)}
 
 CURRENT SUMMARY:
-${JSON.stringify(currentSummary, null, 2)}
+${JSON.stringify(
+  {
+    patientId: currentSummary.patientId,
+    oneLiner: currentSummary.oneLiner,
+    activeIssues: currentSummary.activeIssues,
+    toDoList: currentSummary.toDoList,
+  },
+  null,
+  2,
+)}
 
 RECENT CHART ENTRIES (Newest first):
 ${JSON.stringify(
@@ -69,11 +78,6 @@ Specialization Context: ${specialization}
           type: Type.ARRAY,
           items: { type: Type.STRING },
           description: SCHEMA_DESCRIPTIONS.handoff_toDoList,
-        },
-        clinicalPearl: {
-          type: Type.STRING,
-          nullable: true,
-          description: SCHEMA_DESCRIPTIONS.handoff_clinicalPearl,
         },
       },
       required: ["patientId", "oneLiner", "activeIssues", "toDoList"],
