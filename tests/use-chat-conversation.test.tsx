@@ -20,7 +20,7 @@ describe("useChatConversation", () => {
       groundingSources: [],
     });
     const { result } = renderHook(() =>
-      useChatConversation({ model: "model-1", chartData: null, isOpen: true }),
+      useChatConversation({ chartData: null, isOpen: true }),
     );
     const attachment = {
       file: new File(["sample"], "sample.png"),
@@ -31,7 +31,6 @@ describe("useChatConversation", () => {
     await act(async () => result.current.sendMessage("Question", [attachment]));
 
     expect(sendChatMessage).toHaveBeenCalledWith(
-      "model-1",
       [],
       "Question",
       null,
@@ -59,7 +58,7 @@ describe("useChatConversation", () => {
         groundingSources: [],
       });
     const { result } = renderHook(() =>
-      useChatConversation({ model: "model-1", chartData: null, isOpen: true }),
+      useChatConversation({ chartData: null, isOpen: true }),
     );
 
     await act(async () => result.current.sendMessage("Retry me", []));
@@ -71,7 +70,6 @@ describe("useChatConversation", () => {
     await act(async () => result.current.retryMessage(1));
 
     expect(sendChatMessage).toHaveBeenLastCalledWith(
-      "model-1",
       [],
       "Retry me",
       null,
@@ -88,7 +86,7 @@ describe("useChatConversation", () => {
   it("aborts an active request when cancelled without adding a failure message", async () => {
     let observedSignal: AbortSignal | undefined;
     vi.mocked(sendChatMessage).mockImplementation(
-      (_model, _history, _message, _chart, _search, signal) => {
+      (_history, _message, _chart, _search, signal) => {
         observedSignal = signal;
         return new Promise((_resolve, reject) => {
           signal?.addEventListener("abort", () =>
@@ -98,7 +96,7 @@ describe("useChatConversation", () => {
       },
     );
     const { result } = renderHook(() =>
-      useChatConversation({ model: "model-1", chartData: null, isOpen: true }),
+      useChatConversation({ chartData: null, isOpen: true }),
     );
     let pending!: Promise<void>;
 
@@ -121,7 +119,7 @@ describe("useChatConversation", () => {
       groundingSources: [],
     });
     const { result } = renderHook(() =>
-      useChatConversation({ model: "model-1", chartData: null, isOpen: false }),
+      useChatConversation({ chartData: null, isOpen: false }),
     );
 
     await act(async () => result.current.sendMessage("Question", []));

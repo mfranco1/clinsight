@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { GenerateContentResponse } from "@google/genai";
 import {
   awaitWithAbort,
+  buildGeminiContentRequest,
   blobToBase64,
   callGemini,
   cleanGroundingSources,
@@ -11,6 +12,35 @@ import {
 import { extractAndParseJSON } from "../src/services/ai/responseParsing";
 
 describe("Gemini transport helpers", () => {
+  it("routes text, structured, grounded, and media requests to the fixed model", () => {
+    const requests = [
+      buildGeminiContentRequest({ contents: "text" }, {}),
+      buildGeminiContentRequest(
+        { contents: "structured" },
+        {
+          responseMimeType: "application/json",
+          responseSchema: { type: "OBJECT" },
+        },
+      ),
+      buildGeminiContentRequest(
+        { contents: "grounded" },
+        { tools: [{ googleSearch: {} }] },
+      ),
+      buildGeminiContentRequest(
+        {
+          contents: {
+            parts: [{ inlineData: { data: "AA==", mimeType: "image/png" } }],
+          },
+        },
+        {},
+      ),
+    ];
+
+    expect(requests.map((request) => request.model)).toEqual(
+      Array(4).fill("gemini-3.8-flash"),
+    );
+  });
+
   it("sanitizes model reasoning markers and normalizes grounding URLs", () => {
     expect(sanitizeModelOutput("Answer <thought>private</thought> done")).toBe(
       "Answer  done",

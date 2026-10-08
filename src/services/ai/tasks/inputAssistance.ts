@@ -1,5 +1,4 @@
 import { Type } from "@google/genai";
-import { DEFAULT_MODEL } from "../../../config/appConfig";
 import type { GroundingSource, SuggestionsData } from "../../../types";
 import { INPUT_SUGGESTIONS_PROMPT, MEDICAL_LOOKUP_PROMPT } from "../prompts";
 import { callGemini } from "../geminiTransport";
@@ -8,11 +7,9 @@ import { logDiagnostic } from "../../diagnosticLogger";
 
 export const generateInputSuggestions = async (
   notes: string,
-  modelName = DEFAULT_MODEL,
 ): Promise<SuggestionsData> => {
   const prompt = `CURRENT DRAFT:\n${notes}\n\n${INPUT_SUGGESTIONS_PROMPT}`;
   const result = await callGemini({
-    model: modelName,
     contents: { parts: [{ text: prompt }] },
     responseMimeType: "application/json",
     responseSchema: {
@@ -61,7 +58,6 @@ export const medicalLookup = async (
 export const generateResponseTitle = async (
   userMessage: string,
   responseContent: string,
-  modelName = DEFAULT_MODEL,
 ): Promise<string> => {
   try {
     const prompt = `Based on the following practitioner prompt and the assistant response, generate a concise, clinical-record-appropriate title of 2 to 5 words for this interaction. Do not use quotes, asterisks, punctuation, or conversational filler. Keep it strictly focused on the medical or administrative focus (e.g. "Laboratory Results Review", "Hypertension Counseling", "Pediatric Feeding Guide", "Insulin Dose Adjustment").Do not use emdashes.
@@ -72,7 +68,6 @@ Practitioner Query:
 Assistant Response:
 "${responseContent.substring(0, 1000)}"`;
     const result = await callGemini({
-      model: modelName,
       contents: { parts: [{ text: prompt }] },
     });
     return result.text.trim().replace(/^['"*]+|['"*]+$/g, "");

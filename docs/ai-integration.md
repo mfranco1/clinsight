@@ -6,6 +6,8 @@ Feature code calls typed operations in `src/services/ai/actions.ts`, which use t
 
 The gateway dynamically loads the owning task module when an operation is called, keeping prompts, runtime SDK schemas, and transport code out of dashboard startup. Calls remain typed and task modules retain provider-specific behavior behind the same boundary. Chat cancellation is checked after task loading and before provider work begins.
 
+All provider requests use the fixed Gemini model `gemini-3.8-flash`, enforced by `geminiTransport.ts`. Model selection is not exposed in the product or AI action contracts. Existing `clinsight_default_model` values are ignored; they do not affect routing. Task prompts, system instructions, and response schemas remain owned by their task modules and are independent of model selection.
+
 Keep UI/features independent of provider SDK details. Add or change task contracts at the gateway/action/task boundary and cover request mapping, response shape, empty or malformed output, and error behavior as appropriate. Patient summary generation includes the one-liner, active issues, and action items; clinical pearls are not generated. Prescription parsing remains available; home-instructions generation has been removed from the current product. Keep raw prompts, completions, and patient content out of diagnostics.
 
 Tests must never call an AI provider. Vitest rejects unexpected network requests, and the `test` build mode omits local credentials and makes `geminiTransport` fail before constructing the SDK client. Browser tests use a local-only network fixture. Cover AI workflows with synthetic responses and mocked gateway/transport boundaries; there is no live-provider test exception.

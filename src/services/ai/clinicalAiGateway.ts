@@ -15,7 +15,6 @@ import type {
 interface GenerateChartRequest {
   text: string;
   files: File[];
-  model?: string;
   specialization?: string;
   useSearch?: boolean;
   history?: ChartEntry[];
@@ -25,7 +24,6 @@ interface GenerateChartRequest {
 interface GenerateProgressNoteRequest {
   text: string;
   files: File[];
-  model?: string;
   specialization?: string;
   useSearch?: boolean;
   history?: ChartEntry[];
@@ -34,13 +32,11 @@ interface GenerateProgressNoteRequest {
 interface ReassessNoteRequest {
   soap: SoapNote;
   history?: ChartEntry[];
-  model?: string;
   specialization?: string;
   useSearch?: boolean;
 }
 
 interface ChatRequest {
-  model?: string;
   history: ChatMessage[];
   message: string;
   patient: MedicalChartResponse | null;
@@ -50,7 +46,6 @@ interface ChatRequest {
 }
 
 interface NoteThreadRequest {
-  model?: string;
   history: ChatMessage[];
   message: string;
   noteContent: string;
@@ -66,7 +61,6 @@ interface RefreshSummaryRequest {
   patientInfo: GeneralData;
   recentEntries: ChartEntry[];
   recentCourse: CourseEvent[];
-  model: string;
   specialization: string;
 }
 
@@ -110,33 +104,25 @@ export interface ClinicalAiGateway {
     currentContent: string,
     suggestions: string[],
     userInput: string,
-    model?: string,
   ): Promise<string>;
   analyzeClinicalPhotos(
     files: File[],
     currentPhysicalExam?: string,
-    model?: string,
   ): Promise<string>;
   analyzeLabPhotos(
     files: File[],
     currentLabs?: string,
     currentInterpretation?: string,
-    model?: string,
   ): Promise<{ labs: string; labInterpretation: string[] }>;
   analyzeImagingPhotos(
     files: File[],
     currentImaging?: string,
     currentCorrelation?: string,
-    model?: string,
   ): Promise<{ imaging: string; imagingCorrelation: string[] }>;
-  generateInputSuggestions(
-    notes: string,
-    model?: string,
-  ): Promise<SuggestionsData>;
+  generateInputSuggestions(notes: string): Promise<SuggestionsData>;
   generateResponseTitle(
     userMessage: string,
     responseContent: string,
-    model?: string,
   ): Promise<string>;
   refreshSummary(request: RefreshSummaryRequest): Promise<HandoffSummary>;
   parsePrescriptions(plan: PlanItem[]): Promise<

@@ -1,11 +1,9 @@
-import { DEFAULT_MODEL } from "../../config/appConfig";
 import type {
   FileUpload,
   MedicalChartResponse,
   PlanItem,
   SoapNote,
 } from "../../types";
-import { safeStorage } from "../../utils/storage";
 import { geminiGateway } from "./geminiGateway";
 
 /** Positional feature actions preserve the existing component API during gateway migration. */
@@ -13,7 +11,6 @@ export const transcribeAudio = (audio: Blob) =>
   geminiGateway.transcribeAudio(audio);
 
 export const sendChatMessage = (
-  model: string = DEFAULT_MODEL,
   history: Parameters<typeof geminiGateway.sendChatMessage>[0]["history"],
   message: string,
   patient: MedicalChartResponse | null,
@@ -22,7 +19,6 @@ export const sendChatMessage = (
   attachments?: FileUpload[],
 ) =>
   geminiGateway.sendChatMessage({
-    model,
     history,
     message,
     patient,
@@ -32,8 +28,6 @@ export const sendChatMessage = (
   });
 
 export const sendNoteThreadMessage = (
-  model: string = safeStorage.getItem("clinsight_default_model") ||
-    DEFAULT_MODEL,
   history: Parameters<typeof geminiGateway.sendNoteThreadMessage>[0]["history"],
   message: string,
   noteContent: string,
@@ -44,7 +38,6 @@ export const sendNoteThreadMessage = (
   attachments?: FileUpload[],
 ) =>
   geminiGateway.sendNoteThreadMessage({
-    model,
     history,
     message,
     noteContent,
@@ -65,53 +58,35 @@ export const integrateClinicalData = (
   currentContent: string,
   suggestions: string[],
   userInput: string,
-  model = DEFAULT_MODEL,
 ) =>
   geminiGateway.integrateClinicalData(
     section,
     currentContent,
     suggestions,
     userInput,
-    model,
   );
 
 export const analyzeClinicalPhotos = (
   files: File[],
   currentPhysicalExam = "",
-  model = DEFAULT_MODEL,
-) => geminiGateway.analyzeClinicalPhotos(files, currentPhysicalExam, model);
+) => geminiGateway.analyzeClinicalPhotos(files, currentPhysicalExam);
 
 export const analyzeLabPhotos = (
   files: File[],
   currentLabs = "",
   currentInterpretation = "",
-  model = DEFAULT_MODEL,
-) =>
-  geminiGateway.analyzeLabPhotos(
-    files,
-    currentLabs,
-    currentInterpretation,
-    model,
-  );
+) => geminiGateway.analyzeLabPhotos(files, currentLabs, currentInterpretation);
 
 export const analyzeImagingPhotos = (
   files: File[],
   currentImaging = "",
   currentCorrelation = "",
-  model = DEFAULT_MODEL,
 ) =>
-  geminiGateway.analyzeImagingPhotos(
-    files,
-    currentImaging,
-    currentCorrelation,
-    model,
-  );
+  geminiGateway.analyzeImagingPhotos(files, currentImaging, currentCorrelation);
 
 export const medicalLookup = (query: string, signal?: AbortSignal) =>
   geminiGateway.lookup(query, signal);
-export const generateInputSuggestions = (
-  notes: string,
-  model = DEFAULT_MODEL,
-) => geminiGateway.generateInputSuggestions(notes, model);
+export const generateInputSuggestions = (notes: string) =>
+  geminiGateway.generateInputSuggestions(notes);
 export const parsePrescriptions = (plan: PlanItem[]) =>
   geminiGateway.parsePrescriptions(plan);

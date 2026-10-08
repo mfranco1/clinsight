@@ -22,14 +22,13 @@ import type { FileUpload } from "../src/types";
 describe("AI feature actions", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("maps existing positional chat calls to the typed gateway request", async () => {
+  it("maps chat calls to the typed gateway request", async () => {
     const history = [{ role: "user", text: "Hello" }] as never;
     const patient = { patientInfo: { patientName: "Fixture" } } as never;
     const attachments: FileUpload[] = [];
     const signal = new AbortController().signal;
 
     await sendChatMessage(
-      "model-x",
       history,
       "Follow up",
       patient,
@@ -39,7 +38,6 @@ describe("AI feature actions", () => {
     );
 
     expect(gateway.sendChatMessage).toHaveBeenCalledWith({
-      model: "model-x",
       history,
       message: "Follow up",
       patient,

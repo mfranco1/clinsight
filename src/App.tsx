@@ -49,7 +49,6 @@ import {
   requestNotificationPermission,
   sendNotification,
 } from "./services/notificationService";
-import { DEFAULT_MODEL } from "./config/appConfig";
 import { getErrorMessageCompat } from "./services/appErrors";
 import {
   getTodayLocalDateString,
@@ -218,15 +217,11 @@ function App() {
     message: string;
     type: "success" | "error" | "info";
   } | null>(null);
-  const [defaultModel, setDefaultModel] = useState<string>(
-    () => safeStorage.getItem("clinsight_default_model") || DEFAULT_MODEL,
-  );
   const [defaultSpecialization, setDefaultSpecialization] = useState<string>(
     () =>
       safeStorage.getItem("clinsight_default_specialization") ||
       "General Practice",
   );
-  const [model, setModel] = useState<string>(defaultModel);
   const [specialization, setSpecialization] = useState<string>(
     defaultSpecialization,
   );
@@ -273,11 +268,6 @@ function App() {
     );
     if (updatedPatients !== patients) updatePatients(() => updatedPatients);
   }, [patients]);
-
-  useEffect(() => {
-    safeStorage.setItem("clinsight_default_model", defaultModel);
-    setModel(defaultModel);
-  }, [defaultModel]);
 
   useEffect(() => {
     safeStorage.setItem(
@@ -436,7 +426,6 @@ function App() {
       setActiveEntryId(null);
       if (view === ViewMode.INPUT) {
         setSpecialization(defaultSpecialization);
-        setModel(defaultModel);
       }
     }
     setCurrentView(view);
@@ -457,7 +446,6 @@ function App() {
         const result = await geminiGateway.generateProgressNote({
           text: inputText,
           files: filesToUpload,
-          model,
           specialization,
           useSearch: true,
           history: activePatient.entries,
@@ -542,7 +530,6 @@ function App() {
         const data = await geminiGateway.generateChart({
           text: inputText,
           files: filesToUpload,
-          model,
           specialization,
           useSearch: true,
           history: [],
@@ -797,7 +784,6 @@ function App() {
       const result = await geminiGateway.reassessNote({
         soap: activeEntry.soap,
         history: recentHistory,
-        model,
         specialization,
         useSearch: true,
       });
@@ -852,7 +838,6 @@ function App() {
       const result = await geminiGateway.generateProgressNote({
         text: rawText,
         files: activeEntry.attachments?.map((a) => a.file) || [],
-        model,
         specialization,
         useSearch: true,
         history,
@@ -906,7 +891,6 @@ function App() {
     setInputText("");
     clearInputFiles();
     setSpecialization(defaultSpecialization);
-    setModel(defaultModel);
     setError(null);
   };
 
@@ -976,7 +960,6 @@ function App() {
         patientInfo: activePatient.patientInfo,
         recentEntries,
         recentCourse,
-        model,
         specialization,
       });
 
@@ -1303,8 +1286,6 @@ function App() {
                 isGenerating={isGenerating}
                 onReset={handleResetForm}
                 onImport={handleImportCase}
-                selectedModel={model}
-                onModelSelect={setModel}
                 selectedSpecialization={specialization}
                 onSpecializationSelect={setSpecialization}
                 hasExistingData={!!activePatient}
@@ -1341,7 +1322,6 @@ function App() {
                 onReactivateEncounter={(encounterId) =>
                   handleReactivateEncounter(activePatient.id, encounterId)
                 }
-                selectedModel={model}
                 groundingSources={activeEntry.groundingSources}
                 references={activeEntry.references}
                 onUpdate={(updatedSoap) =>
@@ -1420,8 +1400,6 @@ function App() {
               <SettingsView
                 defaultSpecialization={defaultSpecialization}
                 setDefaultSpecialization={setDefaultSpecialization}
-                defaultModel={defaultModel}
-                setDefaultModel={setDefaultModel}
               />
             )}
           </div>
@@ -1476,8 +1454,6 @@ function App() {
           onClose={() => setIsChatOpen(false)}
           chartData={activePatient}
           onSaveAsNote={handleSaveChatAsNote}
-          model={model}
-          onModelChange={setModel}
         />
       )}
 

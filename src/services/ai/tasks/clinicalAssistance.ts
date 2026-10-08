@@ -1,5 +1,4 @@
 import { Type } from "@google/genai";
-import { DEFAULT_MODEL } from "../../../config/appConfig";
 import { markdownBulletsToArray } from "../../../utils/markdown";
 import { SCHEMA_DESCRIPTIONS } from "../schemaDescriptions";
 import {
@@ -48,7 +47,6 @@ export const integrateClinicalData = async (
   currentContent: string,
   suggestions: string[],
   userInput: string,
-  modelName = DEFAULT_MODEL,
 ): Promise<string> => {
   const prompt = INTEGRATE_DATA_PROMPT(
     sectionTitle,
@@ -57,7 +55,6 @@ export const integrateClinicalData = async (
     userInput,
   );
   const result = await callGemini({
-    model: modelName,
     contents: { parts: [{ text: prompt }] },
   });
   return result.text || currentContent;

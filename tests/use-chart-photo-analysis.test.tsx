@@ -38,7 +38,6 @@ describe("useChartPhotoAnalysis", () => {
     const { result } = renderHook(() =>
       useChartPhotoAnalysis({
         activeEntry: entry,
-        selectedModel: "model-1",
         onUpdate,
         setWorkflowError: vi.fn(),
       }),
@@ -49,7 +48,6 @@ describe("useChartPhotoAnalysis", () => {
     expect(analyzeClinicalPhotos).toHaveBeenCalledWith(
       [entry.attachments[0].file],
       "General: Well appearing",
-      "model-1",
     );
     expect(onUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -78,7 +76,6 @@ describe("useChartPhotoAnalysis", () => {
       ({ activeEntry }) =>
         useChartPhotoAnalysis({
           activeEntry,
-          selectedModel: "model-1",
           setWorkflowError,
         }),
       {
@@ -91,7 +88,6 @@ describe("useChartPhotoAnalysis", () => {
       [entry.attachments[1].file],
       "Not Recorded",
       "",
-      "model-1",
     );
 
     rerender({
@@ -115,7 +111,6 @@ describe("useChartPhotoAnalysis", () => {
     const { result } = renderHook(() =>
       useChartPhotoAnalysis({
         activeEntry: entry,
-        selectedModel: "model-1",
         setWorkflowError,
       }),
     );

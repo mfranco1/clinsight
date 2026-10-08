@@ -1,30 +1,24 @@
 import React from "react";
 import { Icons } from "../../components/ui/Icons";
-import { SPECIALIZATIONS, MODELS } from "../../config/appConfig";
+import { SPECIALIZATIONS } from "../../config/appConfig";
 
 interface SettingsViewProps {
   defaultSpecialization: string;
   setDefaultSpecialization: (val: string) => void;
-  defaultModel: string;
-  setDefaultModel: (val: string) => void;
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({
   defaultSpecialization,
   setDefaultSpecialization,
-  defaultModel,
-  setDefaultModel,
 }) => {
   const [localSpecialization, setLocalSpecialization] = React.useState(
     defaultSpecialization,
   );
-  const [localModel, setLocalModel] = React.useState(defaultModel);
   const [isSaved, setIsSaved] = React.useState(false);
 
   const handleSave = () => {
     try {
       setDefaultSpecialization(localSpecialization);
-      setDefaultModel(localModel);
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
     } catch (err) {
@@ -103,22 +97,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                   {SPECIALIZATIONS.map((spec) => (
                     <option key={spec} value={spec}>
                       {spec}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-content-secondary uppercase tracking-wider ml-1">
-                  Default Model
-                </label>
-                <select
-                  value={localModel}
-                  onChange={(e) => setLocalModel(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-canvas border border-border-default rounded-xl text-sm focus:ring-2 focus:ring-focus-ring outline-none transition-all appearance-none"
-                >
-                  {MODELS.map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.label}
                     </option>
                   ))}
                 </select>

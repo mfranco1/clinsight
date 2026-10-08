@@ -1,12 +1,10 @@
 import type { Content, Part } from "@google/genai";
-import { DEFAULT_MODEL } from "../../../config/appConfig";
 import type {
   ChatMessage,
   FileUpload,
   GroundingSource,
   MedicalChartResponse,
 } from "../../../types";
-import { safeStorage } from "../../../utils/storage";
 import {
   CHAT_SYSTEM_INSTRUCTION,
   NOTE_THREAD_SYSTEM_INSTRUCTION,
@@ -14,7 +12,6 @@ import {
 import { callGemini, convertFilesToParts } from "../geminiTransport";
 
 export const sendChatMessage = async (
-  model: string = DEFAULT_MODEL,
   history: ChatMessage[],
   newMessage: string,
   chartContext: MedicalChartResponse | null,
@@ -43,7 +40,6 @@ export const sendChatMessage = async (
     );
 
   const result = await callGemini({
-    model,
     systemInstruction,
     contents: [...historyContent, { role: "user", parts: messageParts }],
     useGoogleSearch,
@@ -60,8 +56,6 @@ export const sendChatMessage = async (
 };
 
 export const sendNoteThreadMessage = async (
-  model: string = safeStorage.getItem("clinsight_default_model") ||
-    DEFAULT_MODEL,
   history: ChatMessage[],
   newMessage: string,
   originalNoteContent: string,
@@ -88,12 +82,7 @@ export const sendNoteThreadMessage = async (
         attachments.map((attachment) => attachment.file),
       )),
     );
-  const resolvedModel =
-    model && model !== "undefined"
-      ? model
-      : safeStorage.getItem("clinsight_default_model") || DEFAULT_MODEL;
   const result = await callGemini({
-    model: resolvedModel,
     systemInstruction,
     contents: [...historyContent, { role: "user", parts: messageParts }],
     useGoogleSearch: true,

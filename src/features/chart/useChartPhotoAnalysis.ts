@@ -11,14 +11,12 @@ import { arrayToMarkdownBullets } from "../../utils/markdown";
 
 interface UseChartPhotoAnalysisOptions {
   activeEntry: ChartEntry;
-  selectedModel?: string;
   onUpdate?: (soap: SoapNote) => void;
   setWorkflowError: (message: string) => void;
 }
 
 export function useChartPhotoAnalysis({
   activeEntry,
-  selectedModel,
   onUpdate,
   setWorkflowError,
 }: UseChartPhotoAnalysisOptions) {
@@ -41,7 +39,6 @@ export function useChartPhotoAnalysis({
       const updatedPhysicalExam = await analyzeClinicalPhotos(
         files,
         currentPhysicalExam,
-        selectedModel,
       );
       if (onUpdate && activeEntry.soap) {
         onUpdate({
@@ -58,7 +55,7 @@ export function useChartPhotoAnalysis({
     } finally {
       setIsAnalyzingPhotos(false);
     }
-  }, [activeEntry, onUpdate, selectedModel, setWorkflowError]);
+  }, [activeEntry, onUpdate, setWorkflowError]);
 
   const analyzeLabs = useCallback(async () => {
     if (!activeEntry.attachments || activeEntry.attachments.length === 0)
@@ -82,7 +79,6 @@ export function useChartPhotoAnalysis({
         files,
         currentLabs,
         currentInterpretation,
-        selectedModel,
       );
       if (onUpdate && activeEntry.soap) {
         onUpdate({
@@ -98,7 +94,7 @@ export function useChartPhotoAnalysis({
     } finally {
       setIsAnalyzingLabs(false);
     }
-  }, [activeEntry, onUpdate, selectedModel, setWorkflowError]);
+  }, [activeEntry, onUpdate, setWorkflowError]);
 
   const analyzeImaging = useCallback(async () => {
     if (!activeEntry.attachments || activeEntry.attachments.length === 0)
@@ -122,7 +118,6 @@ export function useChartPhotoAnalysis({
         files,
         currentImaging,
         currentCorrelation,
-        selectedModel,
       );
       if (onUpdate && activeEntry.soap) {
         onUpdate({
@@ -140,7 +135,7 @@ export function useChartPhotoAnalysis({
     } finally {
       setIsAnalyzingImaging(false);
     }
-  }, [activeEntry, onUpdate, selectedModel, setWorkflowError]);
+  }, [activeEntry, onUpdate, setWorkflowError]);
 
   return {
     isAnalyzingPhotos,

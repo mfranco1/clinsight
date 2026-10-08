@@ -15,7 +15,7 @@ import {
 } from "../../types";
 import { transcribeAudio } from "../../services/ai/actions";
 import { logDiagnostic } from "../../services/diagnosticLogger";
-import { SPECIALIZATIONS, MODELS } from "../../config/appConfig";
+import { SPECIALIZATIONS } from "../../config/appConfig";
 import { CLINICAL_TEMPLATES } from "./templates";
 import { Icons } from "../../components/ui/Icons";
 import LookupModal from "./components/LookupModal";
@@ -45,8 +45,6 @@ interface InputSectionProps {
   isGenerating: boolean;
   onReset: () => void;
   onImport: (data: MedicalChartResponse | MedicalChartResponse[]) => void;
-  selectedModel: string;
-  onModelSelect: (model: string) => void;
   selectedSpecialization: string;
   onSpecializationSelect: (specialty: string) => void;
   hasExistingData?: boolean;
@@ -67,8 +65,6 @@ const InputSection: React.FC<InputSectionProps> = ({
   isGenerating,
   onReset,
   onImport,
-  selectedModel,
-  onModelSelect,
   selectedSpecialization,
   onSpecializationSelect,
   hasExistingData = false,
@@ -265,11 +261,6 @@ const InputSection: React.FC<InputSectionProps> = ({
       });
 
     e.target.value = "";
-  };
-
-  const getModelDisplayName = (modelId: string) => {
-    const model = MODELS.find((m) => m.id === modelId);
-    return model ? model.label : "Model";
   };
 
   const formatDate = (ts: number) => {
@@ -666,29 +657,6 @@ const InputSection: React.FC<InputSectionProps> = ({
                   </div>
                 </div>
 
-                {/* Model Toggle */}
-                <div className="w-full sm:w-auto">
-                  <label className="block text-[10px] font-bold text-content-muted uppercase tracking-wider mb-1.5 ml-1">
-                    Model
-                  </label>
-                  <div className="flex items-center bg-surface rounded-lg p-1 border border-border-default shadow-sm w-fit">
-                    {MODELS.map((m) => (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => onModelSelect(m.id)}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                          selectedModel === m.id
-                            ? "bg-action-100 text-action-800 shadow-sm"
-                            : "text-content-secondary hover:bg-canvas"
-                        }`}
-                      >
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Type Toggle */}
                 {!isAppendMode && (
                   <div className="w-full sm:w-auto">
@@ -764,9 +732,7 @@ const InputSection: React.FC<InputSectionProps> = ({
                   {isGenerating ? (
                     <>
                       <Icons.Loader className="mr-2 h-4 w-4 text-white" />
-                      {isAppendMode
-                        ? "Analyzing Entry"
-                        : `Analyzing (${getModelDisplayName(selectedModel)})`}
+                      {isAppendMode ? "Analyzing Entry" : "Analyzing"}
                     </>
                   ) : (
                     <>

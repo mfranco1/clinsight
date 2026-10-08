@@ -55,7 +55,6 @@ export async function sendThreadInquiry({
 
   try {
     const response = await sendNoteThreadMessage(
-      undefined,
       history,
       query,
       note.content,

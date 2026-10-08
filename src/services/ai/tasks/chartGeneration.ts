@@ -27,7 +27,6 @@ import {
   PLAN_SCHEMA,
   SOAP_SCHEMA,
 } from "../schemas/soap";
-import { DEFAULT_MODEL } from "../../../config/appConfig";
 
 interface GeneratedMedicalChart {
   patientInfo: GeneralData;
@@ -56,7 +55,6 @@ interface ReassessedNote extends Pick<
 export const generateMedicalChart = async (
   textInput: string,
   files: File[],
-  modelName: string = DEFAULT_MODEL,
   specialization: string = "General Practice",
   useGoogleSearch = false,
   history: ChartEntry[] = [],
@@ -98,7 +96,6 @@ export const generateMedicalChart = async (
   if (files?.length) parts.push(...(await convertFilesToParts(files)));
 
   const result = await callGemini({
-    model: modelName,
     systemInstruction: GET_CHART_SYSTEM_INSTRUCTION(
       specialization,
       useGoogleSearch,
@@ -250,7 +247,6 @@ export const generateMedicalChart = async (
 export const generateProgressNote = async (
   textInput: string,
   files: File[],
-  modelName: string = DEFAULT_MODEL,
   specialization: string = "General Practice",
   useGoogleSearch = false,
   history: ChartEntry[] = [],
@@ -284,7 +280,6 @@ export const generateProgressNote = async (
   });
 
   const result = await callGemini({
-    model: modelName,
     systemInstruction: PROGRESS_NOTE_SYSTEM_INSTRUCTION(
       specialization,
       useGoogleSearch,
@@ -349,7 +344,6 @@ export const generateProgressNote = async (
 export const reassessSoapNote = async (
   currentSoap: SoapNote,
   history: ChartEntry[] = [],
-  modelName: string = DEFAULT_MODEL,
   specialization: string = "General Practice",
   useGoogleSearch = false,
 ): Promise<{
@@ -365,7 +359,6 @@ export const reassessSoapNote = async (
     useGoogleSearch,
   );
   const result = await callGemini({
-    model: modelName,
     contents: { parts: [{ text: prompt }] },
     useGoogleSearch,
     responseMimeType: "application/json",

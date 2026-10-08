@@ -75,13 +75,11 @@ describe("AI task request and result contracts", () => {
         patientInfo,
         [],
         [],
-        "model-x",
         "Primary Care",
       ),
     ).resolves.toEqual(summary);
     expect(callGemini).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "model-x",
         responseMimeType: "application/json",
         contents: {
           parts: [{ text: expect.stringContaining("Primary Care") }],
@@ -104,7 +102,6 @@ describe("AI task request and result contracts", () => {
       { patientName: "Fixture Patient" } as never,
       [],
       [],
-      "model-x",
       "Primary Care",
     );
     const request = callGemini.mock.calls[0][0];
@@ -170,9 +167,7 @@ describe("AI task request and result contracts", () => {
     callGemini.mockResolvedValue({
       text: "<note_title>Follow-up</note_title>Clinical answer",
     });
-    await expect(
-      sendChatMessage("model-x", [], "Question", null),
-    ).resolves.toMatchObject({
+    await expect(sendChatMessage([], "Question", null)).resolves.toMatchObject({
       text: "Clinical answer",
       title: "Follow-up",
     });
@@ -205,7 +200,6 @@ describe("AI task request and result contracts", () => {
     const result = await generateMedicalChart(
       "New presentation",
       [],
-      "model-x",
       "Cardiology",
       true,
       [],
@@ -220,7 +214,6 @@ describe("AI task request and result contracts", () => {
     expect(result.soap.subjective.ros).toEqual({ Respiratory: "Clear" });
     const request = callGemini.mock.calls[0][0];
     expect(request).toMatchObject({
-      model: "model-x",
       useGoogleSearch: true,
       responseMimeType: "application/json",
     });
@@ -252,7 +245,6 @@ describe("AI task request and result contracts", () => {
     const result = await generateProgressNote(
       "Follow-up note",
       [],
-      "model-y",
       "Primary Care",
       false,
     );
@@ -264,7 +256,6 @@ describe("AI task request and result contracts", () => {
     expect(result.soap.subjective.ros).toEqual({});
     const request = callGemini.mock.calls[0][0];
     expect(request).toMatchObject({
-      model: "model-y",
       useGoogleSearch: false,
       responseMimeType: "application/json",
     });
@@ -304,14 +295,13 @@ describe("AI task request and result contracts", () => {
       },
     } as never;
     await expect(
-      reassessSoapNote(currentSoap, [], "model-z", "Internal Medicine", true),
+      reassessSoapNote(currentSoap, [], "Internal Medicine", true),
     ).resolves.toMatchObject({
       ...reassessment,
       groundingSources: [{ title: "Source", uri: "https://example.test" }],
     });
     expect(callGemini).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "model-z",
         useGoogleSearch: true,
         responseMimeType: "application/json",
         responseSchema: expect.objectContaining({

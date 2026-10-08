@@ -15,7 +15,6 @@ export const refreshPatientSummary = async (
   patientInfo: GeneralData,
   recentEntries: ChartEntry[],
   recentCourse: CourseEvent[],
-  model: string,
   specialization: string,
 ): Promise<HandoffSummary> => {
   const prompt = `
@@ -54,7 +53,6 @@ ${JSON.stringify(recentCourse, null, 2)}
 Specialization Context: ${specialization}
 `;
   const result = await callGemini({
-    model,
     contents: { parts: [{ text: prompt }] },
     systemInstruction: REFRESH_SUMMARY_SYSTEM_INSTRUCTION,
     responseMimeType: "application/json",

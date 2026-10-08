@@ -51,7 +51,6 @@ describe("sendThreadInquiry", () => {
       attachments: [attachment],
     });
     expect(sendNoteThreadMessage).toHaveBeenCalledWith(
-      undefined,
       [{ role: "user", text: "Earlier question", groundingSources: undefined }],
       "Explain this section",
       note.content,

@@ -6,17 +6,13 @@ import type {
   Part,
 } from "@google/genai";
 import type { GroundingSource } from "../../types";
-import {
-  DEFAULT_MODEL,
-  DEFAULT_STRUCTURED_MODEL,
-  MODELS,
-} from "../../config/appConfig";
 import { logDiagnostic } from "../diagnosticLogger";
+
+export const GEMINI_MODEL = "gemini-3.8-flash";
 
 declare const __CLINSIGHT_TEST_MODE__: boolean;
 
 export interface GeminiRequest {
-  model?: string;
   systemInstruction?: string;
   contents: GenerateContentParameters["contents"];
   useGoogleSearch?: boolean;
@@ -24,6 +20,15 @@ export interface GeminiRequest {
   responseSchema?: GenerateContentConfig["responseSchema"];
   signal?: AbortSignal;
 }
+
+export const buildGeminiContentRequest = (
+  params: Pick<GeminiRequest, "contents">,
+  config: GenerateContentConfig,
+): GenerateContentParameters => ({
+  model: GEMINI_MODEL,
+  contents: params.contents,
+  config,
+});
 
 export interface GeminiResult {
   text: string;
@@ -109,8 +114,7 @@ export const callGemini = async (
   }
 
   const ai = getAI();
-  let {
-    model = DEFAULT_MODEL,
+  const {
     systemInstruction,
     contents,
     useGoogleSearch = false,
@@ -119,34 +123,17 @@ export const callGemini = async (
     signal,
   } = params;
 
-  if (responseSchema) {
-    const selectedModel = MODELS.find((item) => item.id === model);
-    if (selectedModel && !selectedModel.supportsStructuredOutput) {
-      logDiagnostic(
-        "warn",
-        "Selected model does not support structured output; using the structured-output fallback.",
-      );
-      model = DEFAULT_STRUCTURED_MODEL;
-    }
-  }
-
   const config: GenerateContentConfig = {
     systemInstruction,
     responseMimeType,
     responseSchema,
     tools: useGoogleSearch ? [{ googleSearch: {} }] : undefined,
   };
-  if (model === "gemini-3.5-flash" || model.includes("gemini-3.5")) {
-    config.thinkingConfig = { includeThoughts: false };
-  }
-
   try {
     const response = await awaitWithAbort(
-      ai.models.generateContent({
-        model,
-        contents,
-        config,
-      }),
+      ai.models.generateContent(
+        buildGeminiContentRequest({ contents }, config),
+      ),
       signal,
     );
 

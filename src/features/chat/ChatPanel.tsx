@@ -9,7 +9,6 @@ import {
 import { transcribeAudio } from "../../services/ai/actions";
 import { logDiagnostic } from "../../services/diagnosticLogger";
 import { Icons } from "../../components/ui/Icons";
-import { MODELS, DEFAULT_MODEL } from "../../config/appConfig";
 import CameraCaptureModal from "../../components/CameraCaptureModal";
 import ClinicalMarkdown from "../../components/clinical/ClinicalMarkdown";
 import { createFileUploads, openAttachment } from "../../services/fileService";
@@ -29,8 +28,6 @@ interface ChatPanelProps {
     groundingSources?: GroundingSource[],
     title?: string,
   ) => void;
-  model: string;
-  onModelChange: (model: string) => void;
 }
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -38,8 +35,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onClose,
   chartData,
   onSaveAsNote,
-  model,
-  onModelChange,
 }) => {
   const [inputValue, setInputValue] = useState("");
   const {
@@ -49,7 +44,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
     sendMessage,
     retryMessage,
     cancel: handleCancelChat,
-  } = useChatConversation({ model, chartData, isOpen });
+  } = useChatConversation({ chartData, isOpen });
   const [savedMessageIds, setSavedMessageIds] = useState<Set<number>>(
     new Set(),
   );
@@ -228,22 +223,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           >
             <Icons.Close className="w-5 h-5" />
           </button>
-        </div>
-
-        {/* Controls */}
-        <div className="px-4 py-2 border-b border-border-subtle bg-surface space-y-2">
-          {/* Model Selector */}
-          <div className="flex bg-surface p-1 rounded-lg">
-            {MODELS.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => onModelChange(m.id)}
-                className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${model === m.id ? "bg-action-100 text-action-800 shadow-sm" : "text-content-secondary hover:bg-canvas"}`}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Messages Area */}

@@ -14,7 +14,6 @@ export const geminiGateway: ClinicalAiGateway = {
     (await import("./tasks/chartGeneration")).generateMedicalChart(
       request.text,
       request.files,
-      request.model,
       request.specialization,
       request.useSearch,
       request.history,
@@ -24,7 +23,6 @@ export const geminiGateway: ClinicalAiGateway = {
     (await import("./tasks/chartGeneration")).generateProgressNote(
       request.text,
       request.files,
-      request.model,
       request.specialization,
       request.useSearch,
       request.history,
@@ -33,7 +31,6 @@ export const geminiGateway: ClinicalAiGateway = {
     (await import("./tasks/chartGeneration")).reassessSoapNote(
       request.soap,
       request.history,
-      request.model,
       request.specialization,
       request.useSearch,
     ),
@@ -42,7 +39,6 @@ export const geminiGateway: ClinicalAiGateway = {
     const { sendChatMessage } = await import("./tasks/conversation");
     throwIfAborted(request.signal);
     return sendChatMessage(
-      request.model,
       request.history,
       request.message,
       request.patient,
@@ -56,7 +52,6 @@ export const geminiGateway: ClinicalAiGateway = {
     const { sendNoteThreadMessage } = await import("./tasks/conversation");
     throwIfAborted(request.signal);
     return sendNoteThreadMessage(
-      request.model,
       request.history,
       request.message,
       request.noteContent,
@@ -86,50 +81,36 @@ export const geminiGateway: ClinicalAiGateway = {
     currentContent,
     suggestions,
     userInput,
-    model,
   ) =>
     (await import("./tasks/clinicalAssistance")).integrateClinicalData(
       section,
       currentContent,
       suggestions,
       userInput,
-      model,
     ),
-  analyzeClinicalPhotos: async (files, currentPhysicalExam, model) =>
+  analyzeClinicalPhotos: async (files, currentPhysicalExam) =>
     (await import("./tasks/mediaAnalysis")).analyzeClinicalPhotos(
       files,
       currentPhysicalExam,
-      model,
     ),
-  analyzeLabPhotos: async (files, currentLabs, currentInterpretation, model) =>
+  analyzeLabPhotos: async (files, currentLabs, currentInterpretation) =>
     (await import("./tasks/mediaAnalysis")).analyzeLabPhotos(
       files,
       currentLabs,
       currentInterpretation,
-      model,
     ),
-  analyzeImagingPhotos: async (
-    files,
-    currentImaging,
-    currentCorrelation,
-    model,
-  ) =>
+  analyzeImagingPhotos: async (files, currentImaging, currentCorrelation) =>
     (await import("./tasks/mediaAnalysis")).analyzeImagingPhotos(
       files,
       currentImaging,
       currentCorrelation,
-      model,
     ),
-  generateInputSuggestions: async (notes, model) =>
-    (await import("./tasks/inputAssistance")).generateInputSuggestions(
-      notes,
-      model,
-    ),
-  generateResponseTitle: async (userMessage, responseContent, model) =>
+  generateInputSuggestions: async (notes) =>
+    (await import("./tasks/inputAssistance")).generateInputSuggestions(notes),
+  generateResponseTitle: async (userMessage, responseContent) =>
     (await import("./tasks/inputAssistance")).generateResponseTitle(
       userMessage,
       responseContent,
-      model,
     ),
   refreshSummary: async (request) =>
     (await import("./tasks/summary")).refreshPatientSummary(
@@ -137,7 +118,6 @@ export const geminiGateway: ClinicalAiGateway = {
       request.patientInfo,
       request.recentEntries,
       request.recentCourse,
-      request.model,
       request.specialization,
     ),
   parsePrescriptions: async (plan) =>

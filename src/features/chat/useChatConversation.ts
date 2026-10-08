@@ -9,7 +9,6 @@ import {
 } from "./messages";
 
 interface UseChatConversationOptions {
-  model: string;
   chartData: MedicalChartResponse | null;
   isOpen: boolean;
 }
@@ -24,7 +23,6 @@ function isAbortError(error: unknown): boolean {
 }
 
 export function useChatConversation({
-  model,
   chartData,
   isOpen,
 }: UseChatConversationOptions) {
@@ -56,7 +54,6 @@ export function useChatConversation({
 
       try {
         const reply = await sendChatMessage(
-          model,
           history,
           userMessage.text,
           chartData,
@@ -90,7 +87,7 @@ export function useChatConversation({
         }
       }
     },
-    [chartData, isOpen, model],
+    [chartData, isOpen],
   );
 
   const sendMessage = useCallback(

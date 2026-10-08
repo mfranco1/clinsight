@@ -144,7 +144,6 @@ interface SoapViewProps {
   encounters?: Encounter[];
   patientStatus?: PatientStatus;
   onUpdatePatientStatus?: (status: PatientStatus) => void;
-  selectedModel?: string;
   groundingSources?: GroundingSource[];
   references?: string[];
   onUpdate?: (updatedSoap: SoapNote) => void;
@@ -577,7 +576,6 @@ const SoapView: React.FC<SoapViewProps> = ({
   encounters,
   patientStatus,
   onUpdatePatientStatus,
-  selectedModel,
   groundingSources,
   references,
   onUpdate,
@@ -645,7 +643,6 @@ const SoapView: React.FC<SoapViewProps> = ({
     analyzeImaging: handleAnalyzeImaging,
   } = useChartPhotoAnalysis({
     activeEntry,
-    selectedModel,
     onUpdate,
     setWorkflowError,
   });
@@ -759,7 +756,6 @@ const SoapView: React.FC<SoapViewProps> = ({
         target.currentContent,
         suggestions,
         userInput,
-        selectedModel,
       );
       onUpdate(
         applyIntegrationResult(data, target, revisedContent, suggestions),
