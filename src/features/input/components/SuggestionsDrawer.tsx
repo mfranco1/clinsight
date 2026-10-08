@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Icons } from "../../../components/ui/Icons";
 import { SuggestionsData } from "../../../types";
 import { generateInputSuggestions } from "../../../services/ai/actions";
 import { getErrorMessageCompat } from "../../../services/appErrors";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
+import {
+  LoadingIndicator,
+  Skeleton,
+} from "../../../components/ui/LoadingFeedback";
 
 interface SuggestionsDrawerProps {
   isOpen: boolean;
@@ -16,32 +20,58 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
   onClose,
   notesData,
 }) => {
-  const [data, setData] = useState<SuggestionsData | null>(null);
+  const [data, setData] = useState<{
+    source: string;
+    result: SuggestionsData;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    source: string;
+    message: string;
+  } | null>(null);
+  const requestId = useRef(0);
+  const activeSource = useRef<string | null>(null);
+  const currentData = data?.source === notesData ? data.result : null;
+  const currentError = error?.source === notesData ? error.message : null;
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     if (!notesData || notesData.trim().length < 40) {
-      setError("Please type more notes to get meaningful suggestions");
+      setError({
+        source: notesData,
+        message: "Please type more notes to get meaningful suggestions",
+      });
       return;
     }
+    if (activeSource.current === notesData) return;
+    activeSource.current = notesData;
     setError(null);
     setIsLoading(true);
+    const currentRequestId = ++requestId.current;
     try {
       const result = await generateInputSuggestions(notesData);
-      setData(result);
+      if (requestId.current === currentRequestId) {
+        setData({ source: notesData, result });
+      }
     } catch (err: unknown) {
-      setError(getErrorMessageCompat(err, "Failed to load suggestions."));
+      if (requestId.current === currentRequestId) {
+        setError({
+          source: notesData,
+          message: getErrorMessageCompat(err, "Failed to load suggestions."),
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (requestId.current === currentRequestId) {
+        activeSource.current = null;
+        setIsLoading(false);
+      }
     }
-  };
+  }, [notesData]);
 
   useEffect(() => {
-    if (isOpen && !data && !isLoading && !error) {
-      fetchSuggestions();
+    if (isOpen && !currentData && !currentError) {
+      void fetchSuggestions();
     }
-  }, [isOpen]);
+  }, [isOpen, notesData, currentData, currentError, fetchSuggestions]);
 
   if (!isOpen) return null;
 
@@ -87,21 +117,57 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-content-secondary space-y-4">
-              <Icons.Loader className="w-8 h-8 text-action-500 animate-spin" />
-              <p className="text-sm font-medium">Analyzing current draft...</p>
+          {isLoading && !currentData ? (
+            <div className="space-y-6" aria-busy="true">
+              <LoadingIndicator label="Preparing suggestions…" />
+              <section className="space-y-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-content-secondary">
+                  Suggested Questions
+                </h3>
+                <div aria-hidden="true" className="space-y-3">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              </section>
+              <section className="space-y-3">
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-content-secondary">
+                  Suggested Tests
+                </h3>
+                <div aria-hidden="true" className="space-y-3">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </section>
             </div>
-          ) : error ? (
+          ) : currentError && !currentData ? (
             <div className="p-4 bg-action-subtle border border-action-border rounded-xl text-action-hover text-sm mt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Icons.AlertCircle className="w-5 h-5" />
                 <span className="font-bold">Cannot provide suggestions</span>
               </div>
-              <p>{error}</p>
+              <p>{currentError}</p>
+              <button
+                type="button"
+                onClick={() => void fetchSuggestions()}
+                className="mt-3 font-semibold underline"
+              >
+                Try again
+              </button>
             </div>
-          ) : data ? (
+          ) : currentData ? (
             <div className="space-y-8 pb-8">
+              {isLoading && (
+                <LoadingIndicator label="Updating suggestions…" size="sm" />
+              )}
+              {currentError && (
+                <p
+                  className="rounded-control border border-danger-200 bg-danger-50 p-3 text-sm text-content-default"
+                  role="alert"
+                >
+                  Could not update suggestions: {currentError}
+                </p>
+              )}
               {/* Questions Section */}
               <section>
                 <h3 className="text-[11px] font-bold text-content-secondary uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -109,9 +175,9 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
                   Suggested Questions
                 </h3>
 
-                {data.questions.length > 0 ? (
+                {currentData.questions.length > 0 ? (
                   <div className="space-y-4">
-                    {data.questions.map((q, i) => (
+                    {currentData.questions.map((q, i) => (
                       <div
                         key={i}
                         className="bg-surface border text-sm border-border-default shadow-sm rounded-xl p-4 hover:border-action-300 transition-colors group"
@@ -148,9 +214,9 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
                   Suggested Tests
                 </h3>
 
-                {data.tests.length > 0 ? (
+                {currentData.tests.length > 0 ? (
                   <div className="space-y-4">
-                    {data.tests.map((t, i) => (
+                    {currentData.tests.map((t, i) => (
                       <div
                         key={i}
                         className="bg-surface border text-sm border-border-default shadow-sm rounded-xl p-4 hover:border-action-300 transition-colors group"

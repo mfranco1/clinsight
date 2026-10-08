@@ -1,4 +1,5 @@
 import React from "react";
+import { useRetainedState } from "../../app/ViewState";
 import {
   MedicalChartResponse,
   ViewMode,
@@ -41,10 +42,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onAddPatient,
   onUpdateOrder,
 }) => {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [isFilterExpanded, setIsFilterExpanded] = React.useState(false);
-  const [startDate, setStartDate] = React.useState("");
-  const [endDate, setEndDate] = React.useState("");
+  const [searchQuery, setSearchQuery] = useRetainedState(
+    "dashboard:search",
+    "",
+  );
+  const [isFilterExpanded, setIsFilterExpanded] = useRetainedState(
+    "dashboard:filter-expanded",
+    false,
+  );
+  const [startDate, setStartDate] = useRetainedState(
+    "dashboard:start-date",
+    "",
+  );
+  const [endDate, setEndDate] = useRetainedState("dashboard:end-date", "");
   const [statusConfirm, setStatusConfirm] = React.useState<{
     id: string;
     action: "DISCHARGE" | "READMIT" | "CONSULT" | "DELETE" | "DECEASED";

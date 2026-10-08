@@ -17,6 +17,7 @@ import { getLocalDateTimeParts, getTodayDate } from "../../utils/date";
 import { createId } from "../../utils/ids";
 import DateRangeFields from "../../components/ui/DateRangeFields";
 import { filterAndSortNotes, paginateNotes } from "./listing";
+import { useRetainedState } from "../../app/ViewState";
 
 interface NotesViewProps {
   notes: PatientNote[];
@@ -29,15 +30,41 @@ const NotesView: React.FC<NotesViewProps> = ({
   onUpdateNotes,
   chartContext,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [newNoteId, setNewNoteId] = useState<string | null>(null);
+  const stateKey = `patient:${chartContext?.id ?? "unknown"}:notes:`;
+  const [searchQuery, setSearchQuery] = useRetainedState(
+    `${stateKey}search`,
+    "",
+  );
+  const [itemsPerPage, setItemsPerPage] = useRetainedState(
+    `${stateKey}page-size`,
+    10,
+  );
+  const [currentPage, setCurrentPage] = useRetainedState(`${stateKey}page`, 1);
+  const [isFilterExpanded, setIsFilterExpanded] = useRetainedState(
+    `${stateKey}filter-expanded`,
+    false,
+  );
+  const [sortOrder, setSortOrder] = useRetainedState<"newest" | "oldest">(
+    `${stateKey}sort`,
+    "newest",
+  );
+  const [startDate, setStartDate] = useRetainedState(
+    `${stateKey}start-date`,
+    "",
+  );
+  const [endDate, setEndDate] = useRetainedState(`${stateKey}end-date`, "");
+  const [newNoteId, setNewNoteId] = useRetainedState<string | null>(
+    `${stateKey}new-note`,
+    null,
+  );
   const [noteIdToDelete, setNoteIdToDelete] = useState<string | null>(null);
+  const previousFilters = React.useRef({
+    searchQuery,
+    itemsPerPage,
+    sortOrder,
+    startDate,
+    endDate,
+  });
 
   const today = getTodayDate();
 
@@ -59,7 +86,23 @@ const NotesView: React.FC<NotesViewProps> = ({
 
   // Reset page when filters change
   useEffect(() => {
-    setCurrentPage(1);
+    const previous = previousFilters.current;
+    if (
+      previous.searchQuery !== searchQuery ||
+      previous.itemsPerPage !== itemsPerPage ||
+      previous.sortOrder !== sortOrder ||
+      previous.startDate !== startDate ||
+      previous.endDate !== endDate
+    ) {
+      setCurrentPage(1);
+    }
+    previousFilters.current = {
+      searchQuery,
+      itemsPerPage,
+      sortOrder,
+      startDate,
+      endDate,
+    };
   }, [searchQuery, itemsPerPage, sortOrder, startDate, endDate]);
 
   const handleAddNote = () => {

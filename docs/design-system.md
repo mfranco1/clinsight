@@ -32,6 +32,12 @@ Preserve accessible names, form labels, dialog roles, close behavior, keyboard i
 
 Keep loading, error, confirmation, and empty states clear and consistent with the owning workflow. AI-generated suggestions and clinical content must remain reviewable and editable through existing flows.
 
+`src/components/ui/LoadingFeedback.tsx` provides a polite `LoadingIndicator`, a centered branded `LoadingScreen`, reduced-motion `Skeleton` shapes and a generic `ErrorState`. Compose these primitives in the feature that owns the pending content; keep available chrome visible and skeletonize only the pending region. Reuse app identity through `Icons.Logo`, use concise status text that describes the actual operation, and keep old valid results visible during refresh. Skeleton shapes are decorative and hidden from assistive technology. Feature imports use a lightweight feature-shaped fallback through `createLazyFeature`; successful lazy modules remain shared when navigating away and back.
+
+Dashboard search/date controls and patient-scoped order/note filters retain their small UI values in memory while navigating during the current session. Keep clinical records, note drafts, and generated results in their existing feature/patient-store owners; do not add them to the generic view-state cache.
+
+Dashboard search/date controls and patient-scoped order/note filters retain their small UI values in memory while navigating during the current session. Keep clinical records, note drafts, and generated results in their existing feature/patient-store owners; do not add them to the generic view-state cache.
+
 ## Browser resource lifecycle
 
 Recording/camera workflows use shared hooks for capture and stream cleanup; file upload/drop workflows use existing conversion and preview ownership patterns. Stop media tracks, revoke object URLs, and clean up listeners/timers when their owner closes, is removed, or unmounts. Keep transcription or error behavior in the owning feature.

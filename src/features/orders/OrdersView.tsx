@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useRetainedState } from "../../app/ViewState";
 import { createPortal } from "react-dom";
 import {
   PatientOrder,
@@ -57,6 +58,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 interface OrdersViewProps {
+  patientId: string;
   orders: PatientOrder[];
   medications: MedicationOrder[];
   encounters?: Encounter[];
@@ -68,6 +70,7 @@ interface OrdersViewProps {
 type OrdersTab = "DIAGNOSTICS" | "MEDICATIONS";
 
 const OrdersView: React.FC<OrdersViewProps> = ({
+  patientId,
   orders,
   medications,
   encounters,
@@ -75,14 +78,36 @@ const OrdersView: React.FC<OrdersViewProps> = ({
   onUpdateMedications,
   patientInfo,
 }) => {
-  const [activeTab, setActiveTab] = useState<OrdersTab>("DIAGNOSTICS");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("ALL");
-  const [typeFilter, setTypeFilter] = useState<OrderCategory | "ALL">("ALL");
-  const [encounterFilter, setEncounterFilter] = useState<string>("ALL");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
+  const stateKey = `patient:${patientId}:orders:`;
+  const [activeTab, setActiveTab] = useRetainedState<OrdersTab>(
+    `${stateKey}tab`,
+    "DIAGNOSTICS",
+  );
+  const [searchQuery, setSearchQuery] = useRetainedState(
+    `${stateKey}search`,
+    "",
+  );
+  const [statusFilter, setStatusFilter] = useRetainedState<OrderStatusFilter>(
+    `${stateKey}status`,
+    "ALL",
+  );
+  const [typeFilter, setTypeFilter] = useRetainedState<OrderCategory | "ALL">(
+    `${stateKey}type`,
+    "ALL",
+  );
+  const [encounterFilter, setEncounterFilter] = useRetainedState(
+    `${stateKey}encounter`,
+    "ALL",
+  );
+  const [startDate, setStartDate] = useRetainedState(
+    `${stateKey}start-date`,
+    "",
+  );
+  const [endDate, setEndDate] = useRetainedState(`${stateKey}end-date`, "");
+  const [isFilterExpanded, setIsFilterExpanded] = useRetainedState(
+    `${stateKey}filter-expanded`,
+    false,
+  );
   const [isBulkOverlayOpen, setIsBulkOverlayOpen] = useState(false);
   const [isRxOpen, setIsRxOpen] = useState(false);
   const [newOrderId, setNewOrderId] = useState<string | null>(null);

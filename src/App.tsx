@@ -16,6 +16,10 @@ import type ChatPanelComponent from "./features/chat/ChatPanel";
 import type PrivacyPolicyModalComponent from "./components/PrivacyPolicyModal";
 import type TermsOfServiceModalComponent from "./components/TermsOfServiceModal";
 import { createLazyFeature } from "./components/ui/LazyFeature";
+import {
+  LoadingScreen,
+  SkeletonSection,
+} from "./components/ui/LoadingFeedback";
 import LoadingOverlay from "./components/LoadingOverlay";
 import Toast from "./components/Toast";
 import { Icons } from "./components/ui/Icons";
@@ -92,48 +96,101 @@ import {
   serializeAttachments,
 } from "./services/attachmentPersistence";
 import { logDiagnostic } from "./services/diagnosticLogger";
+import { useViewStateCache } from "./app/ViewState";
+
+function ViewLoadingFallback({ title }: { title: string }) {
+  return (
+    <section className="mx-auto w-full max-w-7xl p-4 md:p-6" aria-busy="true">
+      <h1 className="mb-5 text-lg font-semibold text-content-strong">
+        {title}
+      </h1>
+      <SkeletonSection rows={4} />
+      <SkeletonSection titleWidth="w-32" rows={2} />
+      <span className="sr-only" role="status" aria-live="polite">
+        Loading {title.toLowerCase()}…
+      </span>
+    </section>
+  );
+}
 
 const InputSection = createLazyFeature<
   React.ComponentProps<typeof InputSectionComponent>
->(() => import("./features/input/InputSection"));
+>(
+  () => import("./features/input/InputSection"),
+  <ViewLoadingFallback title="Patient intake" />,
+);
 const SoapView = createLazyFeature<
   React.ComponentProps<typeof SoapViewComponent>
->(() => import("./features/chart/SoapView"));
+>(
+  () => import("./features/chart/SoapView"),
+  <ViewLoadingFallback title="Patient chart" />,
+);
 const CourseView = createLazyFeature<
   React.ComponentProps<typeof CourseViewComponent>
->(() => import("./features/course/CourseView"));
+>(
+  () => import("./features/course/CourseView"),
+  <ViewLoadingFallback title="Course" />,
+);
 const SummaryView = createLazyFeature<
   React.ComponentProps<typeof SummaryViewComponent>
->(() => import("./features/handoff/SummaryView"));
+>(
+  () => import("./features/handoff/SummaryView"),
+  <ViewLoadingFallback title="Handoff" />,
+);
 const NotesView = createLazyFeature<
   React.ComponentProps<typeof NotesViewComponent>
->(() => import("./features/notes/NotesView"));
+>(
+  () => import("./features/notes/NotesView"),
+  <ViewLoadingFallback title="Notes" />,
+);
 const OrdersView = createLazyFeature<
   React.ComponentProps<typeof OrdersViewComponent>
->(() => import("./features/orders/OrdersView"));
+>(
+  () => import("./features/orders/OrdersView"),
+  <ViewLoadingFallback title="Orders" />,
+);
 const ProfileView = createLazyFeature<
   React.ComponentProps<typeof ProfileViewComponent>
->(() => import("./features/profile/ProfileView"));
+>(
+  () => import("./features/profile/ProfileView"),
+  <ViewLoadingFallback title="Patient profile" />,
+);
 const SettingsView = createLazyFeature<
   React.ComponentProps<typeof SettingsViewComponent>
->(() => import("./features/settings/SettingsView"));
+>(
+  () => import("./features/settings/SettingsView"),
+  <ViewLoadingFallback title="Settings" />,
+);
 const LandingPage = createLazyFeature<
   React.ComponentProps<typeof LandingPageComponent>
->(() => import("./features/access/LandingPage"));
+>(
+  () => import("./features/access/LandingPage"),
+  <LoadingScreen label="Loading ClinSight…" />,
+);
 const LoginPage = createLazyFeature<
   React.ComponentProps<typeof LoginPageComponent>
->(() => import("./features/access/LoginPage"));
+>(
+  () => import("./features/access/LoginPage"),
+  <LoadingScreen label="Loading sign in…" />,
+);
 const ChatPanel = createLazyFeature<
   React.ComponentProps<typeof ChatPanelComponent>
 >(() => import("./features/chat/ChatPanel"));
 const PrivacyPolicyModal = createLazyFeature<
   React.ComponentProps<typeof PrivacyPolicyModalComponent>
->(() => import("./components/PrivacyPolicyModal"));
+>(
+  () => import("./components/PrivacyPolicyModal"),
+  <LoadingScreen label="Loading privacy policy…" />,
+);
 const TermsOfServiceModal = createLazyFeature<
   React.ComponentProps<typeof TermsOfServiceModalComponent>
->(() => import("./components/TermsOfServiceModal"));
+>(
+  () => import("./components/TermsOfServiceModal"),
+  <LoadingScreen label="Loading terms…" />,
+);
 
 function App() {
+  const viewStateCache = useViewStateCache();
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   const {
@@ -261,6 +318,10 @@ function App() {
 
   // Ref for the main scrollable container
   const mainContentRef = useRef<HTMLElement>(null);
+  const viewScrollPositions = useRef(
+    new Map<string, { main: number; nested: number[] }>(),
+  );
+  const scrollKey = `${currentView}:${activePatientId ?? "none"}:${currentView === ViewMode.CHART ? (activeEntryId ?? "none") : ""}`;
 
   const [showMobileNav, setShowMobileNav] = useState(true);
   const lastScrollY = useRef(0);
@@ -280,6 +341,20 @@ function App() {
       if (!isMainContent && !isInternalScroll) return;
 
       const currentScrollY = target.scrollTop;
+      const positions = viewScrollPositions.current.get(scrollKey) ?? {
+        main: mainContentRef.current?.scrollTop ?? 0,
+        nested: [],
+      };
+      if (isMainContent) positions.main = currentScrollY;
+      else {
+        const nested = Array.from(
+          mainContentRef.current?.querySelectorAll<HTMLElement>(
+            ".main-scroll-container",
+          ) ?? [],
+        );
+        positions.nested[nested.indexOf(target)] = currentScrollY;
+      }
+      viewScrollPositions.current.set(scrollKey, positions);
 
       if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
         setShowMobileNav(false);
@@ -292,16 +367,27 @@ function App() {
     // Use capture to catch scroll events from children (since scroll doesn't bubble)
     window.addEventListener("scroll", handleScroll, true);
     return () => window.removeEventListener("scroll", handleScroll, true);
-  }, [currentView]);
+  }, [currentView, activePatientId, activeEntryId, scrollKey]);
 
-  // Scroll to top whenever view changes
+  // Restore a view's scroll position after navigation; first visits begin at the top.
   useEffect(() => {
-    if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0;
-    }
-    lastScrollY.current = 0;
-    setShowMobileNav(true);
-  }, [currentView, activeEntryId]);
+    const frame = requestAnimationFrame(() => {
+      const main = mainContentRef.current;
+      if (main) {
+        const positions = viewScrollPositions.current.get(scrollKey);
+        main.scrollTop = positions?.main ?? 0;
+        const nested = main.querySelectorAll<HTMLElement>(
+          ".main-scroll-container",
+        );
+        nested.forEach((element, index) => {
+          element.scrollTop = positions?.nested[index] ?? 0;
+        });
+      }
+      lastScrollY.current = 0;
+      setShowMobileNav(true);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [scrollKey]);
 
   // Request notification permissions on mount
   useEffect(() => {
@@ -327,6 +413,20 @@ function App() {
   }, [currentView]);
 
   const handleNavigate = (view: ViewMode) => {
+    const main = mainContentRef.current;
+    if (main) {
+      const positions = viewScrollPositions.current.get(scrollKey) ?? {
+        main: main.scrollTop,
+        nested: [],
+      };
+      positions.main = main.scrollTop;
+      main
+        .querySelectorAll<HTMLElement>(".main-scroll-container")
+        .forEach((element, index) => {
+          positions.nested[index] = element.scrollTop;
+        });
+      viewScrollPositions.current.set(scrollKey, positions);
+    }
     const patientSpecificViews = [
       ViewMode.PROFILE,
       ViewMode.CHART,
@@ -818,6 +918,8 @@ function App() {
 
   const handleReset = () => {
     handleResetForm();
+    viewScrollPositions.current.clear();
+    viewStateCache.clear();
     setActivePatientId(null);
     setIsGenerating(false);
     setIsReassessing(false);
@@ -971,6 +1073,8 @@ function App() {
 
   const handleDeletePatient = (id: string) => {
     removePatient(id);
+    viewStateCache.clearPrefix(`patient:${id}:`);
+    viewScrollPositions.current.clear();
     if (activePatientId === id) {
       handleNavigate(ViewMode.DASHBOARD);
     }
@@ -1309,6 +1413,7 @@ function App() {
 
             {currentView === ViewMode.ORDERS && activePatient && (
               <OrdersView
+                patientId={activePatient.id}
                 orders={activePatient.orders || []}
                 medications={activePatient.medications || []}
                 encounters={activePatient.encounters}

@@ -2,12 +2,13 @@ import React, {
   Component,
   lazy,
   Suspense,
-  useMemo,
   useState,
   type ComponentType,
   type ErrorInfo,
   type ReactNode,
 } from "react";
+import Button from "./Button";
+import { ErrorState, LoadingIndicator } from "./LoadingFeedback";
 
 interface LazyFeatureErrorBoundaryProps {
   children: ReactNode;
@@ -42,19 +43,15 @@ class LazyFeatureErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div
-          className="m-6 rounded-control border border-danger-200 bg-danger-50 p-4 text-sm text-content-default"
-          role="alert"
-        >
-          <p>This view could not be loaded.</p>
-          <button
-            className="mt-3 rounded-control bg-surface px-3 py-2 font-semibold text-action hover:bg-canvas"
-            onClick={this.props.onRetry}
-            type="button"
-          >
-            Try again
-          </button>
-        </div>
+        <ErrorState
+          title="This view could not be loaded."
+          message="Your other work is still available. Try loading this view again."
+          action={
+            <Button onClick={this.props.onRetry} size="sm" variant="secondary">
+              Try again
+            </Button>
+          }
+        />
       );
     }
     return this.props.children;
@@ -64,27 +61,28 @@ class LazyFeatureErrorBoundary extends Component<
 /** Creates a stable lazy feature wrapper with a local loading and error state. */
 export function createLazyFeature<P extends object>(
   load: () => Promise<{ default: ComponentType<P> }>,
+  fallback?: ReactNode,
 ) {
+  let SharedFeature = lazy(load);
+
   function LazyFeature(props: P) {
     const [attempt, setAttempt] = useState(0);
-    const Feature = useMemo(() => lazy(load), [attempt]);
+    const [Feature, setFeature] = useState(() => SharedFeature);
+
+    const retry = () => {
+      SharedFeature = lazy(load);
+      setFeature(() => SharedFeature);
+      setAttempt((value) => value + 1);
+    };
 
     return (
       <LazyFeatureErrorBoundary
         key={attempt}
         resetKey={attempt}
-        onRetry={() => setAttempt((value) => value + 1)}
+        onRetry={retry}
       >
         <Suspense
-          fallback={
-            <div
-              className="p-6 text-sm text-content-secondary"
-              role="status"
-              aria-live="polite"
-            >
-              Loading view…
-            </div>
-          }
+          fallback={fallback ?? <LoadingIndicator label="Loading view…" />}
         >
           <Feature {...props} />
         </Suspense>

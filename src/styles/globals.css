@@ -21,6 +21,33 @@
   }
 }
 
+@keyframes loadingShimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--clinical-border-subtle) 20%,
+    var(--clinical-surface-muted) 50%,
+    var(--clinical-border-subtle) 80%
+  );
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+    background: var(--clinical-border-subtle);
+  }
+}
+
 .dialog-overlay[data-state="open"] {
   animation: dialogOverlayIn 150ms ease-out;
 }

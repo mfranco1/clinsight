@@ -15,6 +15,7 @@ import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import ModalShell from "../../../components/ui/ModalShell";
 import TextInput from "../../../components/ui/TextInput";
 import Button from "../../../components/ui/Button";
+import { LoadingIndicator } from "../../../components/ui/LoadingFeedback";
 
 interface LookupModalProps {
   isOpen: boolean;
@@ -152,11 +153,8 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
       {/* Results Area */}
       <div className="flex-1 overflow-y-auto p-6 bg-surface min-h-[200px] custom-scrollbar">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full text-content-muted">
-            <Icons.Loader className="h-5 w-5" />
-            <p className="text-sm font-medium mb-4">
-              Consulting clinical guidelines and sources...
-            </p>
+          <div className="flex flex-col items-center justify-center h-full text-content-muted gap-4">
+            <LoadingIndicator label="Searching references…" />
             <button
               type="button"
               onClick={handleCancel}

@@ -46,6 +46,53 @@ test("opens a structured chart and preserves its SOAP presentation", async ({
   ).toBeVisible();
 });
 
+test("restores a loaded chart position when returning from orders", async ({
+  page,
+}) => {
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([structuredPatientCase]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  const chartScroll = page.locator("#soap-view-scroll-container");
+  await expect(chartScroll).toBeVisible();
+  await chartScroll.evaluate((element) => {
+    element.scrollTop = 120;
+    element.dispatchEvent(new Event("scroll", { bubbles: true }));
+  });
+  await expect
+    .poll(() => chartScroll.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
+  const savedPosition = await chartScroll.evaluate(
+    (element) => element.scrollTop,
+  );
+
+  await page.getByRole("button", { name: "Orders" }).last().click();
+  await expect(
+    page.getByRole("heading", { name: /orders/i }).first(),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Medications" }).click();
+  await page.getByRole("button", { name: "Chart" }).last().click();
+  await expect
+    .poll(() => chartScroll.evaluate((element) => element.scrollTop))
+    .toBe(savedPosition);
+  await chartScroll.evaluate((element) => {
+    element.scrollTop = 0;
+    element.dispatchEvent(new Event("scroll", { bubbles: true }));
+  });
+  await expect(
+    page.getByRole("button", { name: "Orders" }).last(),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Orders" }).last().click();
+  await expect(page.getByRole("button", { name: "Medications" })).toHaveClass(
+    /bg-action-subtle/,
+  );
+});
+
 test("switches source and visual modes without rewriting an untouched patient note", async ({
   page,
 }) => {

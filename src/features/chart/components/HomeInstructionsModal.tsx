@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SoapNote, GeneralData } from "../../../types";
 import { generateHomeInstructions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import { Icons } from "../../../components/ui/Icons";
+import { ErrorState, Skeleton } from "../../../components/ui/LoadingFeedback";
+import Button from "../../../components/ui/Button";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
 import { replaceSourceEditorsWithPrintText } from "./homeInstructionsPrint";
 
@@ -31,29 +33,68 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
   patientInfo,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState<HomeInstructionsData | null>(null);
+  const [storedData, setStoredData] = useState<{
+    source: string;
+    value: HomeInstructionsData;
+  } | null>(null);
+  const sourceKey = JSON.stringify(soapData);
+  const data = storedData?.source === sourceKey ? storedData.value : null;
+  const setData = (value: HomeInstructionsData) =>
+    setStoredData({ source: sourceKey, value });
   const [printError, setPrintError] = useState<string | null>(null);
+  const [storedLoadError, setStoredLoadError] = useState<{
+    source: string;
+    message: string;
+  } | null>(null);
+  const loadError =
+    storedLoadError?.source === sourceKey ? storedLoadError.message : null;
+  const setLoadError = (message: string | null) =>
+    setStoredLoadError(message ? { source: sourceKey, message } : null);
+  const activeRequest = useRef<{ source: string; id: number } | null>(null);
+  const requestId = useRef(0);
 
   // Clinic Info (Editable)
   const [physicianName, setPhysicianName] = useState("Juan Dela Cruz, MD");
 
   useEffect(() => {
-    if (isOpen && !data) {
+    if (
+      isOpen &&
+      !data &&
+      !loadError &&
+      activeRequest.current?.source !== sourceKey
+    ) {
       const fetchData = async () => {
+        const currentRequestId = ++requestId.current;
+        activeRequest.current = { source: sourceKey, id: currentRequestId };
         setIsLoading(true);
         try {
           const result = await generateHomeInstructions(soapData);
-          setData(result);
+          if (requestId.current === currentRequestId) {
+            setData(result);
+          }
         } catch (error) {
           logDiagnostic("error", "Home instructions request failed.");
-          // Fallback or error handling
+          if (requestId.current === currentRequestId) {
+            setLoadError("Home instructions could not be prepared.");
+          }
         } finally {
-          setIsLoading(false);
+          if (requestId.current === currentRequestId) {
+            activeRequest.current = null;
+            setIsLoading(false);
+          }
         }
       };
-      fetchData();
+      void fetchData();
     }
-  }, [isOpen, soapData, data]);
+  }, [isOpen, soapData, sourceKey, data, loadError]);
+
+  useEffect(() => {
+    if (!isOpen && activeRequest.current) {
+      requestId.current += 1;
+      activeRequest.current = null;
+      setIsLoading(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -309,11 +350,87 @@ const HomeInstructionsModal: React.FC<HomeInstructionsModalProps> = ({
         {/* Content Area - Gray Background for "Paper" feel */}
         <div className="flex-1 overflow-y-auto p-6 bg-surface-muted print:bg-surface print:p-0 print:overflow-visible">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <Icons.Loader className="h-10 w-10 text-action mb-4" />
-              <p className="text-content-secondary font-medium">
-                Generating personalized instructions...
+            <div
+              className="mx-auto mb-10 flex min-h-[297mm] w-full max-w-[210mm] flex-col gap-8 border border-border-default bg-surface p-6 shadow-lg sm:p-10"
+              aria-busy="true"
+            >
+              <p className="sr-only" role="status" aria-live="polite">
+                Preparing home instructions…
               </p>
+              <header className="flex flex-col justify-between gap-6 border-b-4 border-action-600 pb-6 sm:flex-row">
+                <div>
+                  <h1 className="mb-2 text-3xl font-bold uppercase tracking-tight text-content-strong">
+                    Home Instructions
+                  </h1>
+                  <p className="text-content-secondary font-medium">
+                    Patient Wellness &amp; Discharge Plan
+                  </p>
+                </div>
+                <div className="text-sm text-content-secondary">
+                  <p className="text-lg font-bold text-content-strong">
+                    Clinsight Medical
+                  </p>
+                  <p>123 Medical Arts Bldg</p>
+                  <p>Health City, Metro Manila</p>
+                </div>
+              </header>
+              <section className="flex items-end justify-between rounded-lg border border-border-subtle bg-canvas p-6">
+                <div>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-content-muted">
+                    Patient Name
+                  </p>
+                  <p className="text-xl font-bold text-content-strong">
+                    {patientInfo.patientName}
+                  </p>
+                  <p className="mt-1 text-sm text-content-default">
+                    {patientInfo.ageSex} • {patientInfo.mrn}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-content-muted">
+                    Date
+                  </p>
+                  <p className="text-lg font-medium text-content-strong">
+                    {new Date().toLocaleDateString()}
+                  </p>
+                </div>
+              </section>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {[
+                  "Red Flags",
+                  "Recommended Diet",
+                  "Activity & Exercise",
+                  "Lifestyle & Wellness",
+                  "Referrals",
+                  "Follow Up",
+                ].map((title, index) => (
+                  <section
+                    key={title}
+                    className={`rounded-lg border border-border-default p-5 ${index === 0 || index === 3 ? "md:col-span-2" : ""}`}
+                  >
+                    <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-content-secondary">
+                      {title}
+                    </h3>
+                    <div className="space-y-3" aria-hidden="true">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                      {index % 2 === 0 && <Skeleton className="h-4 w-2/3" />}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </div>
+          ) : loadError ? (
+            <div className="mx-auto mt-6 max-w-[210mm]">
+              <ErrorState
+                title="Home instructions could not be prepared."
+                message="Try again to generate a new draft for clinician review."
+                action={
+                  <Button onClick={() => setLoadError(null)} size="sm">
+                    Try again
+                  </Button>
+                }
+              />
             </div>
           ) : data ? (
             <div
