@@ -60,8 +60,12 @@ export function DocumentTextEditor({
     mode === "visual" && !eligibility.supported ? "source" : mode;
   const modeRef = useRef(mode);
   const eligibilityRef = useRef(eligibility.supported);
+  const onSaveRef = useRef(onSave);
+  const onCancelRef = useRef(onCancel);
   modeRef.current = mode;
   eligibilityRef.current = eligibility.supported;
+  onSaveRef.current = onSave;
+  onCancelRef.current = onCancel;
   const editor = useEditor({
     extensions,
     content: eligibility.supported ? parseDocumentMarkdown(value) : "",
@@ -70,6 +74,23 @@ export function DocumentTextEditor({
     shouldRerenderOnTransaction: false,
     editorProps: {
       transformPastedHTML: sanitizeDocumentPasteHtml,
+      handleKeyDown: (_view, event) => {
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.key === "Enter" &&
+          !event.isComposing
+        ) {
+          event.preventDefault();
+          onSaveRef.current();
+          return true;
+        }
+        if (event.key === "Escape" && !event.isComposing) {
+          event.preventDefault();
+          onCancelRef.current();
+          return true;
+        }
+        return false;
+      },
       attributes: {
         "aria-label": ariaLabel,
         "aria-multiline": "true",
@@ -162,14 +183,14 @@ export function DocumentTextEditor({
           <div
             role="toolbar"
             aria-orientation="horizontal"
-            className="flex flex-wrap items-center gap-1"
+            className="flex w-full max-w-full flex-nowrap items-center gap-1 overflow-x-auto py-1 sm:w-auto sm:flex-wrap sm:overflow-visible"
             aria-label="Formatting"
           >
             <ToolbarButton
               label="Bold"
               active={readyEditor.isActive("bold")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleBold().run()}
+              onClick={() => readyEditor.chain().focus().toggleBold().run()}
             >
               B
             </ToolbarButton>
@@ -177,7 +198,7 @@ export function DocumentTextEditor({
               label="Italic"
               active={readyEditor.isActive("italic")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleItalic().run()}
+              onClick={() => readyEditor.chain().focus().toggleItalic().run()}
             >
               I
             </ToolbarButton>
@@ -185,7 +206,7 @@ export function DocumentTextEditor({
               label="Strikethrough"
               active={readyEditor.isActive("strike")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleStrike().run()}
+              onClick={() => readyEditor.chain().focus().toggleStrike().run()}
             >
               S
             </ToolbarButton>
@@ -193,7 +214,9 @@ export function DocumentTextEditor({
               label="Underline"
               active={readyEditor.isActive("underline")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleUnderline().run()}
+              onClick={() =>
+                readyEditor.chain().focus().toggleUnderline().run()
+              }
             >
               U
             </ToolbarButton>
@@ -212,7 +235,9 @@ export function DocumentTextEditor({
               label="Bullet list"
               active={readyEditor.isActive("bulletList")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleBulletList().run()}
+              onClick={() =>
+                readyEditor.chain().focus().toggleBulletList().run()
+              }
             >
               • List
             </ToolbarButton>
@@ -220,7 +245,9 @@ export function DocumentTextEditor({
               label="Numbered list"
               active={readyEditor.isActive("orderedList")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleOrderedList().run()}
+              onClick={() =>
+                readyEditor.chain().focus().toggleOrderedList().run()
+              }
             >
               1. List
             </ToolbarButton>
@@ -228,7 +255,7 @@ export function DocumentTextEditor({
               label="Task list"
               active={readyEditor.isActive("taskList")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleTaskList().run()}
+              onClick={() => readyEditor.chain().focus().toggleTaskList().run()}
             >
               Checklist
             </ToolbarButton>
@@ -237,7 +264,7 @@ export function DocumentTextEditor({
               active={readyEditor.isActive("heading", { level: 2 })}
               disabled={disabled}
               onClick={() =>
-                readyEditor.chain().toggleHeading({ level: 2 }).run()
+                readyEditor.chain().focus().toggleHeading({ level: 2 }).run()
               }
             >
               H2
@@ -246,7 +273,9 @@ export function DocumentTextEditor({
               label="Block quote"
               active={readyEditor.isActive("blockquote")}
               disabled={disabled}
-              onClick={() => readyEditor.chain().toggleBlockquote().run()}
+              onClick={() =>
+                readyEditor.chain().focus().toggleBlockquote().run()
+              }
             >
               Quote
             </ToolbarButton>
@@ -256,6 +285,7 @@ export function DocumentTextEditor({
               onClick={() =>
                 readyEditor
                   .chain()
+                  .focus()
                   .insertTable({
                     rows: 2,
                     cols: 2,
@@ -269,42 +299,42 @@ export function DocumentTextEditor({
             <ToolbarButton
               label="Add row below"
               disabled={disabled || !readyEditor.isActive("table")}
-              onClick={() => readyEditor.chain().addRowAfter().run()}
+              onClick={() => readyEditor.chain().focus().addRowAfter().run()}
             >
               + Row
             </ToolbarButton>
             <ToolbarButton
               label="Remove current row"
               disabled={disabled || !readyEditor.isActive("table")}
-              onClick={() => readyEditor.chain().deleteRow().run()}
+              onClick={() => readyEditor.chain().focus().deleteRow().run()}
             >
               − Row
             </ToolbarButton>
             <ToolbarButton
               label="Add column after"
               disabled={disabled || !readyEditor.isActive("table")}
-              onClick={() => readyEditor.chain().addColumnAfter().run()}
+              onClick={() => readyEditor.chain().focus().addColumnAfter().run()}
             >
               + Column
             </ToolbarButton>
             <ToolbarButton
               label="Remove current column"
               disabled={disabled || !readyEditor.isActive("table")}
-              onClick={() => readyEditor.chain().deleteColumn().run()}
+              onClick={() => readyEditor.chain().focus().deleteColumn().run()}
             >
               − Column
             </ToolbarButton>
             <ToolbarButton
               label="Undo"
               disabled={disabled || !canRunCommand(readyEditor, "undo")}
-              onClick={() => readyEditor.chain().undo().run()}
+              onClick={() => readyEditor.chain().focus().undo().run()}
             >
               Undo
             </ToolbarButton>
             <ToolbarButton
               label="Redo"
               disabled={disabled || !canRunCommand(readyEditor, "redo")}
-              onClick={() => readyEditor.chain().redo().run()}
+              onClick={() => readyEditor.chain().focus().redo().run()}
             >
               Redo
             </ToolbarButton>
@@ -453,7 +483,7 @@ function ToolbarButton({
       disabled={disabled}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
-      className="min-h-10 rounded-md px-2.5 text-xs font-semibold text-content-secondary hover:bg-surface-muted aria-pressed:bg-action-subtle aria-pressed:text-action disabled:cursor-not-allowed disabled:opacity-40"
+      className="min-h-10 shrink-0 rounded-md px-2.5 text-xs font-semibold text-content-secondary hover:bg-surface-muted aria-pressed:bg-action-subtle aria-pressed:text-action disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>

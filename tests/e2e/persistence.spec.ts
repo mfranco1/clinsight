@@ -128,13 +128,37 @@ test("applies visual formatting and reflects it in Markdown source", async ({
     name: "Start typing your note here... (Supports Markdown and LaTeX)",
   });
   await expect(editor).toContainText("Vitals remain stable.");
-  await editor.press("ControlOrMeta+End");
+  const selectionBounds = await editor.locator("p").evaluate((paragraph) => {
+    const text = paragraph.firstChild;
+    if (!text || text.nodeType !== Node.TEXT_NODE) {
+      throw new Error("Expected a plain paragraph for the selection fixture");
+    }
+    const range = document.createRange();
+    range.setStart(text, 14);
+    range.setEnd(text, text.textContent?.length ?? 14);
+    const rect = range.getBoundingClientRect();
+    return {
+      left: rect.left,
+      right: rect.right,
+      y: rect.top + rect.height / 2,
+    };
+  });
+  await page.mouse.move(selectionBounds.left, selectionBounds.y);
+  await page.mouse.down();
+  await page.mouse.move(selectionBounds.right, selectionBounds.y, { steps: 5 });
+  await page.mouse.up();
+  await expect
+    .poll(() => page.evaluate(() => window.getSelection()?.toString()))
+    .toBe("stable.");
   await page.getByRole("button", { name: "Bold" }).click();
-  await page.keyboard.type(" bold");
-  await expect(editor.locator("strong")).toContainText("bold");
+  await expect(editor.locator("strong")).toHaveText("stable.");
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(editor.locator("strong")).toHaveCount(0);
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect(editor.locator("strong")).toHaveText("stable.");
   await page.getByRole("button", { name: /source/i }).click();
   await expect(page.getByTestId("source-text-editor")).toContainText(
-    " **bold**Vitals remain stable.",
+    "Vitals remain **stable.**",
   );
 });
 
@@ -175,6 +199,60 @@ test("creates a Markdown task list from the visual editor toolbar", async ({
   await expect(page.getByTestId("source-text-editor")).toContainText(
     "- [ ] Review plan.",
   );
+});
+
+test("keeps visual formatting reachable in the narrow-screen toolbar", async ({
+  page,
+}) => {
+  test.skip((page.viewportSize()?.width ?? 1280) > 600);
+  const patientWithNote = {
+    ...structuredPatientCase,
+    notes: [
+      {
+        id: "note-editor-mobile-toolbar",
+        title: "Mobile editor toolbar",
+        content: "Clinical note.",
+        createdAt: "2026-08-26 09:00",
+        updatedAt: "2026-08-26 09:00",
+      },
+    ],
+  };
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([patientWithNote]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Notes" }).last().click();
+  await page.getByRole("button", { name: "Edit Note" }).click();
+
+  const toolbar = page.getByRole("toolbar", { name: "Formatting" });
+  const toolbarMetrics = await toolbar.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+    overflowX: getComputedStyle(element).overflowX,
+  }));
+  expect(toolbarMetrics.overflowX).toBe("auto");
+  expect(toolbarMetrics.scrollWidth).toBeGreaterThan(
+    toolbarMetrics.clientWidth,
+  );
+  await expect(
+    page.getByRole("group", { name: "Editor view mode" }),
+  ).toBeVisible();
+
+  const taskListButton = page.getByRole("button", { name: "Task list" });
+  await taskListButton.scrollIntoViewIfNeeded();
+  await taskListButton.click();
+  await expect(
+    page
+      .getByRole("textbox", {
+        name: "Start typing your note here... (Supports Markdown and LaTeX)",
+      })
+      .locator('input[type="checkbox"]'),
+  ).toHaveCount(1);
 });
 
 test("selects order and medication statuses through the shared desktop/mobile portal menus", async ({

@@ -70,6 +70,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   const [hasExternalConflict, setHasExternalConflict] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isManualResized, setIsManualResized] = useState(false);
+  const resizeMouseUpRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (isEditing && !wasEditingRef.current) {
@@ -110,6 +111,16 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     }
   }, [isEditing, autoFocus]);
 
+  useEffect(
+    () => () => {
+      if (resizeMouseUpRef.current) {
+        window.removeEventListener("mouseup", resizeMouseUpRef.current);
+        resizeMouseUpRef.current = null;
+      }
+    },
+    [],
+  );
+
   const adjustHeight = () => {
     if (textareaRef.current && !isManualResized) {
       textareaRef.current.style.height = "auto";
@@ -117,84 +128,16 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     }
   };
 
-  const applyFormatting = (prefix: string, suffix: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = editValue.substring(start, end);
-
-    const textToInsert = prefix + selectedText + suffix;
-
-    // Try to use execCommand to preserve native undo stack
-    textarea.focus();
-    try {
-      // This is deprecated but widely used for textarea formatting to preserve undo history
-      const success = document.execCommand("insertText", false, textToInsert);
-
-      if (!success) {
-        throw new Error("execCommand failed");
-      }
-
-      // Sync React state with updated textarea value
-      const newValue = textarea.value;
-      setEditValue(newValue);
-      if (onChange) onChange(newValue);
-
-      // Restore selection around the original text
-      textarea.setSelectionRange(
-        start + prefix.length,
-        start + prefix.length + selectedText.length,
-      );
-    } catch (err) {
-      // Fallback to manual state update if execCommand fails
-      const newValue =
-        editValue.substring(0, start) + textToInsert + editValue.substring(end);
-
-      setEditValue(newValue);
-      if (onChange) onChange(newValue);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-      }, 0);
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const isMod = e.ctrlKey || e.metaKey;
 
-    if (isMod) {
-      switch (e.key.toLowerCase()) {
-        case "b":
-          e.preventDefault();
-          applyFormatting("**", "**");
-          break;
-        case "i":
-          e.preventDefault();
-          applyFormatting("*", "*");
-          break;
-        case "u":
-          e.preventDefault();
-          applyFormatting("<u>", "</u>");
-          break;
-        case "k":
-          e.preventDefault();
-          applyFormatting("[", "](https://)");
-          break;
-        case "x":
-          if (e.shiftKey) {
-            e.preventDefault();
-            applyFormatting("~~", "~~");
-          }
-          break;
-        case "enter":
-          e.preventDefault();
-          handleSave();
-          break;
+    if (isMod && !e.nativeEvent.isComposing) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
       }
-    } else if (e.key === "Escape") {
+    } else if (e.key === "Escape" && !e.nativeEvent.isComposing) {
+      e.preventDefault();
       handleCancel();
     }
   };
@@ -202,10 +145,14 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   const handleFallbackKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key === "Enter" &&
+      !event.nativeEvent.isComposing
+    ) {
       event.preventDefault();
       handleSave();
-    } else if (event.key === "Escape") {
+    } else if (event.key === "Escape" && !event.nativeEvent.isComposing) {
       event.preventDefault();
       handleCancel();
     }
@@ -227,11 +174,15 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   };
 
   const handleMouseDown = () => {
-    // Detect manual resize start
     const handleMouseUp = () => {
       setIsManualResized(true);
+      resizeMouseUpRef.current = null;
       window.removeEventListener("mouseup", handleMouseUp);
     };
+    if (resizeMouseUpRef.current) {
+      window.removeEventListener("mouseup", resizeMouseUpRef.current);
+    }
+    resizeMouseUpRef.current = handleMouseUp;
     window.addEventListener("mouseup", handleMouseUp);
   };
 
@@ -357,12 +308,14 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
         {showControls && (
           <div className="flex items-center justify-end gap-2">
             <button
+              type="button"
               onClick={handleCancel}
               className="px-3 py-1.5 text-xs font-bold text-content-secondary hover:text-content-primary hover:bg-surface-muted rounded-lg transition-all"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleSave}
               className="px-3 py-1.5 text-xs font-bold text-white bg-action hover:bg-action-hover rounded-lg shadow-sm transition-all flex items-center gap-1.5"
             >
@@ -380,6 +333,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
     >
       {!hideEditButton && !disabled && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             setIsEditing(true);

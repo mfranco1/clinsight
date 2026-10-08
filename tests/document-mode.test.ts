@@ -19,10 +19,6 @@ describe("document mode fidelity gate", () => {
   it.each([
     ["math", "Assessment: $a^2+b^2=c^2$"],
     ["raw HTML", "Assessment: <u>reviewed</u>"],
-    [
-      "tables that normalize",
-      "| Field | Value |\n| --- | --- |\n| SpO2 | 96% |",
-    ],
   ])(
     "keeps %s in source mode when conversion is not exact",
     (_name, source) => {
@@ -50,6 +46,22 @@ describe("document mode fidelity gate", () => {
     expect(serializeDocumentMarkdown(parseDocumentMarkdown(source))).toBe(
       source,
     );
+  });
+
+  it("allows stable table editing while preserving table cell content", () => {
+    const source =
+      "Intro.\n\n| Field | Value |\n| --- | --- |\n| SpO2 | 96% |\n\nFollow up.";
+    const document = parseDocumentMarkdown(source);
+    const serialized = serializeDocumentMarkdown(document);
+
+    expect(checkDocumentModeEligibility(source)).toEqual({ supported: true });
+    expect(serializeDocumentMarkdown(parseDocumentMarkdown(serialized))).toBe(
+      serialized,
+    );
+    expect(serialized).toContain("SpO2");
+    expect(serialized).toContain("96%");
+    expect(serialized).toContain("Intro.");
+    expect(serialized).toContain("Follow up.");
   });
 
   it("creates a valid empty document for visual editing without changing its source", () => {

@@ -27,7 +27,11 @@ export function checkDocumentModeEligibility(
 
   try {
     const document = markdownManager.parse(source);
-    if (markdownManager.serialize(document) !== source) {
+    const serialized = markdownManager.serialize(document);
+    if (
+      serialized !== source &&
+      !hasStableTableRoundTrip(source, document, serialized)
+    ) {
       return {
         supported: false,
         reason:
@@ -41,6 +45,54 @@ export function checkDocumentModeEligibility(
       reason: "This content could not be safely opened in visual mode.",
     };
   }
+}
+
+function hasStableTableRoundTrip(
+  source: string,
+  document: JSONContent,
+  serialized: string,
+) {
+  if (!containsTable(document)) return false;
+
+  const reparsed = markdownManager.parse(serialized);
+  return (
+    JSON.stringify(reparsed) === JSON.stringify(document) &&
+    maskMarkdownTables(source) === maskMarkdownTables(serialized)
+  );
+}
+
+function containsTable(node: JSONContent): boolean {
+  return node.type === "table" || (node.content ?? []).some(containsTable);
+}
+
+function maskMarkdownTables(markdown: string) {
+  const lines = markdown.split("\n");
+  const masked: string[] = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const header = lines[index];
+    const separator = lines[index + 1] ?? "";
+    if (header.includes("|") && isTableSeparator(separator)) {
+      masked.push("<table>");
+      index += 2;
+      while (index < lines.length && lines[index].includes("|")) index += 1;
+      index -= 1;
+      continue;
+    }
+    masked.push(header);
+  }
+  return masked
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function isTableSeparator(line: string) {
+  const cells = line
+    .trim()
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((cell) => cell.trim());
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
 export function parseDocumentMarkdown(source: string): JSONContent {

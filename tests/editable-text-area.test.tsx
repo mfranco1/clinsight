@@ -28,6 +28,25 @@ describe("EditableTextArea", () => {
     );
   });
 
+  it("keeps compact fields plain and ignores save shortcuts during composition", () => {
+    const onSave = vi.fn();
+    render(<EditableTextArea value="Dose 5 mg" onSave={onSave} />);
+    fireEvent.click(screen.getByTitle("Edit"));
+    const field = screen.getByRole("textbox", { name: "Enter text..." });
+
+    fireEvent.keyDown(field, { key: "b", ctrlKey: true });
+    expect(field).toHaveValue("Dose 5 mg");
+    fireEvent.keyDown(field, {
+      key: "Enter",
+      ctrlKey: true,
+      isComposing: true,
+    });
+    expect(onSave).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(field, { key: "Enter", ctrlKey: true });
+    expect(onSave).toHaveBeenCalledWith("Dose 5 mg");
+  });
+
   it("keeps a dirty edit when the source changes and offers an explicit resolution", () => {
     const onSave = vi.fn();
     const { rerender } = render(

@@ -13,7 +13,7 @@ Render patient-facing clinical documentation consistently across chart, notes, c
 - Shared rendering primitives, explicit syntax and safety policies, clinical citations, search highlighting, responsive styling, and accessible output.
 - Migration of both `ClinicalMarkdown` consumers and feature-local formatting paths.
 - Existing print and clipboard outputs where they present the same content.
-- Coordination with the separate [editor plan](../ongoing/2026-10-08-document-editors.md). This plan owns parsing, display, content policies, and rendered export; that plan owns authoring and editing transactions.
+- Coordination with the separate [editor plan](2026-10-08-document-editors.md). This plan owns parsing, display, content policies, and rendered export; that plan owns authoring and editing transactions.
 
 ## Non-goals
 
