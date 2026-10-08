@@ -21,21 +21,22 @@ Make the GitHub CI workflow pass with reviewed desktop/mobile screenshot baselin
 
 ## Acceptance criteria
 
-- [ ] The detailed failure is confirmed from an authenticated job log or a matching Linux reproduction.
-- [ ] Reviewed Linux desktop/mobile baselines exist for the current implementation; existing macOS coverage remains usable.
+- [x] The detailed failure is confirmed from an authenticated job log or a matching Linux reproduction.
+- [x] Reviewed Linux desktop/mobile baselines exist for the current implementation; existing macOS coverage remains usable.
 - [ ] Both dashboard cases pass on Linux without snapshot updates, followed by the complete desktop/mobile suite.
 - [x] CI retains failure diagnostics and documentation explains how to review intentional snapshot changes.
 - [ ] Local required checks pass and a GitHub CI run on the resulting revision passes both jobs.
 
 ## Evidence
 
-- Latest push run inspected: [CI #6](https://github.com/mfranco1/clinsight/actions/runs/37764846348), revision `188b0fedd7fc571f703870c3348a9f6b776c7a1b`. Local HEAD is `82a4a41`, with subsequent branding changes; it is not the failed revision.
+- Latest push run inspected: [CI #7](https://github.com/mfranco1/clinsight/actions/runs/37769057987), revision `83802fa04bedfabe2b522d0700466b2314f466ba`, matching local HEAD before these changes. The earlier [CI #6](https://github.com/mfranco1/clinsight/actions/runs/37764846348) had the same two failing dashboard cases.
 - GitHub job/annotation APIs confirm that only the browser-test step failed. Install, typecheck/lint, formatting, documentation, unit tests, production build, bundle-size check, and Chromium installation passed. The separate Gitleaks job passed.
-- Browser summary: 29 passed, 1 skipped, 2 failed. Both failures are `loads the dashboard shell` in `tests/e2e/smoke.spec.ts`, one each for `chromium` and `mobile`.
-- Both the failed revision and current HEAD contain only `dashboard-shell-chromium-darwin.png` and `dashboard-shell-mobile-darwin.png`. No Linux baselines are tracked. CI runs on `ubuntu-latest`; no custom snapshot path is configured.
+- Latest browser summary: 30 passed, 2 skipped, 2 failed. Both failures are `loads the dashboard shell` in `tests/e2e/smoke.spec.ts`, one each for `chromium` and `mobile`. All 154 unit tests passed.
+- The pushed revision contains only `dashboard-shell-chromium-darwin.png` and `dashboard-shell-mobile-darwin.png`. CI runs on `ubuntu-latest`; no custom snapshot path is configured.
 - Installed Playwright source sets `testInfo.snapshotSuffix = process.platform` and includes that suffix in the default screenshot path. Linux therefore requires `dashboard-shell-chromium-linux.png` and `dashboard-shell-mobile-linux.png`. Missing expected screenshots fail ordinary verification.
-- This establishes a deterministic baseline coverage defect and is the high-confidence explanation for the observed failures. The exact original error text is unverified: unauthenticated log download returned HTTP 403, the job page requires sign-in to view logs, and the run has zero retained artifacts.
-- Current HEAD passes both dashboard cases on macOS without snapshot updates. This supports a platform baseline problem but does not verify the failed revision or Linux rendering.
+- The signed-in Chrome job log confirms both errors: `A snapshot doesn't exist` for the expected desktop/mobile Linux filenames. The unauthenticated API cannot download artifacts, but the signed-in browser downloaded artifact `11547337398` from CI #7.
+- The artifact ZIP's SHA-256 matches GitHub's digest: `16056ae05b3f4f1c15b749abe5598d2a77dfbad80296646d343f7d443b6624ad`. Both captured dashboard images were reviewed: correct branding, empty patient state, desktop/mobile layout, and demo-only content. Their bytes supply the two new Linux baselines. No application, browser test, or lockfile differences exist between their originating revision and this fix.
+- CI also emitted a Node 20 deprecation warning for upload-artifact v4.6.2. The upload succeeded, so this warning did not cause the failure. Updated to SHA-pinned [v7.0.1](https://github.com/actions/upload-artifact/releases/tag/v7.0.1), whose action metadata uses Node 24. Artifact names now include the attempt number to prevent collisions on reruns.
 
 ## Fix plan
 
@@ -47,9 +48,9 @@ Make the GitHub CI workflow pass with reviewed desktop/mobile screenshot baselin
 
 ### 2. Add reviewed Linux baselines
 
-1. Generate the two dashboard baselines on Linux at the implementation revision, using the same Node, lockfile, Chromium, and offline fixtures as verification. Run only the dashboard cases with `--update-snapshots` for this deliberate generation step.
-2. Review both generated images for correct layout, empty-patient state, branding, and synthetic/demo-only content. Current HEAD includes a branding update after the failed push, so generate from current code rather than copying images from that old run.
-3. Commit the two `-linux.png` files alongside the existing `-darwin.png` files. Keep platform-specific filenames; renaming macOS images to Linux names does not establish rendering parity.
+1. [x] Recover the actual Linux dashboard screenshots generated by CI #7 at the matching implementation revision. Confirm the artifact digest and revision before using them.
+2. [x] Review both images for correct layout, empty-patient state, branding, and synthetic/demo-only content.
+3. [x] Add the two `-linux.png` files alongside the existing `-darwin.png` files. They are ready to commit and push with this change.
 4. [x] Update `docs/testing.md` with platform-specific baseline requirements, Linux generation instructions, image-review expectations, and artifact access. If runner/font drift becomes a demonstrated problem, standardize the rendering environment then; do not add unrelated runner changes preemptively.
 
 ### 3. Validate and close
@@ -61,16 +62,17 @@ Make the GitHub CI workflow pass with reviewed desktop/mobile screenshot baselin
 
 ## Progress
 
-Added a seven-day artifact upload of Playwright's `test-results/` on CI failure and documented platform-specific screenshot baseline generation/review in `docs/testing.md`. Linux baselines and a Linux run remain outstanding. This machine is macOS, and Docker is installed without a running daemon, so Linux screenshots cannot be generated or honestly reviewed here. Next action: generate both Linux baselines on a Linux runner and validate the focused and full browser suites before closing the tracker.
+Recovered and reviewed both actual Linux dashboard screenshots from CI #7 and added them under the expected baseline filenames. Updated the artifact action to Node 24 and made names unique per run attempt. Documented baseline recovery and review. Next action: push the changes and inspect a GitHub CI run that compares against the new Linux baselines without updating snapshots; keep this tracker active until the Linux suite and both jobs pass.
 
 ## Verification
 
 - `git status --short`: clean before investigation.
 - Read GitHub runs, jobs, check annotations, and artifact metadata; inspected workflow, Playwright configuration, source, and baseline files at failed and current revisions.
 - Node 26.11.1: `npm run test:e2e -- tests/e2e/smoke.spec.ts --grep 'loads the dashboard shell' --reporter=line`: 2 passed on macOS, no snapshot updates. Initial sandbox run could not bind port 4173; rerun with server permission passed. Only environment color warnings remained.
-- Linux reproduction, baseline generation, and full-suite checks have not been run. The installed Docker client cannot connect to a daemon.
-- `npm run docs:check`, `npm run format:check`, and `git diff --check`: passed after the workflow, documentation, and tracker edits.
+- CI #7 confirms the exact Linux failure and provides the reviewed Linux baseline images; a comparison run with the new baselines has not yet occurred. This Mac cannot run Linux locally because its Docker daemon is unavailable.
+- Local Node 26.11.1 verification: `npm run lint` (includes typecheck), `npm run build`, `npm run docs:check`, `npm run format:check`, and `git diff --check` passed. No new application or browser test code was changed. Unit/browser counts above are from the actual GitHub run, not a new local execution.
+- New PNGs are byte-for-byte copies of the reviewed artifact images: desktop 1280 × 720, mobile 393 × 727. The Linux comparison run remains pending; no baseline acceptance was simulated on macOS.
 
 ## Outcome
 
-The CI diagnostics and baseline guidance are implemented. The browser-test failure remains unresolved until reviewed Linux baselines and a passing GitHub run are verified.
+The confirmed missing-baseline defect is fixed locally with reviewed screenshots captured by the actual GitHub Linux runner. Final Linux comparison and a passing GitHub run remain pending.
