@@ -464,6 +464,12 @@ test("selects order and medication statuses through the shared desktop/mobile po
   await orderStatus.click();
   await page.getByRole("option", { name: "DONE", exact: true }).click();
   await expect(orderStatus).toHaveText("DONE");
+  await page
+    .getByRole("button", { name: "Edit order CBC", exact: true })
+    .click();
+  await expect(page.getByLabel("Status", { exact: true })).toHaveValue("DONE");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(orderStatus).toHaveText("DONE");
 
   await page.getByRole("button", { name: "Medications", exact: true }).click();
   const medicationStatus = page.getByRole("combobox", {
@@ -471,6 +477,15 @@ test("selects order and medication statuses through the shared desktop/mobile po
   });
   await medicationStatus.click();
   await page.getByRole("option", { name: "HOLD", exact: true }).click();
+  await expect(medicationStatus).toHaveText("HOLD");
+  await page
+    .getByRole("button", {
+      name: "Edit medication Amoxicillin",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByLabel("Status", { exact: true })).toHaveValue("HOLD");
+  await page.getByRole("button", { name: "Save" }).click();
   await expect(medicationStatus).toHaveText("HOLD");
 
   await page.getByRole("button", { name: "Print Rx" }).click();

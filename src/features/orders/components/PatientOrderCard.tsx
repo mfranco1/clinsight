@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { OrderCategory, PatientOrder, OrderStatus } from "../../../types";
 import { Icons } from "../../../components/ui/Icons";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
@@ -40,6 +40,8 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
   isOverlay = false,
 }) => {
   const [isEditing, setIsEditing] = useState(isNew);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const wasEditingRef = useRef(isEditing);
   const [editName, setEditName] = useState(order.name);
   const [editTargetDate, setEditTargetDate] = useState(order.targetDate);
   const [editStatus, setEditStatus] = useState<OrderStatus>(order.status);
@@ -51,6 +53,22 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isEditing) return;
+    setEditName(order.name);
+    setEditTargetDate(order.targetDate);
+    setEditStatus(order.status);
+    setEditCategory(order.category || "Other");
+    setEditNotes(order.notes);
+  }, [isEditing, order]);
+
+  useEffect(() => {
+    if (wasEditingRef.current && !isEditing) {
+      editButtonRef.current?.focus();
+    }
+    wasEditingRef.current = isEditing;
+  }, [isEditing]);
 
   useEffect(() => {
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -126,10 +144,14 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
         <div className="space-y-5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1">
+              <label
+                htmlFor={`order-${order.id}-name`}
+                className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1"
+              >
                 Order Name
               </label>
               <input
+                id={`order-${order.id}-name`}
                 autoFocus
                 type="text"
                 value={editName}
@@ -140,10 +162,14 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1">
+                <label
+                  htmlFor={`order-${order.id}-target-date`}
+                  className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1"
+                >
                   Target Date & Time
                 </label>
                 <input
+                  id={`order-${order.id}-target-date`}
                   type="datetime-local"
                   value={formatForInput(editTargetDate)}
                   onChange={(e) =>
@@ -153,11 +179,15 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1">
+                <label
+                  htmlFor={`order-${order.id}-category`}
+                  className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1"
+                >
                   Category
                 </label>
                 <div className="relative">
                   <select
+                    id={`order-${order.id}-category`}
                     value={editCategory}
                     onChange={(e) =>
                       setEditCategory(e.target.value as OrderCategory)
@@ -178,11 +208,15 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1">
+                <label
+                  htmlFor={`order-${order.id}-status`}
+                  className="text-[10px] font-black text-content-muted uppercase tracking-[0.15em] ml-1"
+                >
                   Status
                 </label>
                 <div className="relative">
                   <select
+                    id={`order-${order.id}-status`}
                     value={editStatus}
                     onChange={(e) =>
                       setEditStatus(e.target.value as OrderStatus)
@@ -209,6 +243,8 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
             </label>
             <div className="bg-canvas border border-border-default rounded-xl p-3 focus-within:bg-surface focus-within:border-action-500 transition-all shadow-inner">
               <EditableTextArea
+                ariaLabel="Order notes"
+                autoFocus={false}
                 value={editNotes}
                 onChange={setEditNotes}
                 isEditing={true}
@@ -222,12 +258,14 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle">
             <button
+              type="button"
               onClick={handleCancel}
               className="px-5 py-2.5 text-xs font-bold text-content-secondary hover:text-neutral-800 hover:bg-surface-muted rounded-xl transition-all"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleSave}
               className="px-8 py-2.5 bg-action text-white rounded-xl text-xs font-bold hover:bg-action-hover transition-all shadow-lg shadow-action-600/20 active:scale-95"
             >
@@ -467,7 +505,9 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
         <div className="flex items-center justify-end md:justify-start gap-1 transition-opacity w-full md:w-full mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0 border-border-subtle shrink-0">
           {order.groupId && (
             <button
+              type="button"
               onClick={onUngroup}
+              aria-label={`Remove order ${order.name || "without a name"} from group`}
               className="p-2 text-content-muted hover:text-warning-600 hover:bg-warning-50 rounded-xl transition-all"
               title="Remove from Group"
             >
@@ -475,14 +515,19 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
             </button>
           )}
           <button
+            type="button"
             onClick={() => setIsEditing(true)}
+            ref={editButtonRef}
+            aria-label={`Edit order ${order.name || "without a name"}`}
             className="p-2 text-content-muted hover:text-action hover:bg-transparent rounded-xl transition-all"
             title="Edit Order"
           >
             <Icons.Edit className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => setIsDeleteModalOpen(true)}
+            aria-label={`Delete order ${order.name || "without a name"}`}
             className="p-2 text-content-muted hover:text-critical-600 hover:bg-transparent rounded-xl transition-all"
             title="Delete Order"
           >

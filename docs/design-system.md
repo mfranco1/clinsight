@@ -35,6 +35,8 @@ Long patient-note, chart-section, course-detail, and handoff-summary editing use
 
 `EditableTextArea` accepts an optional `ariaLabel`; supply it when a visible field caption should provide the control's accessible name, instead of relying on placeholder text alone.
 
+Operational order and medication rows keep their domain-owned editors, but every visible editor caption must label its input. Record-specific edit, delete, and grouping actions need contextual names. When an inline editor closes, restore focus to its row edit action; give only the primary field autofocus when rich notes editors are present so competing autofocus does not move focus unexpectedly.
+
 See [architecture](architecture.md#repository-ownership) for module ownership. Promote an abstraction when multiple consumers need the same behavior; keep feature-specific detail local. Do not introduce a second component suite or replace unique clinical workflow semantics with generic flags.
 
 ## Application branding

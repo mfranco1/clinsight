@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { MedicationOrder, MedicationStatus } from "../../../types";
 import { Icons } from "../../../components/ui/Icons";
 import MedicationStatusDropdown from "../../../components/ui/MedicationStatusDropdown";
@@ -28,6 +28,8 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
   onToggleSelect,
 }) => {
   const [isEditing, setIsEditing] = useState(isNew);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const wasEditingRef = useRef(isEditing);
   const [isNameExpanded, setIsNameExpanded] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -39,6 +41,24 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
   const [editStatus, setEditStatus] = useState<MedicationStatus>(med.status);
   const [editNotes, setEditNotes] = useState(med.notes || "");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (isEditing) return;
+    setEditDrug(med.drug);
+    setEditDose(med.dose);
+    setEditRoute(med.route);
+    setEditFrequency(med.frequency);
+    setEditDuration(med.duration);
+    setEditStatus(med.status);
+    setEditNotes(med.notes || "");
+  }, [isEditing, med]);
+
+  React.useEffect(() => {
+    if (wasEditingRef.current && !isEditing) {
+      editButtonRef.current?.focus();
+    }
+    wasEditingRef.current = isEditing;
+  }, [isEditing]);
 
   React.useEffect(() => {
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 768);
@@ -188,6 +208,7 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           </span>
           <EditableTextArea
             ariaLabel="Medication notes"
+            autoFocus={false}
             value={editNotes}
             onChange={setEditNotes}
             placeholder="Sig or other notes..."
@@ -393,6 +414,7 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           <button
             type="button"
             onClick={() => setIsEditing(true)}
+            ref={editButtonRef}
             aria-label={`Edit medication ${med.drug || "without a name"}`}
             className="p-2 text-content-muted hover:text-action transition-colors"
             title="Edit"
