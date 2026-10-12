@@ -228,11 +228,19 @@ function AppContent() {
 
   // Persistence: Save to localStorage whenever patients change
   useEffect(() => {
-    safeStorage.setItem(
+    const persisted = safeStorage.setItem(
       PATIENTS_STORAGE_KEY,
       JSON.stringify(serializeAttachments(patients)),
     );
-  }, [patients]);
+    if (persisted) {
+      dismissToast("patient-storage-error");
+    } else {
+      showToast(
+        "Patient changes are available for this session but could not be saved to this browser.",
+        { type: "error", duration: 0, id: "patient-storage-error" },
+      );
+    }
+  }, [dismissToast, patients, showToast]);
 
   useEffect(() => {
     const nextUrls = collectAttachmentPreviewUrls(patients);
