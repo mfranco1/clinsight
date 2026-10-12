@@ -192,6 +192,8 @@ Exit gate: no clipping in toolbars/panels/dialogs; selecting a status does not a
 
 Progress: added shared Radix-backed `Popover` and `DropdownMenu` surfaces with portal positioning, viewport collision constraints, brand styling, Escape dismissal, and focus restoration. Input Templates and Drafts use the popover; chart section management remains a checkbox popover. Dashboard patient actions, media gallery upload/camera actions, clinical chat attachment actions, and the chart toolbar action surface now use the menu primitive, replacing custom click-away handling while preserving existing workflow callbacks and status/delete confirmation. The gallery menu is portalled into its dialog layer; Escape closes the menu first and preserves the gallery, while a subsequent Escape retains the dialog's existing close behavior. `ToolbarButton` forwards refs and native button props for safe `asChild` composition and supports accessible names for icon-only triggers. Focused menu/popover tests and desktop/mobile chart-management, dashboard-delete, and gallery-menu browser journeys cover interaction and recovery behavior. The clinical chat menu has keyboard opening, Escape, and focus-return unit coverage. The chart toolbar's three menu entries had no action callbacks before migration and remain presentational; implementing those actions is separate feature work. The deep-dive composer in `PatientNoteCard` remains a documented selection-relative popover exception because it embeds chat and recording behavior and accounts for nested dialogs. The production bundle impact of both Radix dependencies remains under review; no size budget has been set.
 
+Latest Stage 4 slice: the dashboard task-sidebar order selector now names its order in the accessible label, matching order-card and medication-row controls. A containment test exposed that choosing a portalled status option bubbled to and activated its parent row; the shared select content now stops that click propagation while retaining its status callback. Focused tests cover both contextual naming and row isolation. `docs/design-system.md` records these contracts. The current production build emits the shared `Popover` chunk at 28.64 kB raw / 10.06 kB gzip and the app entry chunk at 445.17 kB / 138.27 kB gzip. There is no recorded pre-Radix baseline or bundle budget, so these are tracking figures rather than a regression verdict.
+
 ### Stage 5 — Standardize side panels, bottom sheets, and bottom actions
 
 Dependencies: Stages 1–2 and 4. Risk: high for hidden state and responsive behavior.
@@ -324,7 +326,7 @@ Implementation active. Stage 0 baseline is complete. Shared modal, popover, toas
 
 ## Verification
 
-- Latest serial `npm test`: 75 files and 216 tests passed. The focused loading-feedback/editor-boundary tests also pass (8 tests).
+- Latest serial `npm test`: 76 files and 218 tests passed. The focused status-dropdown/dashboard task tests pass (4 tests); the focused loading-feedback/editor-boundary tests also pass (8 tests).
 - `npm run lint` (including typecheck) and `npm run build` pass.
 - `npm run test:e2e` passes 44 desktop/mobile tests with 2 skipped. This run includes startup loading, chart/editor workflows, and the responsive journeys; Playwright reports the long-note performance measurements at desktop and mobile widths.
 - `npm run docs:check`, `npm run format:check`, and `git diff --check` pass. The prior Prettier issue in `tests/brand.test.tsx` was normalized so the whole-repository format check is clean.

@@ -31,4 +31,26 @@ describe("shared portal status dropdowns", () => {
 
     expect(onChange).toHaveBeenCalledWith(MedicationStatus.HOLD);
   });
+
+  it("does not activate a containing row when selecting a status", () => {
+    const onRowClick = vi.fn();
+    const onChange = vi.fn();
+    render(
+      <div onClick={onRowClick}>
+        <OrderStatusDropdown
+          status={OrderStatus.PENDING}
+          onChange={onChange}
+          ariaLabel="Status for order CBC"
+        />
+      </div>,
+    );
+
+    fireEvent.click(
+      screen.getByRole("combobox", { name: "Status for order CBC" }),
+    );
+    fireEvent.click(screen.getByRole("option", { name: "DONE" }));
+
+    expect(onChange).toHaveBeenCalledWith(OrderStatus.DONE);
+    expect(onRowClick).not.toHaveBeenCalled();
+  });
 });

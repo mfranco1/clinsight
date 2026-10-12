@@ -40,6 +40,7 @@ const StatusDropdown = <TStatus extends string>({
         position="popper"
         align={isDesktop ? "center" : "start"}
         sideOffset={4}
+        onClick={(event) => event.stopPropagation()}
         className="z-[110] max-h-[min(var(--radix-select-content-available-height),15rem)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-border-subtle bg-surface p-1.5 shadow-2xl"
       >
         <Select.Viewport className="custom-scrollbar max-h-[inherit] overflow-y-auto">

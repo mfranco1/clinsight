@@ -209,6 +209,7 @@ const TodayTasksSidebar: React.FC<TodayTasksSidebarProps> = ({
 
                             <div className="shrink-0 w-20 relative z-10">
                               <OrderStatusDropdown
+                                ariaLabel={`Status for order ${order.name}`}
                                 status={order.status}
                                 onChange={(newStatus) =>
                                   onUpdateOrder(group.patientId, {
