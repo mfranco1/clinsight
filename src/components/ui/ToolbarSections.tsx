@@ -110,26 +110,32 @@ export const ToolbarFilterToggle: React.FC<{
 );
 
 // 4. ToolbarButton - Generic button for toolbar actions
+type ToolbarButtonProps = Omit<
+  React.ComponentPropsWithoutRef<"button">,
+  "onClick" | "className" | "disabled" | "title"
+> & {
+  onClick?: () => void;
+  icon?: React.ElementType;
+  label?: string;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "success"
+    | "ghost"
+    | "outline"
+    | "active";
+  className?: string;
+  disabled?: boolean;
+  title?: string;
+  ariaLabel?: string;
+  showIndicator?: boolean;
+  hideLabelOnMobile?: boolean;
+};
+
 export const ToolbarButton = React.forwardRef<
   HTMLButtonElement,
-  {
-    onClick?: () => void;
-    icon?: React.ElementType;
-    label?: string;
-    variant?:
-      | "primary"
-      | "secondary"
-      | "danger"
-      | "success"
-      | "ghost"
-      | "outline"
-      | "active";
-    className?: string;
-    disabled?: boolean;
-    title?: string;
-    showIndicator?: boolean;
-    hideLabelOnMobile?: boolean;
-  }
+  ToolbarButtonProps
 >(
   (
     {
@@ -140,8 +146,10 @@ export const ToolbarButton = React.forwardRef<
       className = "",
       disabled = false,
       title,
+      ariaLabel,
       showIndicator,
       hideLabelOnMobile = false,
+      ...buttonProps
     },
     ref,
   ) => {
@@ -161,9 +169,11 @@ export const ToolbarButton = React.forwardRef<
     return (
       <button
         ref={ref}
+        {...buttonProps}
         onClick={onClick}
         disabled={disabled}
         title={title || label}
+        aria-label={ariaLabel}
         className={`flex items-center ${Icon && hideLabelOnMobile ? "px-2 sm:px-4" : "px-4"} py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 whitespace-nowrap group active:scale-95 disabled:opacity-50 disabled:pointer-events-none relative ${variants[variant]} ${className}`}
       >
         {Icon && (

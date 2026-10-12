@@ -85,6 +85,17 @@ test("manages chart section visibility through accessible accordion controls", a
 
   await page.goto("/");
   await page.getByText("Test Patient").first().click();
+  const chartActions = page.getByRole("button", { name: "Chart actions" });
+  await chartActions.click();
+  const actionsMenu = page.getByRole("menu", { name: "Chart actions" });
+  await expect(actionsMenu).toBeVisible();
+  await expect(
+    actionsMenu.getByRole("menuitem", { name: "Print View" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(actionsMenu).toHaveCount(0);
+  await expect(chartActions).toBeFocused();
+
   const manageButton = page.getByRole("button", { name: "Manage" });
   await manageButton.click();
   const sectionPopover = page.getByRole("dialog", {

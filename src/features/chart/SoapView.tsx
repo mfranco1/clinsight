@@ -44,6 +44,13 @@ import {
   PopoverTrigger,
 } from "../../components/ui/Popover";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../components/ui/DropdownMenu";
+import {
   ToolbarButton,
   ToolbarPagination,
   ToolbarSeparator,
@@ -657,7 +664,6 @@ const SoapView: React.FC<SoapViewProps> = ({
     useEntrySectionVisibility(activeEntry.id, computeInitialVisibility(data));
 
   const {
-    menuRef,
     isMenuOpen,
     setIsMenuOpen,
     isManageOpen,
@@ -1085,31 +1091,25 @@ const SoapView: React.FC<SoapViewProps> = ({
                     </Popover>
                   )}
 
-                  <div className="relative" ref={menuRef}>
-                    <ToolbarButton
-                      onClick={() => setIsMenuOpen(!isMenuOpen)}
-                      icon={Icons.More}
-                      variant={isMenuOpen ? "active" : "secondary"}
-                      className="w-9 h-9 p-0 flex items-center justify-center"
-                    />
-                    {isMenuOpen && (
-                      <div className="absolute right-0 mt-2 w-56 bg-surface rounded-xl shadow-2xl border border-border-default z-50 py-2 animate-fade-in origin-top-right overflow-hidden">
-                        <button className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-default hover:bg-action-subtle hover:text-action-hover transition-colors flex items-center">
-                          Clinical Abstract
-                        </button>
-                        <button className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-default hover:bg-action-subtle hover:text-action-hover transition-colors flex items-center">
-                          Discharge Summary
-                        </button>
-                        <div className="h-px bg-surface-muted my-1"></div>
-                        <button className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-default hover:bg-action-subtle hover:text-action-hover transition-colors flex items-center">
-                          <span className="w-3.5 h-3.5 mr-2 flex items-center justify-center">
-                            <Icons.Print />
-                          </span>
-                          Print View
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <ToolbarButton
+                        icon={Icons.More}
+                        ariaLabel="Chart actions"
+                        variant={isMenuOpen ? "active" : "secondary"}
+                        className="w-9 h-9 p-0 flex items-center justify-center"
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 py-2">
+                      <DropdownMenuItem>Clinical Abstract</DropdownMenuItem>
+                      <DropdownMenuItem>Discharge Summary</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="gap-2">
+                        <Icons.Print className="h-3.5 w-3.5" />
+                        Print View
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </StickyToolbar>

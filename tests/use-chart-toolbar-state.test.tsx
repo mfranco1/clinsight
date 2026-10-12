@@ -1,12 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { useChartToolbarState } from "../src/features/chart/useChartToolbarState";
 
 describe("useChartToolbarState", () => {
-  it("closes its inline action menu on outside clicks and cleans up the listener", () => {
-    const removeListener = vi.spyOn(document, "removeEventListener");
-    const { result, unmount } = renderHook(() => useChartToolbarState());
-    result.current.menuRef.current = document.createElement("div");
+  it("keeps independent toolbar and history state in the hook", () => {
+    const { result } = renderHook(() => useChartToolbarState());
 
     act(() => {
       result.current.setIsMenuOpen(true);
@@ -17,14 +15,7 @@ describe("useChartToolbarState", () => {
     expect(result.current.isHistoryCollapsed).toBe(true);
     expect(result.current.isMobileHistoryOpen).toBe(true);
 
-    act(() => document.dispatchEvent(new MouseEvent("mousedown")));
-    expect(result.current.isMenuOpen).toBe(false);
+    expect(result.current.isMenuOpen).toBe(true);
     expect(result.current.isManageOpen).toBe(true);
-
-    unmount();
-    expect(removeListener).toHaveBeenCalledWith(
-      "mousedown",
-      expect.any(Function),
-    );
   });
 });
