@@ -4,6 +4,12 @@ import { Icons } from "../ui/Icons";
 import CameraCaptureModal from "../CameraCaptureModal";
 import { FilePreviewBadge } from "../ui/FileUpload/FilePreviewBadge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/DropdownMenu";
+import {
   createFileUploads,
   revokeUrl,
   openAttachment,
@@ -52,7 +58,6 @@ export const ClinicalChatInput: React.FC<ClinicalChatInputProps> = ({
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const attachmentMenuRef = useRef<HTMLDivElement>(null);
 
   // Auto-resize textarea height
   useEffect(() => {
@@ -63,20 +68,6 @@ export const ClinicalChatInput: React.FC<ClinicalChatInputProps> = ({
       textarea.style.height = `${newHeight}px`;
     }
   }, [value]);
-
-  // Click outside listener for attachment dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        attachmentMenuRef.current &&
-        !attachmentMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowAttachmentMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (
@@ -140,56 +131,49 @@ export const ClinicalChatInput: React.FC<ClinicalChatInputProps> = ({
         />
 
         {/* Attachment Options section */}
-        <div className="relative" ref={attachmentMenuRef}>
-          <button
-            type="button"
-            onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-            disabled={isLoading || isTranscribing || disabled}
-            className={`flex items-center justify-center transition-all border ${
-              size === "sm"
-                ? `w-7 h-7 rounded-xl ${
-                    showAttachmentMenu
-                      ? "bg-action-subtle text-action border-action-border shadow-inner"
-                      : "bg-canvas text-content-muted border-border-default hover:text-action hover:bg-action-subtle hover:border-action-border"
-                  }`
-                : `w-11 h-11 rounded-xl ${
-                    showAttachmentMenu
-                      ? "bg-action-subtle text-action border-action-border shadow-inner"
-                      : "bg-canvas text-content-muted border-border-default hover:text-action hover:bg-action-subtle hover:border-action-border"
-                  }`
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-            title="Attachments"
-          >
-            <Icons.Plus className={size === "sm" ? "w-4 h-4" : "w-5 h-5"} />
-          </button>
-
-          {showAttachmentMenu && (
-            <div className="absolute bottom-full left-0 mb-2 w-42 bg-surface rounded-xl shadow-xl border border-border-default z-50 py-2 animate-fade-in origin-bottom-left">
-              <button
-                type="button"
-                onClick={() => {
-                  fileInputRef.current?.click();
-                  setShowAttachmentMenu(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-default hover:bg-action-subtle hover:text-action flex items-center gap-3 transition-colors"
-              >
-                <Icons.Paperclip className="w-4 h-4" />
-                Upload
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCameraOpen(true);
-                  setShowAttachmentMenu(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-default hover:bg-action-subtle hover:text-action flex items-center gap-3 transition-colors"
-              >
-                <Icons.Camera className="w-4 h-4" />
-                Camera
-              </button>
-            </div>
-          )}
-        </div>
+        <DropdownMenu
+          open={showAttachmentMenu}
+          onOpenChange={setShowAttachmentMenu}
+        >
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              disabled={isLoading || isTranscribing || disabled}
+              className={`flex items-center justify-center transition-all border ${
+                size === "sm"
+                  ? `w-7 h-7 rounded-xl ${
+                      showAttachmentMenu
+                        ? "bg-action-subtle text-action border-action-border shadow-inner"
+                        : "bg-canvas text-content-muted border-border-default hover:text-action hover:bg-action-subtle hover:border-action-border"
+                    }`
+                  : `w-11 h-11 rounded-xl ${
+                      showAttachmentMenu
+                        ? "bg-action-subtle text-action border-action-border shadow-inner"
+                        : "bg-canvas text-content-muted border-border-default hover:text-action hover:bg-action-subtle hover:border-action-border"
+                    }`
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              aria-label="Attachments"
+            >
+              <Icons.Plus className={size === "sm" ? "w-4 h-4" : "w-5 h-5"} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-42 py-2">
+            <DropdownMenuItem
+              onSelect={() => fileInputRef.current?.click()}
+              className="gap-3"
+            >
+              <Icons.Paperclip className="w-4 h-4" />
+              Upload
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setIsCameraOpen(true)}
+              className="gap-3"
+            >
+              <Icons.Camera className="w-4 h-4" />
+              Camera
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="relative flex-1">
           <textarea
