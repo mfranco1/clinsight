@@ -18,6 +18,7 @@ import { ClinicalChatInput } from "../../components/clinical/ClinicalChatInput";
 import { useAudioRecorder } from "../../hooks/useAudioRecorder";
 import { useChatConversation } from "./useChatConversation";
 import { useChatPanelResize } from "./useChatPanelResize";
+import SidePanelShell from "../../components/ui/SidePanelShell";
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -179,54 +180,30 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
 
   return (
     <>
-      {/* Backdrop for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-25 z-40 md:hidden"
-          onClick={onClose}
-        ></div>
-      )}
-
-      {/* Side Panel */}
-      <div
-        className={`fixed inset-y-0 right-0 z-50 bg-surface shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        } w-full md:w-auto`}
+      <SidePanelShell
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Clinical Assistant"
+        icon={Icons.Subjective}
+        headerDescription="Ask questions about the case"
+        keepMounted
+        bodyScrollable={false}
+        bodyClassName="flex flex-col"
+        className="bg-surface ease-in-out"
+        backdropClassName="fixed inset-0 z-40 bg-black/25 md:hidden"
         style={{ width: isDesktop ? sidebarWidth : "100%" }}
-      >
-        {/* Resize Handle (Desktop Only) */}
-        <div
-          className="hidden md:block absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize hover:bg-action-subtle/50 hover:w-1.5 transition-all z-50 group"
-          onMouseDown={startResizing}
-        >
-          <div className="absolute inset-y-0 left-0 w-[1px] bg-neutral-200 group-hover:bg-action-400 transition-colors"></div>
-        </div>
-
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-border-default flex items-center justify-between bg-canvas relative select-none">
-          <div className="flex items-center">
-            <div className="bg-action-100 p-1.5 rounded-lg mr-3">
-              <Icons.Subjective className="w-5 h-5 text-action" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-neutral-800">
-                Clinical Assistant
-              </h2>
-              <p className="text-xs text-content-secondary">
-                Ask questions about the case
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-content-muted hover:text-content-default p-1 rounded-full hover:bg-neutral-200 transition-colors"
+        beforeHeader={
+          <div
+            aria-hidden="true"
+            className="group absolute bottom-0 left-0 top-0 z-50 hidden w-1 cursor-ew-resize transition-all hover:w-1.5 hover:bg-action-subtle/50 md:block"
+            onMouseDown={startResizing}
           >
-            <Icons.Close className="w-5 h-5" />
-          </button>
-        </div>
-
+            <div className="absolute inset-y-0 left-0 w-px bg-neutral-200 transition-colors group-hover:bg-action-400" />
+          </div>
+        }
+      >
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-canvas relative">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-canvas p-4 relative space-y-4">
           <FileDropZone
             onFilesSelected={(files) => addFiles(Array.from(files))}
             onCameraClick={() => setIsCameraOpen(true)}
@@ -326,7 +303,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             size="md"
           />
         </div>
-      </div>
+      </SidePanelShell>
 
       <CameraCaptureModal
         isOpen={isCameraOpen}
