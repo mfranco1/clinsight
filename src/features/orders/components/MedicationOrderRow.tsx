@@ -201,7 +201,10 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           <div className="flex items-center gap-1.5 md:hidden">
             {isSelectMode && (
               <button
+                type="button"
                 onClick={onToggleSelect}
+                aria-label={`${isSelected ? "Deselect" : "Select"} medication ${med.drug || "without a name"}`}
+                aria-pressed={isSelected}
                 className={`p-1.5 -ml-1 rounded-lg transition-all flex items-center justify-center`}
               >
                 {isSelected ? (
@@ -221,7 +224,10 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           <div className="relative flex items-center gap-3">
             {isSelectMode && (
               <button
+                type="button"
                 onClick={onToggleSelect}
+                aria-label={`${isSelected ? "Deselect" : "Select"} medication ${med.drug || "without a name"}`}
+                aria-pressed={isSelected}
                 className={`hidden md:flex p-1.5 rounded-lg transition-all items-center justify-center underline-none group/sel shrink-0`}
               >
                 {isSelected ? (
@@ -360,14 +366,18 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
         {/* Actions */}
         <div className="flex items-center justify-end gap-1 w-full md:w-full mt-2 md:mt-0 pt-2 md:pt-0 border-t md:border-t-0 border-border-subtle shrink-0">
           <button
+            type="button"
             onClick={() => setIsEditing(true)}
+            aria-label={`Edit medication ${med.drug || "without a name"}`}
             className="p-2 text-content-muted hover:text-action transition-colors"
             title="Edit"
           >
             <Icons.Edit className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={() => setIsDeleteModalOpen(true)}
+            aria-label={`Delete medication ${med.drug || "without a name"}`}
             className="p-2 text-content-muted hover:text-critical-600 transition-colors"
             title="Delete"
           >

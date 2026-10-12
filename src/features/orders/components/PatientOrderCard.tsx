@@ -288,7 +288,10 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
             )}
             {isSelectMode && (
               <button
+                type="button"
                 onClick={onToggleSelect}
+                aria-label={`${isSelected ? "Deselect" : "Select"} order ${order.name || "without a name"}`}
+                aria-pressed={isSelected}
                 className={`p-1.5 -ml-1 rounded-lg transition-all flex items-center justify-center`}
               >
                 {isSelected ? (
@@ -310,7 +313,10 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
           <div className="relative flex items-center gap-3">
             {isSelectMode && (
               <button
+                type="button"
                 onClick={onToggleSelect}
+                aria-label={`${isSelected ? "Deselect" : "Select"} order ${order.name || "without a name"}`}
+                aria-pressed={isSelected}
                 className={`hidden md:flex p-1.5 rounded-lg transition-all items-center justify-center underline-none group/sel shrink-0`}
               >
                 {isSelected ? (

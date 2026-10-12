@@ -244,6 +244,8 @@ Progress: added a shared `ViewNavigationItem` for desktop sidebar/mobile bottom 
 
 Dependencies: Stages 3–7. Risk: highest because editable clinical rows combine many interactions.
 
+Progress: the responsive surface frame is shared by diagnostics and medications. Their row components, column layouts, status adapters, grouping, selection state, and bulk workflows remain feature-owned because the contracts differ. Medication selection controls now announce the medication and selected state, and edit/delete actions have explicit names. Diagnostic selection controls likewise announce the order and selected state; date-group completion toggles expose their target date and pressed state. Broader characterization, mobile/keyboard verification, and parity of the medication and diagnostics slices are outstanding.
+
 1. Characterize both diagnostics and medication rows before extraction: full displayed fields, editing/save/cancel, focus, statuses, date groups, group links, selection, bulk actions, newly added row focus, deletion, and responsive cards.
 2. Separate neutral structure from domain rows: shared surface/scroll region, column headers, cells, row actions, selection controls, empty/loading treatment, and optional group headers. Keep diagnostics and medication editors/adapters feature-owned.
 3. Use stable entity IDs for keys and selection; never array indexes. Keep domain filtering/grouping/sorting in existing selectors. Provide typed column definitions/custom cells only where both consumers benefit; do not require every row to fit a configuration object.
@@ -324,6 +326,7 @@ Implementation active. Stage 0 baseline is complete. Shared modal, popover, toas
 
 - Baseline before code changes: typecheck, build, 156 unit tests, docs check, and 36 desktop/mobile E2E tests passed (2 skipped). Full format check failed on existing formatting in `tests/brand.test.tsx`.
 - Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility, order/medication status, and reset-confirmation journeys passed on desktop and mobile (6 tests). Loading/feedback plus note/input tests passed after the inline-error slice (11 tests).
+- The latest operational-row accessibility tests pass (2 tests); `npm run typecheck`, `npm run build`, `npm run docs:check`, and `git diff --check` pass. `npm run format:check` still flags only the pre-existing, unchanged `tests/brand.test.tsx`.
 - Latest full `npm test`: 64 files, 184 tests passed. `npm run build`, `npm run lint`, `npm run docs:check`, and `git diff --check` pass. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); those added journeys, the template/draft popover, nested gallery menu, SuggestionsDrawer, and chat panel journeys passed on desktop/mobile.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
 - `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.

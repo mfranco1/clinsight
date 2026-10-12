@@ -587,7 +587,10 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                       <div className="bg-canvas/50 md:grid md:grid-cols-[120px_1.5fr_100px_120px_1fr_100px_100px] items-center py-2 px-4 gap-4 border-y border-border-subtle">
                         <div className="flex justify-center">
                           <button
+                            type="button"
                             onClick={() => handleMarkDateDone(date, !allDone)}
+                            aria-label={`Mark all orders for ${new Date(date).toLocaleDateString()} ${allDone ? "incomplete" : "complete"}`}
+                            aria-pressed={allDone}
                             className={`w-5 h-5 rounded transition-all flex items-center justify-center border-2 ${allDone ? "bg-action-subtle border-action-500 text-white" : "bg-surface border-border-default hover:border-action-400"}`}
                           >
                             {allDone && <Icons.Check className="w-3 h-3" />}
