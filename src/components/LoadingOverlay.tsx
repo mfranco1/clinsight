@@ -1,6 +1,7 @@
 import BrandMark from "./brand/BrandMark";
 import React from "react";
 import { Icons } from "./ui/Icons";
+import { LoadingBar } from "./ui/LoadingFeedback";
 
 interface LoadingOverlayProps {
   onCancel?: () => void;
@@ -18,18 +19,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     aria-busy="true"
   >
     <div className="flex flex-col items-center text-center">
-      <div className="relative mb-5 flex h-16 w-16 items-center justify-center">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 rounded-full border-[3px] border-white/50"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 animate-spin rounded-full border-[3px] border-white border-t-transparent motion-reduce:animate-none"
-        />
-        <BrandMark size={32} colorMode="mono" className="text-white" />
+      <BrandMark size={32} colorMode="mono" className="mb-5 text-white" />
+      <p className="mb-3 text-sm font-medium text-white">{message}</p>
+      <div className="mb-6">
+        <LoadingBar tone="inverse" />
       </div>
-      <p className="mb-6 text-sm font-medium text-white">{message}</p>
 
       {onCancel && (
         <button

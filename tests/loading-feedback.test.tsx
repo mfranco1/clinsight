@@ -15,10 +15,11 @@ describe("loading feedback primitives", () => {
     );
   });
 
-  it("pairs the app logo with an accessible startup loading message", () => {
+  it("pairs the app logo and an accessible startup loading message with a bar", () => {
     render(<LoadingScreen />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Loading Clinsight…");
+    expect(document.querySelector(".loading-bar")).toBeInTheDocument();
     expect(document.querySelector("svg")).toBeInTheDocument();
   });
 

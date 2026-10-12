@@ -41,6 +41,31 @@
   animation: loadingShimmer 1.5s ease-in-out infinite;
 }
 
+.loading-bar::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  content: "";
+  animation: loadingBarIndeterminate 1.4s ease-in-out infinite;
+}
+
+@keyframes loadingBarIndeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar::before {
+    animation: none;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer {
     animation: none;
