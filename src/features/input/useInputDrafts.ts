@@ -23,6 +23,21 @@ export const useInputDrafts = (
   setTextInput: Dispatch<SetStateAction<string>>,
 ) => {
   const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [failedStorageOperations, setFailedStorageOperations] = useState<
+    Set<"active-session" | "draft-history">
+  >(() => new Set());
+
+  const recordStorageResult = useCallback(
+    (operation: "active-session" | "draft-history", persisted: boolean) => {
+      setFailedStorageOperations((current) => {
+        const next = new Set(current);
+        if (persisted) next.delete(operation);
+        else next.add(operation);
+        return next;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     const savedDrafts = safeStorage.getItem(DRAFTS_KEY);
@@ -41,13 +56,20 @@ export const useInputDrafts = (
   useEffect(() => {
     if (textInput) {
       const timer = setTimeout(
-        () => safeStorage.setItem(ACTIVE_SESSION_KEY, textInput),
+        () =>
+          recordStorageResult(
+            "active-session",
+            safeStorage.setItem(ACTIVE_SESSION_KEY, textInput),
+          ),
         800,
       );
       return () => clearTimeout(timer);
     }
-    safeStorage.removeItem(ACTIVE_SESSION_KEY);
-  }, [textInput]);
+    recordStorageResult(
+      "active-session",
+      safeStorage.removeItem(ACTIVE_SESSION_KEY),
+    );
+  }, [recordStorageResult, textInput]);
 
   const saveToHistory = useCallback(
     (text: string) => {
@@ -62,19 +84,34 @@ export const useInputDrafts = (
         ...drafts.filter((draft) => draft.text !== text),
       ].slice(0, MAX_DRAFTS);
       setDrafts(updatedDrafts);
-      safeStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts));
+      recordStorageResult(
+        "draft-history",
+        safeStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts)),
+      );
     },
-    [drafts],
+    [drafts, recordStorageResult],
   );
 
   const clearHistory = useCallback(() => {
     setDrafts([]);
-    safeStorage.removeItem(DRAFTS_KEY);
-  }, []);
+    recordStorageResult("draft-history", safeStorage.removeItem(DRAFTS_KEY));
+  }, [recordStorageResult]);
 
   const clearActiveSession = useCallback(() => {
-    safeStorage.removeItem(ACTIVE_SESSION_KEY);
-  }, []);
+    recordStorageResult(
+      "active-session",
+      safeStorage.removeItem(ACTIVE_SESSION_KEY),
+    );
+  }, [recordStorageResult]);
 
-  return { drafts, saveToHistory, clearHistory, clearActiveSession };
+  return {
+    drafts,
+    saveToHistory,
+    clearHistory,
+    clearActiveSession,
+    persistenceError:
+      failedStorageOperations.size > 0
+        ? "Input drafts or session text could not be saved to this browser. They may be lost when you refresh."
+        : null,
+  };
 };

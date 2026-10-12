@@ -82,8 +82,13 @@ const InputSection: React.FC<InputSectionProps> = ({
   onSaveRaw,
   isFirstEntryInEncounter = true,
 }) => {
-  const { drafts, saveToHistory, clearHistory, clearActiveSession } =
-    useInputDrafts(textInput, setTextInput);
+  const {
+    drafts,
+    saveToHistory,
+    clearHistory,
+    clearActiveSession,
+    persistenceError,
+  } = useInputDrafts(textInput, setTextInput);
   const [isConsult, setIsConsult] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -228,6 +233,13 @@ const InputSection: React.FC<InputSectionProps> = ({
                 Dismiss
               </button>
             }
+            className="mb-4 font-medium"
+          />
+        )}
+        {persistenceError && (
+          <ErrorState
+            variant="inline"
+            message={persistenceError}
             className="mb-4 font-medium"
           />
         )}

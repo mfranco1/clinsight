@@ -20,13 +20,15 @@ const createSafeStorage = () => {
         return false;
       }
     },
-    removeItem(key: string): void {
+    removeItem(key: string): boolean {
       try {
         window.localStorage.removeItem(key);
         delete mem[key];
+        return true;
       } catch (e) {
         console.warn("Storage item delete error:", e);
         delete mem[key];
+        return false;
       }
     },
   };

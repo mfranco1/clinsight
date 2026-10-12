@@ -102,4 +102,27 @@ describe("useInputDrafts", () => {
     act(() => result.current.setText(""));
     expect(window.localStorage.getItem("clinsight_active_session")).toBeNull();
   });
+
+  it("shows a persistence error when session saving fails and clears it after recovery", () => {
+    vi.useFakeTimers();
+    vi.spyOn(window.localStorage, "setItem").mockImplementationOnce(() => {
+      throw new DOMException("Storage quota exceeded", "QuotaExceededError");
+    });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { result } = renderHook(() => {
+      const [text, setText] = useState("");
+      return { text, setText, ...useInputDrafts(text, setText) };
+    });
+
+    act(() => result.current.setText("First note draft"));
+    act(() => vi.advanceTimersByTime(800));
+    expect(result.current.persistenceError).toContain("could not be saved");
+
+    act(() => result.current.setText("Recovered note draft"));
+    act(() => vi.advanceTimersByTime(800));
+    expect(result.current.persistenceError).toBeNull();
+    expect(window.localStorage.getItem("clinsight_active_session")).toBe(
+      "Recovered note draft",
+    );
+  });
 });
