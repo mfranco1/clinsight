@@ -30,9 +30,12 @@ export function useChatConversation({
   const [isLoading, setIsLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatRequestId = useRef(0);
+  const requestPendingRef = useRef(false);
 
   useEffect(
     () => () => {
+      chatRequestId.current += 1;
+      requestPendingRef.current = false;
       abortControllerRef.current?.abort();
     },
     [],
@@ -44,8 +47,8 @@ export function useChatConversation({
 
   const requestReply = useCallback(
     async (history: ChatMessage[], userMessage: ChatMessage) => {
-      const requestId = Date.now();
-      chatRequestId.current = requestId;
+      const requestId = ++chatRequestId.current;
+      requestPendingRef.current = true;
       setIsLoading(true);
 
       abortControllerRef.current?.abort();
@@ -83,6 +86,7 @@ export function useChatConversation({
       } finally {
         if (chatRequestId.current === requestId) {
           setIsLoading(false);
+          requestPendingRef.current = false;
           abortControllerRef.current = null;
         }
       }
@@ -92,7 +96,12 @@ export function useChatConversation({
 
   const sendMessage = useCallback(
     async (text: string, attachments: FileUpload[]) => {
-      if ((!text.trim() && attachments.length === 0) || isLoading) return;
+      if (
+        (!text.trim() && attachments.length === 0) ||
+        isLoading ||
+        requestPendingRef.current
+      )
+        return;
       const userMessage: ChatMessage = {
         role: "user",
         text,
@@ -106,7 +115,7 @@ export function useChatConversation({
 
   const retryMessage = useCallback(
     async (errorMessageIndex: number) => {
-      if (isLoading) return;
+      if (isLoading || requestPendingRef.current) return;
       const retryContext = getChatRetryContext(messages, errorMessageIndex);
       if (!retryContext) return;
 
@@ -119,7 +128,8 @@ export function useChatConversation({
   );
 
   const cancel = useCallback(() => {
-    chatRequestId.current = 0;
+    chatRequestId.current += 1;
+    requestPendingRef.current = false;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setIsLoading(false);

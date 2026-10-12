@@ -18,6 +18,29 @@ test("hydrates a legacy persisted patient case", async ({ page }) => {
   await expect(page.getByText("TEST-001")).toBeVisible();
 });
 
+test("preserves unreadable patient storage and reports the load failure", async ({
+  page,
+}) => {
+  const unreadableData = JSON.stringify([
+    structuredPatientCase,
+    { id: "malformed-synthetic-record" },
+  ]);
+  await page.addInitScript((serializedData) => {
+    window.localStorage.setItem("clinsight_patients", serializedData);
+  }, unreadableData);
+
+  await page.goto("/");
+
+  await expect(page.getByRole("alert")).toContainText(
+    "Patient records could not be read",
+  );
+  expect(
+    await page.evaluate(() =>
+      window.localStorage.getItem("clinsight_patients"),
+    ),
+  ).toBe(unreadableData);
+});
+
 test("opens a structured chart and preserves its SOAP presentation", async ({
   page,
 }) => {

@@ -18,7 +18,10 @@ describe("LookupModal", () => {
   it("shows a shared recoverable error and retries the same query", async () => {
     medicalLookup
       .mockRejectedValueOnce(new Error("provider detail"))
-      .mockResolvedValueOnce({ text: "Evidence summary", groundingSources: [] });
+      .mockResolvedValueOnce({
+        text: "Evidence summary",
+        groundingSources: [],
+      });
     render(<LookupModal isOpen onClose={vi.fn()} />);
 
     fireEvent.change(screen.getByRole("textbox"), {

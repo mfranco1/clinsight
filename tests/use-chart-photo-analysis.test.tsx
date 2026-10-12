@@ -122,4 +122,47 @@ describe("useChartPhotoAnalysis", () => {
     );
     expect(result.current.isAnalyzingImaging).toBe(false);
   });
+
+  it("ignores a late analysis result after the selected entry changes", async () => {
+    let resolveAnalysis!: (value: string) => void;
+    vi.mocked(analyzeClinicalPhotos).mockReturnValue(
+      new Promise((resolve) => {
+        resolveAnalysis = resolve;
+      }),
+    );
+    const entry = {
+      ...structuredPatientCase.entries[0],
+      id: "entry-before-navigation",
+      attachments: [attachment("exam.png", "Physical Exam")],
+    };
+    const onUpdate = vi.fn();
+    const setWorkflowError = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ activeEntry }) =>
+        useChartPhotoAnalysis({ activeEntry, onUpdate, setWorkflowError }),
+      { initialProps: { activeEntry: entry } },
+    );
+
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.analyzePhotos();
+    });
+    expect(result.current.isAnalyzingPhotos).toBe(true);
+
+    rerender({
+      activeEntry: {
+        ...entry,
+        id: "entry-after-navigation",
+      },
+    });
+    expect(result.current.isAnalyzingPhotos).toBe(false);
+
+    await act(async () => {
+      resolveAnalysis("General: Old entry result");
+      await pending;
+    });
+
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(setWorkflowError).not.toHaveBeenCalled();
+  });
 });

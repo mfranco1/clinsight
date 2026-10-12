@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChartEntry, SoapNote } from "../../types";
 import {
   analyzeClinicalPhotos,
@@ -23,11 +23,38 @@ export function useChartPhotoAnalysis({
   const [isAnalyzingPhotos, setIsAnalyzingPhotos] = useState(false);
   const [isAnalyzingLabs, setIsAnalyzingLabs] = useState(false);
   const [isAnalyzingImaging, setIsAnalyzingImaging] = useState(false);
+  const activeEntryIdRef = useRef(activeEntry.id);
+  activeEntryIdRef.current = activeEntry.id;
+  const mountedRef = useRef(false);
+  const photoRequestRef = useRef(0);
+  const labRequestRef = useRef(0);
+  const imagingRequestRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      photoRequestRef.current += 1;
+      labRequestRef.current += 1;
+      imagingRequestRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
+    photoRequestRef.current += 1;
+    labRequestRef.current += 1;
+    imagingRequestRef.current += 1;
+    setIsAnalyzingPhotos(false);
+    setIsAnalyzingLabs(false);
+    setIsAnalyzingImaging(false);
+  }, [activeEntry.id]);
 
   const analyzePhotos = useCallback(async () => {
     if (!activeEntry.attachments || activeEntry.attachments.length === 0)
       return;
 
+    const requestId = ++photoRequestRef.current;
+    const entryId = activeEntry.id;
     setIsAnalyzingPhotos(true);
     try {
       const files = activeEntry.attachments.map(
@@ -40,7 +67,13 @@ export function useChartPhotoAnalysis({
         files,
         currentPhysicalExam,
       );
-      if (onUpdate && activeEntry.soap) {
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        photoRequestRef.current === requestId &&
+        onUpdate &&
+        activeEntry.soap
+      ) {
         onUpdate({
           ...activeEntry.soap,
           objective: {
@@ -50,10 +83,18 @@ export function useChartPhotoAnalysis({
         });
       }
     } catch {
-      logDiagnostic("error", "Clinical photo analysis failed.");
-      setWorkflowError("Failed to analyze clinical photos. Please try again.");
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        photoRequestRef.current === requestId
+      ) {
+        logDiagnostic("error", "Clinical photo analysis failed.");
+        setWorkflowError(
+          "Failed to analyze clinical photos. Please try again.",
+        );
+      }
     } finally {
-      setIsAnalyzingPhotos(false);
+      if (photoRequestRef.current === requestId) setIsAnalyzingPhotos(false);
     }
   }, [activeEntry, onUpdate, setWorkflowError]);
 
@@ -68,6 +109,8 @@ export function useChartPhotoAnalysis({
       return;
     }
 
+    const requestId = ++labRequestRef.current;
+    const entryId = activeEntry.id;
     setIsAnalyzingLabs(true);
     try {
       const files = labPhotos.map((attachment) => attachment.file);
@@ -80,19 +123,31 @@ export function useChartPhotoAnalysis({
         currentLabs,
         currentInterpretation,
       );
-      if (onUpdate && activeEntry.soap) {
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        labRequestRef.current === requestId &&
+        onUpdate &&
+        activeEntry.soap
+      ) {
         onUpdate({
           ...activeEntry.soap,
           objective: { ...activeEntry.soap.objective, labs, labInterpretation },
         });
       }
     } catch {
-      logDiagnostic("error", "Lab photo analysis failed.");
-      setWorkflowError(
-        "Failed to analyze laboratory photos. Please try again.",
-      );
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        labRequestRef.current === requestId
+      ) {
+        logDiagnostic("error", "Lab photo analysis failed.");
+        setWorkflowError(
+          "Failed to analyze laboratory photos. Please try again.",
+        );
+      }
     } finally {
-      setIsAnalyzingLabs(false);
+      if (labRequestRef.current === requestId) setIsAnalyzingLabs(false);
     }
   }, [activeEntry, onUpdate, setWorkflowError]);
 
@@ -107,6 +162,8 @@ export function useChartPhotoAnalysis({
       return;
     }
 
+    const requestId = ++imagingRequestRef.current;
+    const entryId = activeEntry.id;
     setIsAnalyzingImaging(true);
     try {
       const files = imagingPhotos.map((attachment) => attachment.file);
@@ -119,7 +176,13 @@ export function useChartPhotoAnalysis({
         currentImaging,
         currentCorrelation,
       );
-      if (onUpdate && activeEntry.soap) {
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        imagingRequestRef.current === requestId &&
+        onUpdate &&
+        activeEntry.soap
+      ) {
         onUpdate({
           ...activeEntry.soap,
           objective: {
@@ -130,10 +193,16 @@ export function useChartPhotoAnalysis({
         });
       }
     } catch {
-      logDiagnostic("error", "Imaging photo analysis failed.");
-      setWorkflowError("Failed to analyze imaging photos. Please try again.");
+      if (
+        mountedRef.current &&
+        activeEntryIdRef.current === entryId &&
+        imagingRequestRef.current === requestId
+      ) {
+        logDiagnostic("error", "Imaging photo analysis failed.");
+        setWorkflowError("Failed to analyze imaging photos. Please try again.");
+      }
     } finally {
-      setIsAnalyzingImaging(false);
+      if (imagingRequestRef.current === requestId) setIsAnalyzingImaging(false);
     }
   }, [activeEntry, onUpdate, setWorkflowError]);
 

@@ -67,12 +67,23 @@ export const migratePersistedPatients = (
 
 export const loadPersistedPatients = (
   rawValue: string | null,
-): MedicalChartResponse[] => {
-  if (!rawValue) return [];
+): MedicalChartResponse[] => loadPersistedPatientsWithStatus(rawValue).patients;
+
+export const loadPersistedPatientsWithStatus = (
+  rawValue: string | null,
+): { patients: MedicalChartResponse[]; error: boolean } => {
+  if (!rawValue) return { patients: [], error: false };
   try {
-    return migratePersistedPatients(JSON.parse(rawValue) as unknown);
+    const parsed: unknown = JSON.parse(rawValue);
+    if (
+      !Array.isArray(parsed) ||
+      parsed.some((patient) => !isChartResponse(patient))
+    ) {
+      return { patients: [], error: true };
+    }
+    return { patients: migratePersistedPatients(parsed), error: false };
   } catch (error) {
     console.error("Failed to load patients from storage", error);
-    return [];
+    return { patients: [], error: true };
   }
 };

@@ -1,13 +1,22 @@
 const createSafeStorage = () => {
   const mem: Record<string, string> = {};
   return {
-    getItem(key: string): string | null {
+    getItemWithStatus(key: string): {
+      value: string | null;
+      persisted: boolean;
+    } {
       try {
-        return window.localStorage.getItem(key) ?? mem[key] ?? null;
+        return {
+          value: window.localStorage.getItem(key) ?? mem[key] ?? null,
+          persisted: true,
+        };
       } catch (e) {
         console.warn("Storage item read error:", e);
-        return mem[key] || null;
+        return { value: mem[key] ?? null, persisted: false };
       }
+    },
+    getItem(key: string): string | null {
+      return this.getItemWithStatus(key).value;
     },
     setItem(key: string, value: string): boolean {
       try {

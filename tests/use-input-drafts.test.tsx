@@ -125,4 +125,25 @@ describe("useInputDrafts", () => {
       "Recovered note draft",
     );
   });
+
+  it("keeps a history deletion error visible until durable deletion succeeds", () => {
+    const { result } = renderHook(() => {
+      const [text, setText] = useState("");
+      return { text, ...useInputDrafts(text, setText) };
+    });
+    act(() => result.current.saveToHistory("Draft to remove"));
+    vi.spyOn(window.localStorage, "removeItem").mockImplementationOnce(() => {
+      throw new DOMException("Storage disabled", "SecurityError");
+    });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    act(() => result.current.clearHistory());
+    expect(result.current.drafts).toEqual([]);
+    expect(result.current.persistenceError).toContain("could not be saved");
+    expect(window.localStorage.getItem("clinsight_drafts")).not.toBeNull();
+
+    act(() => result.current.clearHistory());
+    expect(result.current.persistenceError).toBeNull();
+    expect(window.localStorage.getItem("clinsight_drafts")).toBeNull();
+  });
 });

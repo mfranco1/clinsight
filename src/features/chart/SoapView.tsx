@@ -1,5 +1,5 @@
 import { BRAND } from "../../config/brand";
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   SoapNote,
   GroundingSource,
@@ -617,7 +617,7 @@ const SoapView: React.FC<SoapViewProps> = ({
   onUpdateMedications,
   onReactivateEncounter,
 }) => {
-  const { showToast } = useToast();
+  const { showToast, dismissToast } = useToast();
   const [copied, setCopied] = useState(false);
   const [isNoteOpen, setIsNoteOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
@@ -671,8 +671,26 @@ const SoapView: React.FC<SoapViewProps> = ({
   });
 
   const data = activeEntry.soap || ({} as SoapNote);
-  const { entryVisibilities, setEntryVisibilities, currentVisibility } =
-    useEntrySectionVisibility(activeEntry.id, computeInitialVisibility(data));
+  const {
+    entryVisibilities,
+    setEntryVisibilities,
+    currentVisibility,
+    persistenceError: visibilityStorageError,
+  } = useEntrySectionVisibility(activeEntry.id, computeInitialVisibility(data));
+
+  useEffect(() => {
+    const toastId = "chart-visibility-storage-error";
+    if (!visibilityStorageError) {
+      dismissToast(toastId);
+      return;
+    }
+    showToast("Chart display preferences could not be saved to this browser.", {
+      type: "error",
+      duration: 0,
+      id: toastId,
+    });
+    return () => dismissToast(toastId);
+  }, [dismissToast, showToast, visibilityStorageError]);
 
   const {
     isMenuOpen,

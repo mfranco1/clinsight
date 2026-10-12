@@ -1,5 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SectionVisibility } from "../src/features/chart/components/ManageSectionsDropdown";
 import { useEntrySectionVisibility } from "../src/features/chart/useEntrySectionVisibility";
 
@@ -77,5 +77,26 @@ describe("useEntrySectionVisibility", () => {
         ).entry.subjective.hpi,
       ).toBe(true);
     });
+  });
+
+  it("reports a failed preference write and clears the error after a successful write", () => {
+    vi.spyOn(window.localStorage, "setItem").mockImplementationOnce(() => {
+      throw new DOMException("Storage disabled", "SecurityError");
+    });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { result } = renderHook(() =>
+      useEntrySectionVisibility("entry", initial),
+    );
+
+    expect(result.current.persistenceError).toBe(true);
+
+    act(() => {
+      result.current.setEntryVisibilities((previous) => ({
+        ...previous,
+        entry: initial,
+      }));
+    });
+
+    expect(result.current.persistenceError).toBe(false);
   });
 });

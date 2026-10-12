@@ -61,7 +61,7 @@ import { createId } from "./utils/ids";
 import { safeStorage } from "./utils/storage";
 import { normalizePatientAgeSex } from "./utils/patient";
 import {
-  loadPersistedPatients,
+  loadPersistedPatientsWithStatus,
   PATIENTS_STORAGE_KEY,
 } from "./services/patientPersistence";
 import {
@@ -186,6 +186,14 @@ function AppContent() {
   const [isReassessing, setIsReassessing] = useState<boolean>(false);
 
   // Multi-patient state
+  const [patientLoadResult] = useState(() => {
+    const storedPatients = safeStorage.getItemWithStatus(PATIENTS_STORAGE_KEY);
+    const loaded = loadPersistedPatientsWithStatus(storedPatients.value);
+    return {
+      ...loaded,
+      error: loaded.error || !storedPatients.persisted,
+    };
+  });
   const {
     patients,
     updatePatients,
@@ -193,9 +201,7 @@ function AppContent() {
     addPatients,
     updatePatient,
     removePatient,
-  } = usePatientStore(() =>
-    loadPersistedPatients(safeStorage.getItem(PATIENTS_STORAGE_KEY)),
-  );
+  } = usePatientStore(() => patientLoadResult.patients);
   const patientPreviewUrls = useRef<Set<string>>(new Set());
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
 
@@ -228,6 +234,13 @@ function AppContent() {
 
   // Persistence: Save to localStorage whenever patients change
   useEffect(() => {
+    if (patientLoadResult.error) {
+      showToast(
+        "Patient records could not be read. Stored data was left untouched; changes in this session cannot be saved.",
+        { type: "error", duration: 0, id: "patient-storage-error" },
+      );
+      return;
+    }
     const persisted = safeStorage.setItem(
       PATIENTS_STORAGE_KEY,
       JSON.stringify(serializeAttachments(patients)),
@@ -240,7 +253,7 @@ function AppContent() {
         { type: "error", duration: 0, id: "patient-storage-error" },
       );
     }
-  }, [dismissToast, patients, showToast]);
+  }, [dismissToast, patientLoadResult.error, patients, showToast]);
 
   useEffect(() => {
     const nextUrls = collectAttachmentPreviewUrls(patients);
@@ -269,12 +282,24 @@ function AppContent() {
   }, [patients]);
 
   useEffect(() => {
-    safeStorage.setItem(
+    const persisted = safeStorage.setItem(
       "clinsight_default_specialization",
       defaultSpecialization,
     );
+    if (persisted) {
+      dismissToast("specialization-storage-error");
+    } else {
+      showToast(
+        "Your default specialization could not be saved to this browser.",
+        {
+          type: "error",
+          duration: 0,
+          id: "specialization-storage-error",
+        },
+      );
+    }
     setSpecialization(defaultSpecialization);
-  }, [defaultSpecialization]);
+  }, [defaultSpecialization, dismissToast, showToast]);
 
   // Chat Panel State
   const [isChatOpen, setIsChatOpen] = useState(false);

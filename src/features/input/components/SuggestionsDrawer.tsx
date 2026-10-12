@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Icons } from "../../../components/ui/Icons";
 import { SuggestionsData } from "../../../types";
 import { generateInputSuggestions } from "../../../services/ai/actions";
-import { getErrorMessageCompat } from "../../../services/appErrors";
+import { logDiagnostic } from "../../../services/diagnosticLogger";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import {
   ErrorState,
@@ -54,11 +54,12 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
       if (requestId.current === currentRequestId) {
         setData({ source: notesData, result });
       }
-    } catch (err: unknown) {
+    } catch {
       if (requestId.current === currentRequestId) {
+        logDiagnostic("error", "Input suggestions request failed.");
         setError({
           source: notesData,
-          message: getErrorMessageCompat(err, "Failed to load suggestions."),
+          message: "Failed to load suggestions. Please try again.",
         });
       }
     } finally {

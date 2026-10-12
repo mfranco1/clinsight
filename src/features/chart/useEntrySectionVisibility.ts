@@ -21,9 +21,12 @@ export function useEntrySectionVisibility(
   initialVisibility: SectionVisibility,
 ) {
   const [entryVisibilities, setEntryVisibilities] = useState(loadVisibilities);
+  const [persistenceError, setPersistenceError] = useState(false);
 
   useEffect(() => {
-    safeStorage.setItem(STORAGE_KEY, JSON.stringify(entryVisibilities));
+    setPersistenceError(
+      !safeStorage.setItem(STORAGE_KEY, JSON.stringify(entryVisibilities)),
+    );
   }, [entryVisibilities]);
 
   const currentVisibility = useMemo(() => {
@@ -35,5 +38,10 @@ export function useEntrySectionVisibility(
     };
   }, [entryId, entryVisibilities, initialVisibility]);
 
-  return { entryVisibilities, setEntryVisibilities, currentVisibility };
+  return {
+    entryVisibilities,
+    setEntryVisibilities,
+    currentVisibility,
+    persistenceError,
+  };
 }

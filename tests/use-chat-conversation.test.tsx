@@ -116,6 +116,56 @@ describe("useChatConversation", () => {
     ]);
   });
 
+  it("rejects rapid duplicate sends before React rerenders", async () => {
+    vi.mocked(sendChatMessage).mockResolvedValue({
+      text: "Single response",
+      groundingSources: [],
+    });
+    const { result } = renderHook(() =>
+      useChatConversation({ chartData: null, isOpen: true }),
+    );
+
+    await act(async () => {
+      await Promise.all([
+        result.current.sendMessage("Send once", []),
+        result.current.sendMessage("Duplicate", []),
+      ]);
+    });
+
+    expect(sendChatMessage).toHaveBeenCalledOnce();
+    expect(result.current.messages).toMatchObject([
+      { role: "user", text: "Send once" },
+      { role: "model", text: "Single response" },
+    ]);
+  });
+
+  it("ignores a provider success that arrives after cancellation", async () => {
+    let resolveReply!: (reply: { text: string; groundingSources: [] }) => void;
+    vi.mocked(sendChatMessage).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveReply = resolve;
+        }),
+    );
+    const { result } = renderHook(() =>
+      useChatConversation({ chartData: null, isOpen: true }),
+    );
+
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.sendMessage("Cancelled request", []);
+    });
+    act(() => result.current.cancel());
+    await act(async () => {
+      resolveReply({ text: "Late answer", groundingSources: [] });
+      await pending;
+    });
+
+    expect(result.current.messages).toEqual([
+      { role: "user", text: "Cancelled request", attachments: undefined },
+    ]);
+  });
+
   it("aborts an active request when cancelled without adding a failure message", async () => {
     let observedSignal: AbortSignal | undefined;
     vi.mocked(sendChatMessage).mockImplementation(

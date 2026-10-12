@@ -84,7 +84,9 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
           setErrorMessage("Search timed out after 60 seconds.");
         } else {
           logDiagnostic("error", "Medical lookup failed.");
-          setErrorMessage("I'm sorry, I encountered an error during the lookup.");
+          setErrorMessage(
+            "I'm sorry, I encountered an error during the lookup.",
+          );
         }
       }
     } finally {
@@ -172,7 +174,11 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
             title="Lookup failed"
             message={errorMessage}
             action={
-              <Button variant="secondary" size="sm" onClick={() => void handleSearch()}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void handleSearch()}
+              >
                 Try again
               </Button>
             }

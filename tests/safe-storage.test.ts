@@ -36,9 +36,16 @@ describe("safeStorage", () => {
     vi.spyOn(window.localStorage, "setItem").mockImplementation(() => {
       throw new DOMException("Storage disabled", "SecurityError");
     });
+    vi.spyOn(window.localStorage, "getItem").mockImplementation(() => {
+      throw new DOMException("Storage disabled", "SecurityError");
+    });
     vi.spyOn(console, "warn").mockImplementation(() => {});
 
     expect(safeStorage.setItem(key, "session only")).toBe(false);
     expect(safeStorage.getItem(key)).toBe("session only");
+    expect(safeStorage.getItemWithStatus(key)).toEqual({
+      value: "session only",
+      persisted: false,
+    });
   });
 });

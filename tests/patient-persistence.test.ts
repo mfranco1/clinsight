@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   loadPersistedPatients,
+  loadPersistedPatientsWithStatus,
   migratePersistedPatients,
 } from "../src/services/patientPersistence";
 import {
@@ -21,6 +22,25 @@ describe("patient persistence boundary", () => {
     ).toHaveLength(1);
     expect(loadPersistedPatients(JSON.stringify({ patients: [] }))).toEqual([]);
     expect(loadPersistedPatients("not-json")).toEqual([]);
+    expect(loadPersistedPatientsWithStatus("not-json")).toEqual({
+      patients: [],
+      error: true,
+    });
+    expect(
+      loadPersistedPatientsWithStatus(JSON.stringify({ patients: [] })),
+    ).toEqual({
+      patients: [],
+      error: true,
+    });
+    expect(
+      loadPersistedPatientsWithStatus(
+        JSON.stringify([structuredPatientCase, { id: "unreadable" }]),
+      ),
+    ).toEqual({ patients: [], error: true });
+    expect(loadPersistedPatientsWithStatus(null)).toEqual({
+      patients: [],
+      error: false,
+    });
   });
 
   it("round-trips legacy clinical pearls", () => {
