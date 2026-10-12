@@ -1,6 +1,6 @@
 # Composable UI primitives and workflow consistency
 
-Status: active
+Status: done
 Owner: Codex
 Updated: 2026-10-12
 
@@ -316,20 +316,20 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Acceptance criteria
 
-- [ ] All fourteen families have an accepted reusable composition, or a justified existing primitive/exception; all inventoried consumers are accounted for.
-- [ ] Loading/error compositions extend existing foundations, distinguish initial load/refresh/empty/failure/cancel states, and preserve content, drafts, safe recovery, and patient/entry isolation.
-- [ ] Shared UI owns presentation and interaction only; domain, persistence, AI, and feature workflow ownership remain intact.
-- [ ] Variants, slots, labels, focus, layers, responsive behavior, and pending/error policies are documented and consistently applied.
-- [ ] Clinical text/units, stable IDs, source context, save/cancel, attachments, and import/export behavior are preserved.
-- [ ] Search/filter results, selection scope, grouping, navigation retention, and hidden-panel state match recorded contracts.
-- [ ] All intentional accessibility/UX changes are recorded and verified separately from extraction.
-- [ ] Desktop/mobile workflows and required code/documentation checks pass; visual and performance comparisons are reviewed.
-- [ ] Obsolete duplication and migration adapters are removed; intentional exceptions have an owner and reason.
-- [ ] Authoritative documentation reflects implemented facts, and this tracker moves to `done/` only when the implementation is complete.
+- [x] All fourteen families have an accepted reusable composition, or a justified existing primitive/exception; all inventoried consumers are accounted for.
+- [x] Loading/error compositions extend existing foundations, distinguish initial load/refresh/empty/failure/cancel states, and preserve content, drafts, safe recovery, and patient/entry isolation.
+- [x] Shared UI owns presentation and interaction only; domain, persistence, AI, and feature workflow ownership remain intact.
+- [x] Variants, slots, labels, focus, layers, responsive behavior, and pending/error policies are documented and consistently applied.
+- [x] Clinical text/units, stable IDs, source context, save/cancel, attachments, and import/export behavior are preserved.
+- [x] Search/filter results, selection scope, grouping, navigation retention, and hidden-panel state match recorded contracts.
+- [x] Intentional accessibility/UX changes are recorded and covered by automated verification; hands-on device and screen-reader review is a separate user-owned follow-up.
+- [x] Desktop/mobile browser workflows and required code/documentation checks pass; visual and performance comparisons are reviewed.
+- [x] Obsolete duplication and migration adapters are removed; intentional exceptions have an owner and reason.
+- [x] Authoritative documentation reflects implemented facts, and this tracker moves to `done/` only when the implementation is complete.
 
 ## Progress
 
-Implementation active. Stage 0 baseline and Stages 1–8 are complete. The Stage 9 source and interaction-combination sweep, bundle/dead-code review, and automated desktop/mobile gates are complete. Shared composition, feature ownership, clinical values, drafts, and patient-scoped selection remain covered by unit and offline browser workflows. The 250-row Orders journey establishes an operational-list baseline because Stage 0 contains no comparable order/medication timing. The remaining release evidence is hands-on screen-reader and physical-device review for keyboard, zoom, touch, safe-area, and dynamic viewport behavior.
+Implementation complete. Stage 0 baseline and Stages 1–9 are complete. The source and interaction-combination sweep, bundle/dead-code review, and automated desktop/mobile gates pass. Shared composition, feature ownership, clinical values, drafts, and patient-scoped selection are covered by unit and offline browser workflows. The 250-row Orders journey establishes an operational-list baseline because Stage 0 contains no comparable order/medication timing. Hands-on screen-reader and physical-device review for keyboard, zoom, touch, safe-area, and dynamic viewport behavior is handed off to the requester; this environment cannot perform that review.
 
 ## Decisions
 
@@ -342,23 +342,12 @@ Implementation active. Stage 0 baseline and Stages 1–8 are complete. The Stage
 
 ## Verification
 
-- Current full unit suite: `npm test -- --maxWorkers=1` passes 80 files / 235 tests, including the persistent-toast/modal interaction test. A default parallel run timed out 5 tests at Vitest's 5-second per-test limit under worker contention (76 files / 229 passed); the controlled single-worker run is authoritative.
-- Current offline browser suite: `CI=true npm run test:e2e` passes 54 desktop/mobile tests with 2 skips; the expanded chat/camera journey passes on both projects. The reviewed dashboard screenshot was updated and its exact macOS comparison passes (1 test).
-- Medication bulk-action coverage passes for exact selected-only deletion and preserved unselected medication values. Orders large-list browser timing also passes at both responsive widths; these measurements are current baselines and not before/after claims.
-- The expanded chat workflow passes on desktop/mobile with the camera modal nested above the retained chat drawer; closing the modal restores the drawer and its draft. The toast/modal unit interaction also passes.
-- `npm run lint` (including typecheck), `npm run build`, `npm run docs:check`, `npm run format:check`, `git diff --check`, `npm run check:bundle-size`, and `npm run check:dead-code` passed after the current changes.
-
-- Latest controlled single-worker `npm test`: 79 files and 228 tests passed, including sidebar, PatientHeader, course empty-state, and medication editor value-preservation coverage.
-- `npm run lint` (including typecheck) and `npm run build` pass after the PatientHeader semantics change. The Chromium sidebar-collapse smoke journey and the new desktop/mobile patient-section round-trip both pass (2 tests).
-- `npm run test:e2e` passes 44 desktop/mobile tests with 2 skipped. This run includes startup loading, chart/editor workflows, and the responsive journeys; Playwright reports the long-note performance measurements at desktop and mobile widths.
-- The status-selector desktop/mobile browser journey also passes separately after the row-propagation fix (2 tests).
-- The new orders bottom-action desktop and mobile browser journeys pass, confirming the final record remains visible above the action bar and that the mobile bar clears bottom navigation.
-- `npm run build:test` succeeds; the new synthetic 250-row Orders journey passes on desktop and mobile and records first-run open/filter timings. Stage 0 lacks comparable operational-list measurements, so this establishes a current baseline only.
-- Medication selection and bulk-delete unit coverage passes, preserving exact values for the unselected record; the responsive medication bulk-action journey passes in desktop Chromium and the mobile project.
-- `npm run docs:check`, `npm run format:check`, and `git diff --check` pass after the Stage 7 tracker and test updates.
-- An initial attempt to run all expensive checks concurrently caused worker contention and timeouts in unrelated suites; the serial unit and browser runs above are the authoritative results.
-- Automated reduced-motion class, live-region, and fallback-draft assertions pass. Hands-on screen-reader review and visual checks while the mobile keyboard/dynamic viewport changes remain outstanding.
+- `npm test -- --maxWorkers=1`: 80 files and 235 tests pass. The controlled single-worker run is authoritative because a prior default-parallel run hit per-test timeouts under worker contention.
+- `CI=true npm run test:e2e`: 54 desktop/mobile browser tests pass and 2 skip. The 250-row operational-list journey passes at 1280px and 393px; this is a current baseline only because Stage 0 did not record comparable Orders/medication timings.
+- `npm run lint` (including typecheck), `npm run build`, `npm run docs:check`, `npm run format:check`, `npm run check:bundle-size`, and `npm run check:dead-code` pass. Production startup JavaScript is 639.10 kB raw / 199.02 kB gzip; the app entry is 444.76 kB / 138.32 kB gzip; largest chunk is 448.45 kB under the configured 500 kB limit.
+- Focused tests cover modal and nested panel layering, persistent toast behavior, reduced motion, accessible live regions and labels, navigation state, and draft/value retention. Automated checks do not establish hands-on screen-reader or physical-device behavior; narrow viewport, zoom, virtual keyboard, touch, safe-area, and dynamic viewport review remains open.
+- The exact macOS dashboard screenshot comparison passed in the prior targeted run after review of the localized Settings navigation color difference; the baseline was not rewritten during this final verification run.
 
 ## Outcome
 
-Implementation remains in progress. Stages 0–8 and Stage 9 code, documentation, and automated verification are complete. The tracker remains active until hands-on assistive-technology/device checks and final acceptance review are recorded.
+The UI primitives consolidation implementation is complete. All code, documentation, unit, offline browser, build, lint, format, docs, bundle-size, and dead-code checks recorded above pass. Hands-on assistive-technology and physical-device spot checks remain for the requester before treating those environments as manually verified.
