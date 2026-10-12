@@ -80,7 +80,7 @@ Follow [repository ownership](../../architecture.md#repository-ownership), the [
 - **Async presentation:** extend `LoadingFeedback`, `LoadingOverlay`, `createLazyFeature`, and the existing editor fallback. Features supply operation labels, pending state, retained content, safe error messages, and explicit retry/cancel actions. Do not introduce a global loading boolean, generic fetch framework, or mandatory async-state wrapper; shared UI must not start/retry requests or infer cancellation from dismissal.
 - **Customization:** prefer typed size, density, intent, placement, and layout variants; slots for header, body, footer, actions, and custom cells; and narrowly scoped class overrides. Avoid flags for individual features and arbitrary overrides that bypass required semantics.
 - **Behavior:** document visibility, close-request reasons, focus entry/restoration, modal versus nonmodal behavior, scroll ownership, mount retention, and pending actions. Share behavior through existing accessible foundations rather than copying document listeners into each consumer.
-- **Dependencies:** retain Radix Dialog and Select. At the relevant stage, evaluate small matching accessible menu/popover/alert-dialog primitives if installed capabilities cannot support the required semantics. Check current official APIs, licensing, maintenance, and measured bundle impact before adding a dependency. Do not add an entire UI/table suite by default.
+- **Dependencies:** retain Radix Dialog, Select, and Popover. At the relevant stage, evaluate small matching accessible menu/alert-dialog primitives if installed capabilities cannot support the required semantics. Check current official APIs, licensing, maintenance, and measured bundle impact before adding a dependency. Do not add an entire UI/table suite by default.
 
 Proposed conceptual contracts: controlled `open/onOpenChange`; close reasons such as Escape, outside interaction, and close button; semantic `intent`; explicit labels/descriptions; composed header/body/footer; feature-supplied `pending/error`; stable `getRowId`; and separately controlled query/filter/selection values. These are design targets, not a requirement to rename every existing prop. Preserve old call sites with thin, tested adapters during migration and remove adapters when their last consumer moves.
 
@@ -190,7 +190,7 @@ Dependencies: Stages 1–2 and 3A. Risk: medium.
 
 Exit gate: no clipping in toolbars/panels/dialogs; selecting a status does not accidentally activate its row; custom positioning remains only for documented special cases.
 
-Progress: the chart section manager remains a checkbox popover, but its category accordions now use labelled native buttons with `aria-expanded`/`aria-controls`; “Show all”/“Hide all” actions have contextual accessible names and are visible on keyboard focus. Visibility remains controlled by the existing per-entry owner. Other feature menus and custom positioning remain to be migrated or dispositioned.
+Progress: added a shared Radix-backed `Popover` surface with portal positioning, viewport collision constraints, labelled content, Escape dismissal, and focus restoration. Input Templates and Drafts now use it; their bespoke mobile fixed-position portal and duplicate outside/scroll listeners are removed while template application and draft restoration remain owner-controlled. `ToolbarButton` now forwards refs so it can be composed safely as a popover trigger. The chart section manager remains a checkbox popover, but its category accordions use labelled native buttons with `aria-expanded`/`aria-controls`; “Show all”/“Hide all” actions have contextual accessible names and are visible on keyboard focus. Visibility remains controlled by the existing per-entry owner. Other feature menus and custom positioning remain to be migrated or dispositioned. Focused popover and draft-hook tests pass; desktop/mobile template-and-draft E2E journeys pass. The production build reports the lazy InputSection chunk at 58.43 kB (19.10 kB gzip), versus 31.53 kB (9.70 kB gzip) before adding the Popover dependency; the broader bundle review remains open and no budget has been set.
 
 ### Stage 5 — Standardize side panels, bottom sheets, and bottom actions
 
@@ -309,7 +309,7 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Progress
 
-Implementation active. Stage 0 baseline is complete. Shared modal, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. The current toast slice passes 179 unit tests, lint/typecheck, production build, docs check, formatting for changed files, and the dashboard shell journey on desktop/mobile. Remaining consumers and families still need the staged migrations below.
+Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. Current validation passes 180 unit tests, lint/typecheck, production build, docs check, changed-file formatting, and the dashboard shell journey on desktop/mobile. The input popover migration passes focused unit tests and its template/draft E2E journey on desktop/mobile. Remaining consumers and families still need the staged migrations below.
 
 ## Decisions
 
@@ -324,7 +324,7 @@ Implementation active. Stage 0 baseline is complete. Shared modal, toast viewpor
 
 - Baseline before code changes: typecheck, build, 156 unit tests, docs check, and 36 desktop/mobile E2E tests passed (2 skipped). Full format check failed on existing formatting in `tests/brand.test.tsx`.
 - Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility, order/medication status, and reset-confirmation journeys passed on desktop and mobile (6 tests). Loading/feedback plus note/input tests passed after the inline-error slice (11 tests).
-- Latest full `npm test`: 61 files, 179 tests passed. `npm run build`, `npm run lint`, `npm run docs:check`, and `git diff --check` pass. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); both added journeys passed on desktop/mobile.
+- Latest full `npm test`: 62 files, 180 tests passed. `npm run build`, `npm run lint`, `npm run docs:check`, and `git diff --check` pass. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); those added journeys and the new template/draft popover journey passed on desktop/mobile.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
 - `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
 

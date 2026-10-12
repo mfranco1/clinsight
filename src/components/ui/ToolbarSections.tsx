@@ -110,70 +110,80 @@ export const ToolbarFilterToggle: React.FC<{
 );
 
 // 4. ToolbarButton - Generic button for toolbar actions
-export const ToolbarButton: React.FC<{
-  onClick: () => void;
-  icon?: React.ElementType;
-  label?: string;
-  variant?:
-    | "primary"
-    | "secondary"
-    | "danger"
-    | "success"
-    | "ghost"
-    | "outline"
-    | "active";
-  className?: string;
-  disabled?: boolean;
-  title?: string;
-  showIndicator?: boolean;
-  hideLabelOnMobile?: boolean;
-}> = ({
-  onClick,
-  icon: Icon,
-  label,
-  variant = "secondary",
-  className = "",
-  disabled = false,
-  title,
-  showIndicator,
-  hideLabelOnMobile = false,
-}) => {
-  const variants = {
-    primary:
-      "text-action-hover bg-action-subtle hover:bg-action-100 border-transparent",
-    secondary: "text-content-default hover:bg-canvas border-transparent",
-    danger: "text-danger-600 hover:bg-danger-50 border-transparent",
-    success:
-      "text-success-700 bg-success-50 hover:bg-success-100 border-transparent",
-    ghost: "text-content-secondary hover:bg-canvas border-transparent",
-    outline:
-      "text-content-default border border-border-default hover:bg-canvas",
-    active: "text-action-hover bg-action-subtle border border-action-100",
-  };
+export const ToolbarButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    onClick?: () => void;
+    icon?: React.ElementType;
+    label?: string;
+    variant?:
+      | "primary"
+      | "secondary"
+      | "danger"
+      | "success"
+      | "ghost"
+      | "outline"
+      | "active";
+    className?: string;
+    disabled?: boolean;
+    title?: string;
+    showIndicator?: boolean;
+    hideLabelOnMobile?: boolean;
+  }
+>(
+  (
+    {
+      onClick,
+      icon: Icon,
+      label,
+      variant = "secondary",
+      className = "",
+      disabled = false,
+      title,
+      showIndicator,
+      hideLabelOnMobile = false,
+    },
+    ref,
+  ) => {
+    const variants = {
+      primary:
+        "text-action-hover bg-action-subtle hover:bg-action-100 border-transparent",
+      secondary: "text-content-default hover:bg-canvas border-transparent",
+      danger: "text-danger-600 hover:bg-danger-50 border-transparent",
+      success:
+        "text-success-700 bg-success-50 hover:bg-success-100 border-transparent",
+      ghost: "text-content-secondary hover:bg-canvas border-transparent",
+      outline:
+        "text-content-default border border-border-default hover:bg-canvas",
+      active: "text-action-hover bg-action-subtle border border-action-100",
+    };
 
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title || label}
-      className={`flex items-center ${Icon && hideLabelOnMobile ? "px-2 sm:px-4" : "px-4"} py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 whitespace-nowrap group active:scale-95 disabled:opacity-50 disabled:pointer-events-none relative ${variants[variant]} ${className}`}
-    >
-      {Icon && (
-        <Icon
-          className={`w-4 h-4 ${label ? (hideLabelOnMobile ? "sm:mr-2" : "mr-2") : ""} ${variant === "secondary" || variant === "outline" ? "text-content-muted group-hover:text-action transition-colors" : ""}`}
-        />
-      )}
-      {label && (
-        <span className={hideLabelOnMobile ? "hidden sm:inline-block" : ""}>
-          {label}
-        </span>
-      )}
-      {showIndicator && (
-        <span className="absolute right-1.5 w-1.5 h-1.5 bg-action-subtle rounded-full border border-white" />
-      )}
-    </button>
-  );
-};
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        disabled={disabled}
+        title={title || label}
+        className={`flex items-center ${Icon && hideLabelOnMobile ? "px-2 sm:px-4" : "px-4"} py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 whitespace-nowrap group active:scale-95 disabled:opacity-50 disabled:pointer-events-none relative ${variants[variant]} ${className}`}
+      >
+        {Icon && (
+          <Icon
+            className={`w-4 h-4 ${label ? (hideLabelOnMobile ? "sm:mr-2" : "mr-2") : ""} ${variant === "secondary" || variant === "outline" ? "text-content-muted group-hover:text-action transition-colors" : ""}`}
+          />
+        )}
+        {label && (
+          <span className={hideLabelOnMobile ? "hidden sm:inline-block" : ""}>
+            {label}
+          </span>
+        )}
+        {showIndicator && (
+          <span className="absolute right-1.5 w-1.5 h-1.5 bg-action-subtle rounded-full border border-white" />
+        )}
+      </button>
+    );
+  },
+);
+ToolbarButton.displayName = "ToolbarButton";
 
 // 5. ToolbarPagination - Standardized pagination controls
 export const ToolbarPagination: React.FC<{

@@ -2,11 +2,9 @@ import React, {
   useState,
   useRef,
   useEffect,
-  useCallback,
   Dispatch,
   SetStateAction,
 } from "react";
-import { createPortal } from "react-dom";
 import {
   FileUpload,
   MedicalChartResponse,
@@ -29,6 +27,11 @@ import {
 } from "../../components/ui/ToolbarSections";
 import { FileDropZone } from "../../components/ui/FileUpload/FileDropZone";
 import { FilePreviewBadge } from "../../components/ui/FileUpload/FilePreviewBadge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../components/ui/Popover";
 import { openAttachment } from "../../services/fileService";
 import SuggestionsDrawer from "./components/SuggestionsDrawer";
 import { useAudioRecorder } from "../../hooks/useAudioRecorder";
@@ -101,42 +104,6 @@ const InputSection: React.FC<InputSectionProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isClearHistoryModalOpen, setIsClearHistoryModalOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const templatesDropdownRef = useRef<HTMLDivElement>(null);
-  const templatesButtonRef = useRef<HTMLButtonElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  const [isMobile, setIsMobile] = useState(false);
-
-  const updateDropdownPos = useCallback(() => {
-    if (templatesButtonRef.current && showTemplates) {
-      const rect = templatesButtonRef.current.getBoundingClientRect();
-      setDropdownPos({
-        top: rect.bottom,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-  }, [showTemplates]);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  useEffect(() => {
-    if (showTemplates && isMobile) {
-      updateDropdownPos();
-      window.addEventListener("scroll", updateDropdownPos, true);
-      window.addEventListener("resize", updateDropdownPos);
-      return () => {
-        window.removeEventListener("scroll", updateDropdownPos, true);
-        window.removeEventListener("resize", updateDropdownPos);
-      };
-    }
-  }, [showTemplates, updateDropdownPos, isMobile]);
 
   // Sync isConsult with active encounter's type in append mode
   useEffect(() => {
@@ -147,43 +114,6 @@ const InputSection: React.FC<InputSectionProps> = ({
       setIsConsult(activeEnc?.type === EncounterType.CONSULT);
     }
   }, [isAppendMode, activePatient]);
-
-  useEffect(() => {
-    // Close dropdowns on outside click or scroll
-    const handleScroll = () => {
-      if (showTemplates) setShowTemplates(false);
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      // Handle Drafts Dropdown
-      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
-        setShowDrafts(false);
-      }
-
-      // Handle Templates Dropdown - Aware of Portal
-      const isInsideTrigger =
-        templatesDropdownRef.current &&
-        templatesDropdownRef.current.contains(target);
-      const isInsidePortal =
-        portalRef.current && portalRef.current.contains(target);
-
-      if (showTemplates && !isInsideTrigger && !isInsidePortal) {
-        setShowTemplates(false);
-      }
-    };
-
-    if (showTemplates) {
-      window.addEventListener("scroll", handleScroll, true);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll, true);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showTemplates, showDrafts, isMobile]);
 
   const handleManualSave = () => {
     if (!textInput || textInput.trim().length < 5) return;
@@ -341,23 +271,24 @@ const InputSection: React.FC<InputSectionProps> = ({
           containerClassName="-mx-4 px-4 -mt-6 pt-6 pb-4 mb-2"
           showOverflow={true}
         >
-          <div
-            className="flex items-center justify-between px-2 py-2 min-h-[52px] relative w-full"
-            ref={dropdownRef}
-          >
+          <div className="flex items-center justify-between px-2 py-2 min-h-[52px] relative w-full">
             {/* Left Fixed Area - Keep trigger outside scroll for visible overflow */}
             <div className="relative z-20 flex-shrink-0">
-              <ToolbarButton
-                onClick={() => setShowDrafts(!showDrafts)}
-                icon={Icons.History}
-                label="Drafts"
-                variant={showDrafts ? "active" : "secondary"}
-                showIndicator={drafts.length > 0}
-                hideLabelOnMobile={true}
-              />
-
-              {showDrafts && (
-                <div className="absolute left-0 mt-2 w-72 bg-surface rounded-xl shadow-2xl border border-border-default z-50 py-2 animate-fade-in origin-top-left overflow-hidden">
+              <Popover open={showDrafts} onOpenChange={setShowDrafts}>
+                <PopoverTrigger asChild>
+                  <ToolbarButton
+                    icon={Icons.History}
+                    label="Drafts"
+                    variant={showDrafts ? "active" : "secondary"}
+                    showIndicator={drafts.length > 0}
+                    hideLabelOnMobile={true}
+                  />
+                </PopoverTrigger>
+                <PopoverContent
+                  aria-label="Input drafts"
+                  align="start"
+                  className="w-72 rounded-xl py-2 animate-fade-in origin-top-left"
+                >
                   <div className="px-4 py-2 border-b border-neutral-50 mb-1 flex justify-between items-center bg-canvas/50">
                     <span className="text-[10px] font-bold text-content-muted uppercase tracking-widest">
                       Session History
@@ -397,7 +328,7 @@ const InputSection: React.FC<InputSectionProps> = ({
                     )}
                   </div>
                   {drafts.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-neutral-50 px-4">
+                    <div className="mt-2 border-t border-neutral-50 px-4 pt-2">
                       <button
                         onClick={() => setIsClearHistoryModalOpen(true)}
                         className="w-full text-center py-1.5 text-[10px] font-bold text-content-muted hover:text-danger-500 uppercase tracking-widest transition-colors"
@@ -406,8 +337,8 @@ const InputSection: React.FC<InputSectionProps> = ({
                       </button>
                     </div>
                   )}
-                </div>
-              )}
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Scrollable Middle/Right Section - Hidden scrollbar logic or basic auto */}
@@ -501,56 +432,33 @@ const InputSection: React.FC<InputSectionProps> = ({
                 </button>
 
                 {/* Templates Dropdown Container */}
-                <div className="relative" ref={templatesDropdownRef}>
-                  <button
-                    ref={templatesButtonRef}
-                    type="button"
-                    onClick={() => setShowTemplates(!showTemplates)}
-                    className={`flex items-center px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 whitespace-nowrap ${showTemplates ? "bg-action-100 text-action-hover border-action-border" : "bg-surface-muted text-content-default hover:bg-action-subtle hover:text-action-hover border border-transparent hover:border-action-border"} border`}
+                <Popover open={showTemplates} onOpenChange={setShowTemplates}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={`flex items-center px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 whitespace-nowrap ${showTemplates ? "bg-action-100 text-action-hover border-action-border" : "bg-surface-muted text-content-default hover:bg-action-subtle hover:text-action-hover border border-transparent hover:border-action-border"} border`}
+                    >
+                      <Icons.LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
+                      Templates
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    aria-label="Input templates"
+                    align="end"
+                    className="w-48 rounded-lg p-0 py-1 animate-fade-in-up"
                   >
-                    <Icons.LayoutGrid className="w-3.5 h-3.5 mr-1.5" />
-                    Templates
-                  </button>
-                  {showTemplates &&
-                    (isMobile ? (
-                      createPortal(
-                        <div
-                          ref={portalRef}
-                          className="fixed bg-surface rounded-xl shadow-2xl border border-border-default z-[100] py-1 animate-fade-in-up overflow-hidden max-h-[50vh] overflow-y-auto"
-                          style={{
-                            top: `${dropdownPos.top + 8}px`,
-                            left: `${Math.max(16, Math.min(window.innerWidth - 208, dropdownPos.left))}px`,
-                            width: "192px",
-                          }}
-                        >
-                          {CLINICAL_TEMPLATES.map((t) => (
-                            <button
-                              key={t.id}
-                              type="button"
-                              onClick={() => applyTemplate(t.content)}
-                              className="w-full text-left px-4 py-3 text-xs font-medium text-content-primary hover:bg-action-subtle hover:text-action-hover transition-colors border-b last:border-none border-neutral-50 active:bg-action-100"
-                            >
-                              {t.label}
-                            </button>
-                          ))}
-                        </div>,
-                        document.body,
-                      )
-                    ) : (
-                      <div className="absolute right-0 mt-2 w-48 bg-surface rounded-lg shadow-xl border border-border-default z-50 py-1 animate-fade-in-up overflow-hidden">
-                        {CLINICAL_TEMPLATES.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            onClick={() => applyTemplate(t.content)}
-                            className="w-full text-left px-4 py-2.5 text-xs font-medium text-content-primary hover:bg-action-subtle hover:text-action-hover transition-colors border-b last:border-none border-neutral-50"
-                          >
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
+                    {CLINICAL_TEMPLATES.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => applyTemplate(t.content)}
+                        className="w-full border-b border-neutral-50 px-4 py-3 text-left text-xs font-medium text-content-primary transition-colors last:border-none hover:bg-action-subtle hover:text-action-hover active:bg-action-100 sm:py-2.5"
+                      >
+                        {t.label}
+                      </button>
                     ))}
-                </div>
+                  </PopoverContent>
+                </Popover>
 
                 <button
                   type="button"
