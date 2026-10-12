@@ -175,7 +175,7 @@ test("restores a loaded chart position when returning from orders", async ({
   await expect(
     page.getByRole("heading", { name: /orders/i }).first(),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Medications" }).click();
+  await page.getByRole("button", { name: "Medications", exact: true }).click();
   await page.getByRole("button", { name: "Chart" }).last().click();
   await expect
     .poll(() => chartScroll.evaluate((element) => element.scrollTop))
@@ -188,9 +188,9 @@ test("restores a loaded chart position when returning from orders", async ({
     page.getByRole("button", { name: "Orders" }).last(),
   ).toBeVisible();
   await page.getByRole("button", { name: "Orders" }).last().click();
-  await expect(page.getByRole("button", { name: "Medications" })).toHaveClass(
-    /bg-action-subtle/,
-  );
+  await expect(
+    page.getByRole("button", { name: "Medications", exact: true }),
+  ).toHaveClass(/bg-action-subtle/);
 });
 
 test("switches source and visual modes without rewriting an untouched patient note", async ({

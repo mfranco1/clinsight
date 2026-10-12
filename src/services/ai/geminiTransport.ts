@@ -8,7 +8,7 @@ import type {
 import type { GroundingSource } from "../../types";
 import { logDiagnostic } from "../diagnosticLogger";
 
-export const GEMINI_MODEL = "gemini-3.8-flash";
+const GEMINI_MODEL = "gemini-3.8-flash";
 
 declare const __CLINSIGHT_TEST_MODE__: boolean;
 

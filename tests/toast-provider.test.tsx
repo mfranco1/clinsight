@@ -1,6 +1,8 @@
 import React from "react";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { useState } from "react";
+import ModalShell from "../src/components/ui/ModalShell";
 import { ToastProvider, useToast } from "../src/components/ui/ToastProvider";
 
 const Controls = () => {
@@ -21,6 +23,31 @@ const Controls = () => {
           Add {index + 1}
         </button>
       ))}
+    </>
+  );
+};
+
+const ToastAndModalControls = () => {
+  const { showToast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={() =>
+          showToast("Background save failed", { duration: 0, id: "save-error" })
+        }
+      >
+        Show persistent error
+      </button>
+      <button onClick={() => setIsModalOpen(true)}>Open dialog</button>
+      <ModalShell
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Edit synthetic record"
+      >
+        <p>Dialog content</p>
+      </ModalShell>
     </>
   );
 };
@@ -66,5 +93,26 @@ describe("ToastProvider", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("preserves a persistent notification while a modal is open", () => {
+    render(
+      <ToastProvider>
+        <ToastAndModalControls />
+      </ToastProvider>,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show persistent error" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Open dialog" }));
+    expect(
+      screen.getByRole("dialog", { name: "Edit synthetic record" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close modal" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Background save failed",
+    );
   });
 });

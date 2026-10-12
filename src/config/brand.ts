@@ -1,4 +1,4 @@
-export type BrandShape =
+type BrandShape =
   | {
       readonly tag: "path";
       readonly d: string;

@@ -71,11 +71,9 @@ Use `ModalShell` for blocking policy and workflow dialogs. Legal disclosures tha
 
 `EmptyState` supports `section` (the existing default), `compact`, and `page` compositions. The owning workflow supplies accurate empty-state copy and actions for its cause; no-results states should offer a way to clear or adjust the relevant query/filter when that action is available.
 
-The HTML bootstrap in `index.html` and React `LoadingScreen` use indeterminate loading bars with static reduced-motion feedback. The HTML bootstrap appears before React is available and needs its own inline styles. Privacy and terms modals are imported eagerly so their first opening shows the modal directly without a full-page fallback beside the application shell.
+The HTML bootstrap in `index.html` and React `LoadingScreen` use indeterminate loading bars with static reduced-motion feedback. The HTML bootstrap appears before React is available and needs its own inline styles. Privacy and terms dialog components are statically imported with the app shell and mounted on first open, so opening them does not replace the shell with a lazy-load fallback.
 
 `src/components/ui/LoadingFeedback.tsx` provides a polite `LoadingIndicator`, a centered branded `LoadingScreen`, reduced-motion `Skeleton` shapes and a generic `ErrorState`. Compose these primitives in the feature that owns the pending content; keep available chrome visible and skeletonize only the pending region. Reuse app identity through `Brand`, `BrandMark`, and `BrandName`, use concise status text that describes the actual operation, and keep old valid results visible during refresh. Skeleton shapes are decorative and hidden from assistive technology. Feature imports use a lightweight feature-shaped fallback through `createLazyFeature`; successful lazy modules remain shared when navigating away and back.
-
-Dashboard search/date controls and patient-scoped order/note filters retain their small UI values in memory while navigating during the current session. Keep clinical records, note drafts, and generated results in their existing feature/patient-store owners; do not add them to the generic view-state cache.
 
 Dashboard search/date controls and patient-scoped order/note filters retain their small UI values in memory while navigating during the current session. Keep clinical records, note drafts, and generated results in their existing feature/patient-store owners; do not add them to the generic view-state cache.
 

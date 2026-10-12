@@ -15,8 +15,13 @@ test("opens and closes the clinical assistant panel", async ({ page }) => {
   await page.getByRole("button", { name: "Open Clinical Assistant" }).click();
 
   const heading = page.getByRole("heading", { name: "Clinical Assistant" });
-  const panel = page.locator('[role="dialog"]').last();
   await expect(heading).toBeVisible();
+  const panelId = await heading.evaluate(
+    (element) => element.closest('[role="dialog"]')?.id,
+  );
+  if (!panelId)
+    throw new Error("The clinical assistant panel needs a dialog ID");
+  const panel = page.locator(`[id="${panelId}"]`);
   await expect(panel).toHaveAttribute("aria-modal", "false");
   await expect(page.getByText("Lite 3.5", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Flash 3.7", { exact: true })).toHaveCount(0);
@@ -39,5 +44,20 @@ test("opens and closes the clinical assistant panel", async ({ page }) => {
       input.evaluate((element) => Boolean(element.closest("[inert]"))),
     )
     .toBe(false);
+  await expect(input).toHaveValue("Keep this draft while I close the panel");
+
+  await page.getByRole("button", { name: "Attachments" }).click();
+  await page.getByRole("menuitem", { name: "Camera" }).click();
+  const cameraDialog = page.getByRole("dialog", {
+    name: "Capture Attachment",
+  });
+  await expect(cameraDialog).toBeVisible();
+  await expect(cameraDialog).toHaveAttribute("aria-modal", "true");
+  await expect(panel).toHaveAttribute("aria-hidden", "true");
+  await page.getByRole("button", { name: "Close modal" }).click();
+  await expect(cameraDialog).toHaveCount(0);
+  await expect(panel).not.toHaveAttribute("aria-hidden", "true");
+  await expect(panel).toHaveAttribute("aria-modal", "false");
+  await expect(heading).toBeVisible();
   await expect(input).toHaveValue("Keep this draft while I close the panel");
 });
