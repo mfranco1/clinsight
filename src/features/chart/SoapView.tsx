@@ -39,6 +39,11 @@ import { SPECIALIZATIONS } from "../../config/appConfig";
 import StickyToolbar from "../../components/ui/StickyToolbar";
 import { ErrorState } from "../../components/ui/LoadingFeedback";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../components/ui/Popover";
+import {
   ToolbarButton,
   ToolbarPagination,
   ToolbarSeparator,
@@ -653,7 +658,6 @@ const SoapView: React.FC<SoapViewProps> = ({
 
   const {
     menuRef,
-    manageRef,
     isMenuOpen,
     setIsMenuOpen,
     isManageOpen,
@@ -1054,15 +1058,20 @@ const SoapView: React.FC<SoapViewProps> = ({
                 <div className="flex-shrink-0 flex items-center gap-2 relative z-20">
                   {/* Manage Button */}
                   {!isHistorical && (
-                    <div className="relative" ref={manageRef}>
-                      <ToolbarButton
-                        onClick={() => setIsManageOpen(!isManageOpen)}
-                        icon={Icons.Filter}
-                        label="Manage"
-                        variant={isManageOpen ? "active" : "secondary"}
-                        hideLabelOnMobile={true}
-                      />
-                      {isManageOpen && (
+                    <Popover open={isManageOpen} onOpenChange={setIsManageOpen}>
+                      <PopoverTrigger asChild>
+                        <ToolbarButton
+                          icon={Icons.Filter}
+                          label="Manage"
+                          variant={isManageOpen ? "active" : "secondary"}
+                          hideLabelOnMobile={true}
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent
+                        aria-label="Manage chart sections"
+                        align="end"
+                        className="w-72 rounded-2xl p-0"
+                      >
                         <ManageSectionsDropdown
                           visibility={currentVisibility}
                           onChange={(newVisibility) => {
@@ -1071,10 +1080,9 @@ const SoapView: React.FC<SoapViewProps> = ({
                               [activeEntry.id]: newVisibility,
                             }));
                           }}
-                          onClose={() => setIsManageOpen(false)}
                         />
-                      )}
-                    </div>
+                      </PopoverContent>
+                    </Popover>
                   )}
 
                   <div className="relative" ref={menuRef}>

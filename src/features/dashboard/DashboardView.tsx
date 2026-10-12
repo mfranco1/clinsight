@@ -12,6 +12,13 @@ import PatientStatusModal from "../../components/dialogs/PatientStatusModal";
 import StickyToolbar from "../../components/ui/StickyToolbar";
 import { useToast } from "../../components/ui/ToastProvider";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../components/ui/DropdownMenu";
+import {
   ToolbarCount,
   ToolbarSearch,
   ToolbarFilterToggle,
@@ -61,13 +68,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   } | null>(null);
   const [activeKebabId, setActiveKebabId] = React.useState<string | null>(null);
   const { showToast } = useToast();
-
-  // Click away listener for kebab menu
-  React.useEffect(() => {
-    const handleClickAway = () => setActiveKebabId(null);
-    window.addEventListener("click", handleClickAway);
-    return () => window.removeEventListener("click", handleClickAway);
-  }, []);
 
   const todayStr = getTodayLocalDateString();
 
@@ -237,27 +237,29 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={() => onSelectPatient(patient.id)}
                   >
                     <div className="absolute top-4 right-4 z-10">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveKebabId(
-                            activeKebabId === patient.id ? null : patient.id,
-                          );
-                        }}
-                        aria-label="Patient actions"
-                        className={`p-2 rounded-xl transition-all ${
-                          activeKebabId === patient.id
-                            ? "bg-transparent text-content-default"
-                            : "text-neutral-300 hover:text-content-default hover:bg-transparent"
-                        }`}
+                      <DropdownMenu
+                        open={activeKebabId === patient.id}
+                        onOpenChange={(open) =>
+                          setActiveKebabId(open ? patient.id : null)
+                        }
                       >
-                        <Icons.Kebab className="w-4 h-4" />
-                      </button>
-
-                      {activeKebabId === patient.id && (
-                        <div
-                          className="absolute right-0 mt-1 w-48 bg-surface border border-border-default rounded-2xl shadow-xl shadow-neutral-200/50 py-2 animate-in fade-in slide-in-from-top-1 duration-200"
-                          onClick={(e) => e.stopPropagation()}
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={(event) => event.stopPropagation()}
+                            aria-label="Patient actions"
+                            className={`p-2 rounded-xl transition-all ${
+                              activeKebabId === patient.id
+                                ? "bg-transparent text-content-default"
+                                : "text-neutral-300 hover:text-content-default hover:bg-transparent"
+                            }`}
+                          >
+                            <Icons.Kebab className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          className="w-48 rounded-2xl py-2 shadow-neutral-200/50"
+                          onClick={(event) => event.stopPropagation()}
                         >
                           {(!patient.patientInfo.status ||
                             patient.patientInfo.status ===
@@ -265,32 +267,32 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                             patient.patientInfo.status ===
                               PatientStatus.OUTPATIENT) && (
                             <>
-                              <button
-                                onClick={() => {
+                              <DropdownMenuItem
+                                onSelect={() => {
                                   setStatusConfirm({
                                     id: patient.id,
                                     action: "DISCHARGE",
                                   });
-                                  setActiveKebabId(null);
                                 }}
-                                className="w-full flex items-center px-4 py-2.5 text-[11px] font-bold text-content-primary hover:bg-danger-50 hover:text-danger-600 transition-colors uppercase tracking-wider"
+                                variant="destructive"
+                                className="text-[11px]"
                               >
                                 <Icons.Home className="w-3.5 h-3.5 mr-3" />
                                 Discharge
-                              </button>
-                              <button
-                                onClick={() => {
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => {
                                   setStatusConfirm({
                                     id: patient.id,
                                     action: "DECEASED",
                                   });
-                                  setActiveKebabId(null);
                                 }}
-                                className="w-full flex items-center px-4 py-2.5 text-[11px] font-bold text-content-primary hover:bg-critical-50 hover:text-critical-600 transition-colors uppercase tracking-wider"
+                                variant="destructive"
+                                className="text-[11px]"
                               >
                                 <Icons.HeartOff className="w-3.5 h-3.5 mr-3" />
                                 Deceased
-                              </button>
+                              </DropdownMenuItem>
                             </>
                           )}
 
@@ -299,52 +301,50 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                             patient.patientInfo.status ===
                               PatientStatus.DECEASED) && (
                             <>
-                              <button
-                                onClick={() => {
+                              <DropdownMenuItem
+                                onSelect={() => {
                                   setStatusConfirm({
                                     id: patient.id,
                                     action: "CONSULT",
                                   });
-                                  setActiveKebabId(null);
                                 }}
-                                className="w-full flex items-center px-4 py-2.5 text-[11px] font-bold text-content-primary hover:bg-action-subtle hover:text-action transition-colors uppercase tracking-wider"
+                                className="text-[11px]"
                               >
                                 <Icons.ClipboardList className="w-3.5 h-3.5 mr-3" />
                                 Consult
-                              </button>
-                              <button
-                                onClick={() => {
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => {
                                   setStatusConfirm({
                                     id: patient.id,
                                     action: "READMIT",
                                   });
-                                  setActiveKebabId(null);
                                 }}
-                                className="w-full flex items-center px-4 py-2.5 text-[11px] font-bold text-content-primary hover:bg-action-subtle hover:text-action transition-colors uppercase tracking-wider"
+                                className="text-[11px]"
                               >
                                 <Icons.Plus className="w-3.5 h-3.5 mr-3" />
                                 Readmit
-                              </button>
+                              </DropdownMenuItem>
                             </>
                           )}
 
-                          <div className="h-px bg-surface-muted my-1 mx-2"></div>
+                          <DropdownMenuSeparator className="mx-2" />
 
-                          <button
-                            onClick={() => {
+                          <DropdownMenuItem
+                            onSelect={() => {
                               setStatusConfirm({
                                 id: patient.id,
                                 action: "DELETE",
                               });
-                              setActiveKebabId(null);
                             }}
-                            className="w-full flex items-center px-4 py-2.5 text-[11px] font-bold text-content-muted hover:bg-danger-50 hover:text-danger-600 transition-colors uppercase tracking-wider"
+                            variant="destructive"
+                            className="text-[11px]"
                           >
                             <Icons.Trash className="w-3.5 h-3.5 mr-3" />
                             Delete
-                          </button>
-                        </div>
-                      )}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
                     <div className="flex items-start gap-4 mb-6">

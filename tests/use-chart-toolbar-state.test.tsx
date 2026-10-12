@@ -3,11 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { useChartToolbarState } from "../src/features/chart/useChartToolbarState";
 
 describe("useChartToolbarState", () => {
-  it("closes portal menus on outside clicks and removes its listener on cleanup", () => {
+  it("closes its inline action menu on outside clicks and cleans up the listener", () => {
     const removeListener = vi.spyOn(document, "removeEventListener");
     const { result, unmount } = renderHook(() => useChartToolbarState());
     result.current.menuRef.current = document.createElement("div");
-    result.current.manageRef.current = document.createElement("div");
 
     act(() => {
       result.current.setIsMenuOpen(true);
@@ -20,7 +19,7 @@ describe("useChartToolbarState", () => {
 
     act(() => document.dispatchEvent(new MouseEvent("mousedown")));
     expect(result.current.isMenuOpen).toBe(false);
-    expect(result.current.isManageOpen).toBe(false);
+    expect(result.current.isManageOpen).toBe(true);
 
     unmount();
     expect(removeListener).toHaveBeenCalledWith(

@@ -30,7 +30,6 @@ export interface SectionVisibility {
 interface ManageSectionsDropdownProps {
   visibility: SectionVisibility;
   onChange: (visibility: SectionVisibility) => void;
-  onClose: () => void;
 }
 
 const sections = {
@@ -155,7 +154,6 @@ const SectionCategoryGroup: React.FC<SectionCategoryGroupProps> = ({
 const ManageSectionsDropdown: React.FC<ManageSectionsDropdownProps> = ({
   visibility,
   onChange,
-  onClose,
 }) => {
   const [expanded, setExpanded] = useState({
     subjective: false,
@@ -192,7 +190,7 @@ const ManageSectionsDropdown: React.FC<ManageSectionsDropdownProps> = ({
   };
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-72 bg-surface rounded-2xl shadow-xl border border-border-default z-[100] overflow-hidden animate-fade-in origin-top-right">
+    <div className="overflow-hidden rounded-2xl">
       <div className="max-h-[400px] space-y-6 overflow-y-auto p-4 custom-scrollbar">
         <SectionCategoryGroup
           category="subjective"
@@ -230,7 +228,7 @@ const ManageSectionsDropdown: React.FC<ManageSectionsDropdownProps> = ({
         />
       </div>
 
-      <div className="p-3 bg-canvas border-t border-border-subtle text-[10px] text-content-muted font-medium text-center">
+      <div className="border-t border-border-subtle bg-canvas p-3 text-center text-[10px] font-medium text-content-muted">
         Hiding sections will not delete their content
       </div>
     </div>

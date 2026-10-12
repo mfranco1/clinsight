@@ -46,6 +46,33 @@ test("opens a structured chart and preserves its SOAP presentation", async ({
   ).toBeVisible();
 });
 
+test("opens and dismisses the media upload menu within the gallery dialog", async ({
+  page,
+}) => {
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([structuredPatientCase]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Media Gallery" }).click();
+  const gallery = page.getByRole("dialog", { name: "Media Gallery" });
+  await expect(gallery).toBeVisible();
+  await gallery.getByRole("button", { name: "UPLOAD" }).click();
+  const menu = page.getByRole("menu", { name: "UPLOAD" });
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Camera" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(gallery).toBeVisible();
+  await expect(gallery.getByRole("button", { name: "UPLOAD" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(gallery).toHaveCount(0);
+});
+
 test("manages chart section visibility through accessible accordion controls", async ({
   page,
 }) => {
@@ -58,7 +85,16 @@ test("manages chart section visibility through accessible accordion controls", a
 
   await page.goto("/");
   await page.getByText("Test Patient").first().click();
-  await page.getByRole("button", { name: "Manage" }).click();
+  const manageButton = page.getByRole("button", { name: "Manage" });
+  await manageButton.click();
+  const sectionPopover = page.getByRole("dialog", {
+    name: "Manage chart sections",
+  });
+  await expect(sectionPopover).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(sectionPopover).toHaveCount(0);
+  await expect(manageButton).toBeFocused();
+  await manageButton.click();
 
   const subjectiveToggle = page.getByRole("button", {
     name: "Subjective",
@@ -631,7 +667,7 @@ test("revokes attachment preview URLs after a patient is deleted", async ({
 
   await page.goto("/");
   await page.getByRole("button", { name: "Patient actions" }).click();
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
   await page.getByRole("button", { name: "Delete Record" }).click();
 
   await expect

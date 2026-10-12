@@ -3,6 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import ManageSectionsDropdown, {
   type SectionVisibility,
 } from "../src/features/chart/components/ManageSectionsDropdown";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../src/components/ui/Popover";
 
 const createVisibility = (value: boolean): SectionVisibility => ({
   subjective: {
@@ -35,12 +40,20 @@ describe("ManageSectionsDropdown", () => {
     const onChange = vi.fn();
 
     render(
-      <ManageSectionsDropdown
-        visibility={createVisibility(false)}
-        onChange={onChange}
-        onClose={vi.fn()}
-      />,
+      <Popover>
+        <PopoverTrigger asChild>
+          <button type="button">Manage</button>
+        </PopoverTrigger>
+        <PopoverContent aria-label="Manage chart sections">
+          <ManageSectionsDropdown
+            visibility={createVisibility(false)}
+            onChange={onChange}
+          />
+        </PopoverContent>
+      </Popover>,
     );
+
+    fireEvent.click(screen.getByRole("button", { name: "Manage" }));
 
     const subjectiveToggle = screen.getByRole("button", {
       name: "Subjective",

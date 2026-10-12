@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Icons } from "../ui/Icons";
 import { FileUpload, PhotoCategory } from "../../types";
 import CameraCaptureModal from "../CameraCaptureModal";
@@ -6,6 +6,12 @@ import { createFileUploads, openAttachment } from "../../services/fileService";
 import { FileDropZone } from "../ui/FileUpload/FileDropZone";
 import ModalShell from "../ui/ModalShell";
 import EmptyState from "../ui/EmptyState";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/DropdownMenu";
 
 const CATEGORIES: PhotoCategory[] = ["Physical Exam", "Laboratory", "Imaging"];
 
@@ -38,9 +44,11 @@ const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({
   isAnalyzingImaging = false,
   initialTab = "Physical Exam",
 }) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showUploadMenu, setShowUploadMenu] = useState(false);
+  const [uploadMenuPortal, setUploadMenuPortal] = useState<HTMLElement | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState<PhotoCategory>(initialTab);
 
   useEffect(() => {
@@ -48,19 +56,6 @@ const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({
       setActiveTab(initialTab);
     }
   }, [isOpen, initialTab]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowUploadMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   if (!isOpen) return null;
 
@@ -83,22 +78,35 @@ const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Media Gallery"
+        closeOnEscape={!showUploadMenu}
         icon={Icons.Image}
         iconBgColor="bg-action-100 text-action-hover"
         size="4xl"
         bodyClassName="flex flex-col overflow-hidden animate-fade-in"
         headerActions={
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setShowUploadMenu(!showUploadMenu)}
-              className="px-4 py-2 bg-action text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-action-hover shadow-lg shadow-action-600/10 transition-all active:scale-95 flex items-center gap-2 mr-1 cursor-pointer"
+          <div ref={setUploadMenuPortal}>
+            <DropdownMenu
+              open={showUploadMenu}
+              onOpenChange={setShowUploadMenu}
             >
-              UPLOAD
-            </button>
-            {showUploadMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface rounded-xl shadow-2xl border border-border-default z-50 py-1 animate-fade-in origin-top-right overflow-hidden">
-                <button
-                  onClick={() => {
+              <DropdownMenuTrigger asChild>
+                <button className="px-4 py-2 bg-action text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-action-hover shadow-lg shadow-action-600/10 transition-all active:scale-95 flex items-center gap-2 mr-1 cursor-pointer">
+                  UPLOAD
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                portalContainer={uploadMenuPortal ?? undefined}
+                aria-label="Media upload options"
+                align="end"
+                className="z-[102] w-48 overflow-hidden py-1"
+                onKeyDownCapture={(event) => {
+                  if (event.key === "Escape") {
+                    setShowUploadMenu(false);
+                  }
+                }}
+              >
+                <DropdownMenuItem
+                  onSelect={() => {
                     const input = document.createElement("input");
                     input.type = "file";
                     input.multiple = true;
@@ -109,23 +117,22 @@ const PhotoGalleryModal: React.FC<PhotoGalleryModalProps> = ({
                     };
                     input.click();
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-primary hover:bg-action-subtle hover:text-action-hover transition-colors flex items-center gap-2 cursor-pointer"
+                  className="gap-2"
                 >
                   <Icons.Upload className="w-3.5 h-3.5" />
                   Upload
-                </button>
-                <button
-                  onClick={() => {
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
                     setIsCameraOpen(true);
-                    setShowUploadMenu(false);
                   }}
-                  className="w-full text-left px-4 py-2.5 text-xs font-bold text-content-primary hover:bg-action-subtle hover:text-action-hover transition-colors flex items-center gap-2 cursor-pointer"
+                  className="gap-2"
                 >
                   <Icons.Camera className="w-3.5 h-3.5" />
                   Camera
-                </button>
-              </div>
-            )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
         footerActions={
