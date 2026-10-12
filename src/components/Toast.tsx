@@ -1,5 +1,4 @@
-import React, { useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect, useRef } from "react";
 import { Icons } from "./ui/Icons";
 
 interface ToastProps {
@@ -15,14 +14,17 @@ const Toast: React.FC<ToastProps> = ({
   type = "error",
   duration = 5000,
 }) => {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (message && duration > 0) {
       const timer = setTimeout(() => {
-        onClose();
+        onCloseRef.current();
       }, duration);
       return () => clearTimeout(timer);
     }
-  }, [message, duration, onClose]);
+  }, [message, duration]);
 
   if (!message) return null;
 
@@ -52,12 +54,12 @@ const Toast: React.FC<ToastProps> = ({
 
   const currentStyle = styles[type];
 
-  return createPortal(
+  return (
     <div
       role={type === "error" ? "alert" : "status"}
       aria-live={type === "error" ? "assertive" : "polite"}
       aria-atomic="true"
-      className={`fixed bottom-24 right-4 z-[100] max-w-md w-full ${currentStyle.bg} border-l-4 ${currentStyle.border} p-4 rounded shadow-lg animate-slide-up-fade flex items-start`}
+      className={`pointer-events-auto w-full max-w-md ${currentStyle.bg} border-l-4 ${currentStyle.border} p-4 rounded shadow-lg animate-slide-up-fade flex items-start`}
     >
       <div className="flex-shrink-0">{currentStyle.icon}</div>
       <div className="ml-3 flex-1 overflow-hidden">
@@ -74,8 +76,7 @@ const Toast: React.FC<ToastProps> = ({
           <Icons.Close className="h-5 w-5" />
         </button>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 };
 

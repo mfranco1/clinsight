@@ -10,7 +10,7 @@ import {
 import { Icons } from "../../components/ui/Icons";
 import PatientStatusModal from "../../components/dialogs/PatientStatusModal";
 import StickyToolbar from "../../components/ui/StickyToolbar";
-import Toast from "../../components/Toast";
+import { useToast } from "../../components/ui/ToastProvider";
 import {
   ToolbarCount,
   ToolbarSearch,
@@ -60,9 +60,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     action: "DISCHARGE" | "READMIT" | "CONSULT" | "DELETE" | "DECEASED";
   } | null>(null);
   const [activeKebabId, setActiveKebabId] = React.useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(
-    null,
-  );
+  const { showToast } = useToast();
 
   // Click away listener for kebab menu
   React.useEffect(() => {
@@ -531,7 +529,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           if (statusConfirm) {
             if (statusConfirm.action === "DELETE") {
               onDeletePatient(statusConfirm.id);
-              setSuccessMessage("Patient record deleted successfully");
+              showToast("Patient record deleted successfully", {
+                type: "success",
+              });
             } else if (statusConfirm.action === "DECEASED") {
               onUpdatePatientStatus(
                 statusConfirm.id,
@@ -539,7 +539,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 undefined,
                 data.deceasedInfo,
               );
-              setSuccessMessage("Patient marked as deceased successfully");
+              showToast("Patient marked as deceased successfully", {
+                type: "success",
+              });
             } else {
               const mappedStatus =
                 statusConfirm.action === "DISCHARGE"
@@ -560,20 +562,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   : mappedStatus === PatientStatus.ADMITTED
                     ? "Patient admitted successfully"
                     : "Patient registered for outpatient consult";
-              setSuccessMessage(message);
+              showToast(message, { type: "success" });
             }
             setStatusConfirm(null);
           }
         }}
       />
-
-      {successMessage && (
-        <Toast
-          message={successMessage}
-          type="success"
-          onClose={() => setSuccessMessage(null)}
-        />
-      )}
     </>
   );
 };

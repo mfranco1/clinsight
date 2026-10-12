@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useToast } from "../../components/ui/ToastProvider";
 import { PatientStatus } from "../../types";
 
 export type ChartStatusConfirmation = {
@@ -10,28 +11,27 @@ export function useChartStatusActions(
 ) {
   const [statusConfirm, setStatusConfirm] =
     useState<ChartStatusConfirmation | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const updatePatientStatus = useCallback(
     (status: PatientStatus) => {
       if (onUpdatePatientStatus) {
         onUpdatePatientStatus(status);
-        setSuccessMessage(
+        showToast(
           status === PatientStatus.ADMITTED
             ? "Patient readmitted successfully"
             : "New consult started successfully",
+          { type: "success" },
         );
       }
       setStatusConfirm(null);
     },
-    [onUpdatePatientStatus],
+    [onUpdatePatientStatus, showToast],
   );
 
   return {
     statusConfirm,
     setStatusConfirm,
-    successMessage,
-    setSuccessMessage,
     updatePatientStatus,
   };
 }

@@ -3,7 +3,7 @@ import { PlanItem, GroundingSource, PatientOrder } from "../../../types";
 import { Icons } from "../../../components/ui/Icons";
 import { formatLinks } from "../../../components/clinical/formatting";
 import AddOrderModal from "../../../components/AddOrderModal";
-import Toast from "../../../components/Toast";
+import { useToast } from "../../../components/ui/ToastProvider";
 
 import EditableTextArea from "../../../components/ui/EditableTextArea";
 
@@ -30,7 +30,7 @@ const EditablePlanCard: React.FC<{
   const [problemDraft, setProblemDraft] = useState(item.problem);
   const [isAddOrderModalOpen, setIsAddOrderModalOpen] = useState(false);
   const [selectedDiagnostic, setSelectedDiagnostic] = useState("");
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   // State for new structured fields
   const [diagnosticsDraft, setDiagnosticsDraft] = useState(
@@ -97,7 +97,7 @@ const EditablePlanCard: React.FC<{
   const handleAddOrder = (order: PatientOrder) => {
     if (onAddOrder) {
       onAddOrder(order);
-      setSuccessMessage(`Order placed: ${order.name}`);
+      showToast(`Order placed: ${order.name}`, { type: "success" });
     }
   };
 
@@ -324,14 +324,6 @@ const EditablePlanCard: React.FC<{
           onAddOrder={handleAddOrder}
           initialOrderName={selectedDiagnostic}
           sourceText={selectedDiagnostic}
-        />
-      )}
-
-      {successMessage && (
-        <Toast
-          message={successMessage}
-          type="success"
-          onClose={() => setSuccessMessage(null)}
         />
       )}
     </div>

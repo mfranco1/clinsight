@@ -21,7 +21,7 @@ import {
   SkeletonSection,
 } from "./components/ui/LoadingFeedback";
 import LoadingOverlay from "./components/LoadingOverlay";
-import Toast from "./components/Toast";
+import { ToastProvider, useToast } from "./components/ui/ToastProvider";
 import { Icons } from "./components/ui/Icons";
 import DashboardView from "./features/dashboard/DashboardView";
 import {
@@ -170,7 +170,7 @@ const ChatPanel = createLazyFeature<
   React.ComponentProps<typeof ChatPanelComponent>
 >(() => import("./features/chat/ChatPanel"));
 
-function App() {
+function AppContent() {
   const viewStateCache = useViewStateCache();
   const [currentView, setCurrentView] = useState<ViewMode>(ViewMode.DASHBOARD);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
@@ -200,11 +200,14 @@ function App() {
   const [activePatientId, setActivePatientId] = useState<string | null>(null);
 
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error" | "info";
-  } | null>(null);
+  const { showToast, dismissToast } = useToast();
+  const setError = (message: string | null) => {
+    if (message) {
+      showToast(message, { type: "error", duration: 0, id: "app-error" });
+    } else {
+      dismissToast("app-error");
+    }
+  };
   const [defaultSpecialization, setDefaultSpecialization] = useState<string>(
     () =>
       safeStorage.getItem("clinsight_default_specialization") ||
@@ -1138,10 +1141,12 @@ function App() {
         );
         addPatients(processedCases);
         handleNavigate(ViewMode.DASHBOARD);
-        setToast({
-          message: `Successfully uploaded ${importedData.length} patient cases`,
-          type: "success",
-        });
+        showToast(
+          `Successfully uploaded ${importedData.length} patient cases`,
+          {
+            type: "success",
+          },
+        );
       }
     } else {
       const identifiedCase = importedData.id
@@ -1168,15 +1173,6 @@ function App() {
   return (
     <div className="min-h-screen flex bg-canvas font-sans relative overflow-hidden">
       {isGenerating && <LoadingOverlay onCancel={handleCancelGeneration} />}
-
-      {error && <Toast message={error} onClose={() => setError(null)} />}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
 
       <Sidebar
         currentView={currentView}
@@ -1461,4 +1457,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
+  );
+}

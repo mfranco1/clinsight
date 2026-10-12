@@ -156,7 +156,7 @@ Dependencies: Stage 1 layer policy; validate interaction with Stage 2. Risk: med
 
 Exit gate: simultaneous feedback remains reachable, timers clean up, success/error types remain correct, and navigation or unrelated rerenders do not lose or indefinitely prolong messages.
 
-Progress: `Toast` now exposes error messages as assertive alerts and success/info messages as polite statuses. Existing lifetime/placement behavior is unchanged. Centralized viewport/queue and consumer migration remain.
+Progress: `ToastProvider`/`useToast` now own one safe-area-aware app viewport with at most four visible messages and FIFO overflow queueing. Toasts retain stable IDs, manual dismissal, the five-second default, and duration-zero persistence; timer lifetime no longer restarts on unrelated rerenders. Errors announce assertively, success/info politely. App generation errors use a stable persistent ID and are dismissed when their workflow clears them. App upload feedback, dashboard, chart status/order feedback, profile, and plan-card success feedback now use the shared host. Browser notifications remain separate. Remaining work: inventory and migrate other context-local popup feedback, verify identity-scoped messages and modal layering on mobile, and remove any duplicate fixed alert markup found in the final sweep. Focused toast/provider and chart-status tests pass; full unit validation passes (179 tests across 61 files). Lint/typecheck, production build, docs check, and `git diff --check` pass.
 
 ### Stage 3A — Extend loading, error, and recovery foundations
 
@@ -309,7 +309,7 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Progress
 
-Implementation active. Stage 0 baseline is complete. Shared modal, toast announcement, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. The current implementation slice passes full unit/build/docs/E2E checks; remaining consumers and families still need the staged migrations below.
+Implementation active. Stage 0 baseline is complete. Shared modal, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. The current toast slice passes 179 unit tests, lint/typecheck, production build, docs check, formatting for changed files, and the dashboard shell journey on desktop/mobile. Remaining consumers and families still need the staged migrations below.
 
 ## Decisions
 
@@ -324,7 +324,7 @@ Implementation active. Stage 0 baseline is complete. Shared modal, toast announc
 
 - Baseline before code changes: typecheck, build, 156 unit tests, docs check, and 36 desktop/mobile E2E tests passed (2 skipped). Full format check failed on existing formatting in `tests/brand.test.tsx`.
 - Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility, order/medication status, and reset-confirmation journeys passed on desktop and mobile (6 tests). Loading/feedback plus note/input tests passed after the inline-error slice (11 tests).
-- Latest full `npm test`: 60 files, 177 tests passed after the input confirmation migration. Latest `npm run build`, `npm run lint`, and `npm run docs:check` passed after the current code changes. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); both added journeys passed on desktop/mobile.
+- Latest full `npm test`: 61 files, 179 tests passed. `npm run build`, `npm run lint`, `npm run docs:check`, and `git diff --check` pass. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); both added journeys passed on desktop/mobile.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
 - `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
 

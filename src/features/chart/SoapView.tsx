@@ -15,7 +15,7 @@ import {
   ClinicalSectionTitle,
 } from "../../types";
 import { Icons } from "../../components/ui/Icons";
-import Toast from "../../components/Toast";
+import { useToast } from "../../components/ui/ToastProvider";
 import SubjectiveSection from "./components/SubjectiveSection";
 import ObjectiveSection from "./components/ObjectiveSection";
 import AssessmentSection from "./components/AssessmentSection";
@@ -594,6 +594,7 @@ const SoapView: React.FC<SoapViewProps> = ({
   onUpdateMedications,
   onReactivateEncounter,
 }) => {
+  const { showToast } = useToast();
   const [copied, setCopied] = useState(false);
   const [isNoteOpen, setIsNoteOpen] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
@@ -630,8 +631,6 @@ const SoapView: React.FC<SoapViewProps> = ({
   const {
     statusConfirm,
     setStatusConfirm,
-    successMessage,
-    setSuccessMessage,
     updatePatientStatus: handleUpdatePatientStatusAndToast,
   } = useChartStatusActions(onUpdatePatientStatus);
 
@@ -1450,8 +1449,9 @@ const SoapView: React.FC<SoapViewProps> = ({
           onUpsertMeds={(newMeds) => {
             if (onUpdateMedications) {
               onUpdateMedications([...newMeds, ...(medications || [])]);
-              setSuccessMessage(
+              showToast(
                 `${newMeds.length} medication${newMeds.length !== 1 ? "s" : ""} synced to orders`,
+                { type: "success" },
               );
             }
           }}
@@ -1504,8 +1504,9 @@ const SoapView: React.FC<SoapViewProps> = ({
             if (statusConfirm.action === "REACTIVATE") {
               if (onReactivateEncounter && activeEncounter) {
                 onReactivateEncounter(activeEncounter.id);
-                setSuccessMessage(
+                showToast(
                   "Encounter reactivated successfully. You can now edit and resume charting.",
+                  { type: "success" },
                 );
               }
               setStatusConfirm(null);
@@ -1548,14 +1549,6 @@ const SoapView: React.FC<SoapViewProps> = ({
               : Icons.ClipboardList
         }
       />
-
-      {successMessage && (
-        <Toast
-          message={successMessage}
-          type="success"
-          onClose={() => setSuccessMessage(null)}
-        />
-      )}
 
       <PhotoGalleryModal
         isOpen={isPhotosOpen}

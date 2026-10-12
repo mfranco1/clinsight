@@ -3,7 +3,7 @@ import { DeceasedInfo, GeneralData, PatientStatus } from "../../types";
 import GeneralDataSection from "./components/GeneralDataSection";
 import { Icons } from "../../components/ui/Icons";
 import PatientStatusModal from "../../components/dialogs/PatientStatusModal";
-import Toast from "../../components/Toast";
+import { useToast } from "../../components/ui/ToastProvider";
 
 interface ProfileViewProps {
   patientInfo: GeneralData;
@@ -28,9 +28,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   const [statusConfirm, setStatusConfirm] = React.useState<{
     action: "DISCHARGE" | "READMIT" | "CONSULT" | "DELETE" | "DECEASED";
   } | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(
-    null,
-  );
+  const { showToast } = useToast();
 
   const handleUpdateStatus = (
     status: PatientStatus,
@@ -59,7 +57,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           : status === PatientStatus.DECEASED
             ? "Patient marked as deceased successfully"
             : "Patient registered for outpatient consult";
-    setSuccessMessage(message);
+    showToast(message, { type: "success" });
   };
 
   const currentStatus = patientInfo.status || PatientStatus.ADMITTED;
@@ -167,14 +165,6 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           }
         }}
       />
-
-      {successMessage && (
-        <Toast
-          message={successMessage}
-          type="success"
-          onClose={() => setSuccessMessage(null)}
-        />
-      )}
     </>
   );
 };
