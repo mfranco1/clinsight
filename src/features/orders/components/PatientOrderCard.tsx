@@ -324,6 +324,7 @@ const PatientOrderCard: React.FC<PatientOrderCardProps> = ({
             )}
             <div className="shrink-0">
               <OrderStatusDropdown
+                ariaLabel={`Status for order ${order.name}`}
                 status={order.status}
                 onChange={(newStatus) =>
                   onUpdate({ ...order, status: newStatus })

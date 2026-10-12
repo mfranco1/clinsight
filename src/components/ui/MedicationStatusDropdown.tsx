@@ -7,6 +7,7 @@ interface MedicationStatusDropdownProps {
   onChange: (newStatus: MedicationStatus) => void;
   isDesktop?: boolean;
   className?: string;
+  ariaLabel?: string;
 }
 
 const getMedStatusColor = (status: MedicationStatus) => {
@@ -29,6 +30,7 @@ const MedicationStatusDropdown: FC<MedicationStatusDropdownProps> = ({
   onChange,
   isDesktop = false,
   className = "",
+  ariaLabel,
 }) => {
   return (
     <StatusDropdown
@@ -38,6 +40,7 @@ const MedicationStatusDropdown: FC<MedicationStatusDropdownProps> = ({
       getTriggerColor={getMedStatusColor}
       isDesktop={isDesktop}
       className={className}
+      ariaLabel={ariaLabel}
     />
   );
 };

@@ -5,6 +5,7 @@ import { generateInputSuggestions } from "../../../services/ai/actions";
 import { getErrorMessageCompat } from "../../../services/appErrors";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import {
+  ErrorState,
   LoadingIndicator,
   Skeleton,
 } from "../../../components/ui/LoadingFeedback";
@@ -141,32 +142,32 @@ const SuggestionsDrawer: React.FC<SuggestionsDrawerProps> = ({
               </section>
             </div>
           ) : currentError && !currentData ? (
-            <div className="p-4 bg-action-subtle border border-action-border rounded-xl text-action-hover text-sm mt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Icons.AlertCircle className="w-5 h-5" />
-                <span className="font-bold">Cannot provide suggestions</span>
-              </div>
-              <p>{currentError}</p>
-              <button
-                type="button"
-                onClick={() => void fetchSuggestions()}
-                className="mt-3 font-semibold underline"
-              >
-                Try again
-              </button>
-            </div>
+            <ErrorState
+              variant="section"
+              title="Cannot provide suggestions"
+              message={currentError}
+              action={
+                <button
+                  type="button"
+                  onClick={() => void fetchSuggestions()}
+                  className="font-semibold underline"
+                >
+                  Try again
+                </button>
+              }
+            />
           ) : currentData ? (
             <div className="space-y-8 pb-8">
               {isLoading && (
                 <LoadingIndicator label="Updating suggestions…" size="sm" />
               )}
               {currentError && (
-                <p
-                  className="rounded-control border border-danger-200 bg-danger-50 p-3 text-sm text-content-default"
-                  role="alert"
-                >
-                  Could not update suggestions: {currentError}
-                </p>
+                <ErrorState
+                  variant="inline"
+                  title="Could not update suggestions"
+                  message={currentError}
+                  className="text-content-default"
+                />
               )}
               {/* Questions Section */}
               <section>

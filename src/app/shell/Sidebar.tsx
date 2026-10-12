@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ViewMode } from "../../types";
 import { NAV_ITEMS } from "../../config/appConfig";
 import { Icons } from "../../components/ui/Icons";
+import ViewNavigationItem from "../../components/ui/ViewNavigationItem";
 
 interface SidebarProps {
   currentView: ViewMode;
@@ -69,41 +70,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             const IconComponent =
               Icons[item.icon as keyof typeof Icons] || Icons.Document;
 
-            const inactiveTextClass = "text-content-muted";
-            const inactiveIconClass = "text-content-secondary";
-
             return (
-              <button
+              <ViewNavigationItem
                 key={item.id}
+                icon={IconComponent}
+                label={item.label}
+                active={isActive}
+                layout="sidebar"
+                collapsed={isCollapsed}
                 onClick={() => handleNavClick(item.id)}
-                title={isCollapsed ? item.label : undefined}
-                className={`
-                  w-full flex items-center rounded-xl transition-all duration-200 group relative
-                  ${isCollapsed ? "justify-center h-12 p-0" : "px-4 py-3 text-sm font-semibold"}
-                  ${
-                    isActive
-                      ? "bg-action-subtle text-action-hover ring-1 ring-action-100 font-bold"
-                      : `${inactiveTextClass} hover:bg-canvas hover:text-content-strong`
-                  }
-                  cursor-pointer
-                `}
-              >
-                <span
-                  className={`transition-colors shrink-0 ${isActive ? "text-action" : `${inactiveIconClass} group-hover:text-action`}`}
-                >
-                  <IconComponent className="w-5 h-5" />
-                </span>
-
-                {!isCollapsed && (
-                  <span className="ml-3 whitespace-nowrap animate-fade-in">
-                    {item.label}
-                  </span>
-                )}
-
-                {isActive && isCollapsed && (
-                  <div className="absolute left-0 w-1 h-6 bg-action-subtle rounded-r-full"></div>
-                )}
-              </button>
+              />
             );
           })}
         </nav>
@@ -180,16 +156,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           let displayLabel = item.label.split(" ")[0];
 
           return (
-            <button
+            <ViewNavigationItem
               key={item.id}
+              icon={IconComponent}
+              label={item.label}
+              displayLabel={displayLabel}
+              active={isActive}
+              layout="bottom"
               onClick={() => handleNavClick(item.id)}
-              className={`flex flex-col items-center justify-center flex-1 h-full px-1 transition-all ${isActive ? "text-action scale-110" : "text-content-strong"}`}
-            >
-              <IconComponent className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold uppercase tracking-tighter truncate w-full text-center">
-                {displayLabel}
-              </span>
-            </button>
+            />
           );
         })}
         {/* Settings Button for Mobile */}

@@ -7,6 +7,7 @@ interface OrderStatusDropdownProps {
   onChange: (newStatus: OrderStatus) => void;
   isDesktop?: boolean;
   className?: string;
+  ariaLabel?: string;
 }
 
 export const getStatusColor = (status: OrderStatus) => {
@@ -35,6 +36,7 @@ const OrderStatusDropdown: FC<OrderStatusDropdownProps> = ({
   onChange,
   isDesktop = false,
   className = "",
+  ariaLabel,
 }) => {
   return (
     <StatusDropdown
@@ -44,6 +46,7 @@ const OrderStatusDropdown: FC<OrderStatusDropdownProps> = ({
       getTriggerColor={getStatusColor}
       isDesktop={isDesktop}
       className={className}
+      ariaLabel={ariaLabel}
     />
   );
 };

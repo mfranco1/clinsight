@@ -235,6 +235,7 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
             )}
             <div className="shrink-0">
               <MedicationStatusDropdown
+                ariaLabel={`Status for medication ${med.drug}`}
                 status={med.status}
                 onChange={(s) => onUpdate({ ...med, status: s })}
                 isDesktop={isDesktop}

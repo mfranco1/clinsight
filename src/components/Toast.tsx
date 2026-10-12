@@ -54,6 +54,9 @@ const Toast: React.FC<ToastProps> = ({
 
   return createPortal(
     <div
+      role={type === "error" ? "alert" : "status"}
+      aria-live={type === "error" ? "assertive" : "polite"}
+      aria-atomic="true"
       className={`fixed bottom-24 right-4 z-[100] max-w-md w-full ${currentStyle.bg} border-l-4 ${currentStyle.border} p-4 rounded shadow-lg animate-slide-up-fade flex items-start`}
     >
       <div className="flex-shrink-0">{currentStyle.icon}</div>

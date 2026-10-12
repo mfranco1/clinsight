@@ -182,6 +182,11 @@ const CourseView: React.FC<CourseViewProps> = ({
                     setSearchQuery(val);
                     setCurrentPage(1);
                   }}
+                  onClear={() => {
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                  label="Search clinical events"
                   placeholder="Search clinical events..."
                   className="w-full flex"
                 />

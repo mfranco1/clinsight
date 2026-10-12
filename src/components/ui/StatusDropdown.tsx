@@ -8,6 +8,7 @@ interface StatusDropdownProps<TStatus extends string> {
   getTriggerColor: (status: TStatus) => string;
   isDesktop?: boolean;
   className?: string;
+  ariaLabel?: string;
 }
 
 const StatusDropdown = <TStatus extends string>({
@@ -17,13 +18,14 @@ const StatusDropdown = <TStatus extends string>({
   getTriggerColor,
   isDesktop = false,
   className = "",
+  ariaLabel = status,
 }: StatusDropdownProps<TStatus>) => (
   <Select.Root
     value={status}
     onValueChange={(value) => onChange(value as TStatus)}
   >
     <Select.Trigger
-      aria-label={status}
+      aria-label={ariaLabel}
       onClick={(event) => event.stopPropagation()}
       className={`flex min-w-[80px] w-full items-center justify-center rounded-lg border px-2 py-1 text-[9px] font-black uppercase tracking-wider shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring ${getTriggerColor(status)} ${className}`}
     >

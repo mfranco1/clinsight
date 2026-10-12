@@ -200,6 +200,8 @@ const NotesView: React.FC<NotesViewProps> = ({
                 <ToolbarSearch
                   value={searchQuery}
                   onChange={setSearchQuery}
+                  onClear={() => setSearchQuery("")}
+                  label="Search notes"
                   placeholder="Search notes..."
                   className="w-full flex"
                 />
@@ -210,6 +212,7 @@ const NotesView: React.FC<NotesViewProps> = ({
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 activeCount={activeAdvancedFilterCount}
                 hideLabelOnMobile={true}
+                controlsId="notes-filters"
               />
             </div>
 
@@ -234,7 +237,10 @@ const NotesView: React.FC<NotesViewProps> = ({
           </div>
 
           {isFilterExpanded && (
-            <div className="px-4 pb-4 pt-2 border-t border-neutral-50 bg-canvas/30 animate-fade-in">
+            <div
+              id="notes-filters"
+              className="px-4 pb-4 pt-2 border-t border-neutral-50 bg-canvas/30 animate-fade-in"
+            >
               <div className="grid grid-cols-2 md:grid-cols-5 items-end gap-4">
                 <DateRangeFields
                   startDate={startDate}

@@ -358,18 +358,20 @@ test("selects order and medication statuses through the shared desktop/mobile po
   await page.getByText("Test Patient").first().click();
   await page.getByRole("button", { name: "Orders" }).last().click();
 
-  await page.getByRole("combobox", { name: "PENDING" }).click();
+  const orderStatus = page.getByRole("combobox", {
+    name: "Status for order CBC",
+  });
+  await orderStatus.click();
   await page.getByRole("option", { name: "DONE", exact: true }).click();
-  await expect(
-    page.getByRole("combobox", { name: "DONE" }).first(),
-  ).toBeVisible();
+  await expect(orderStatus).toHaveText("DONE");
 
   await page.getByRole("button", { name: "Medications", exact: true }).click();
-  await page.getByRole("combobox", { name: "ACTIVE" }).click();
+  const medicationStatus = page.getByRole("combobox", {
+    name: "Status for medication Amoxicillin",
+  });
+  await medicationStatus.click();
   await page.getByRole("option", { name: "HOLD", exact: true }).click();
-  await expect(
-    page.getByRole("combobox", { name: "HOLD" }).first(),
-  ).toBeVisible();
+  await expect(medicationStatus).toHaveText("HOLD");
 
   await page.getByRole("button", { name: "Print Rx" }).click();
   await expect(

@@ -27,6 +27,8 @@ import MedicationOrderRow from "./components/MedicationOrderRow";
 import BulkOrderOverlay from "./components/BulkOrderOverlay";
 import PrescriptionModal from "./components/PrescriptionModal";
 import ConfirmationModal from "../../components/dialogs/ConfirmationModal";
+import BottomActionBar from "../../components/ui/BottomActionBar";
+import ResponsiveTableSurface from "../../components/ui/ResponsiveTableSurface";
 import { getLocalDateString } from "../../utils/date";
 import { createId } from "../../utils/ids";
 import {
@@ -366,6 +368,8 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                 <ToolbarSearch
                   value={searchQuery}
                   onChange={setSearchQuery}
+                  onClear={() => setSearchQuery("")}
+                  label={`Search ${activeTab.toLowerCase()}`}
                   placeholder={`Search ${activeTab.toLowerCase()}...`}
                   className="w-full flex"
                 />
@@ -375,6 +379,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 activeCount={activeFilterCount}
                 hideLabelOnMobile={true}
+                controlsId="orders-filters"
               />
             </div>
 
@@ -438,6 +443,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
           <AnimatePresence>
             {isFilterExpanded && (
               <motion.div
+                id="orders-filters"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
@@ -532,184 +538,176 @@ const OrdersView: React.FC<OrdersViewProps> = ({
 
       <div className="mt-8">
         {activeTab === "DIAGNOSTICS" ? (
-          <div className="bg-surface rounded-3xl border border-border-default shadow-sm overflow-hidden">
-            <div className="overflow-x-auto no-scrollbar">
-              <div
-                className={`w-full min-w-full ${filteredOrders.length > 0 ? "md:min-w-[900px]" : ""}`}
-              >
-                {/* Grid Header */}
-                {filteredOrders.length > 0 && (
-                  <div className="hidden md:grid md:grid-cols-[120px_1.5fr_100px_120px_1fr_100px_100px] items-center py-3 px-4 gap-4 bg-canvas border-b border-border-subtle">
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest text-center">
-                      Status
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Order
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Type
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Schedule
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Notes
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Ordered
-                    </div>
-                    <div className="text-left text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Actions
-                    </div>
-                  </div>
-                )}
-                <div className="divide-y divide-neutral-50">
-                  {groupedOrders.length === 0 ? (
-                    <EmptyOrders
-                      onBulkAdd={() => setIsBulkOverlayOpen(true)}
-                      onAdd={handleAddOrder}
-                      isFiltered={orders.length > 0}
-                    />
-                  ) : (
-                    groupedOrders.map(([date, dateOrders]) => {
-                      const allDone = dateOrders.every(
-                        (o) => o.status === OrderStatus.DONE,
-                      );
-                      return (
-                        <div key={date}>
-                          <div className="bg-canvas/50 md:grid md:grid-cols-[120px_1.5fr_100px_120px_1fr_100px_100px] items-center py-2 px-4 gap-4 border-y border-border-subtle">
-                            <div className="flex justify-center">
-                              <button
-                                onClick={() =>
-                                  handleMarkDateDone(date, !allDone)
-                                }
-                                className={`w-5 h-5 rounded transition-all flex items-center justify-center border-2 ${allDone ? "bg-action-subtle border-action-500 text-white" : "bg-surface border-border-default hover:border-action-400"}`}
-                              >
-                                {allDone && <Icons.Check className="w-3 h-3" />}
-                              </button>
-                            </div>
-                            <h3 className="text-[10px] font-black text-content-muted uppercase tracking-[0.2em]">
-                              {new Date(date).toLocaleDateString(undefined, {
-                                weekday: "long",
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </h3>
-                          </div>
-                          {dateOrders.map((order, idx) => {
-                            const isGroupedWithPrev = !!(
-                              idx > 0 &&
-                              order.groupId &&
-                              order.groupId === dateOrders[idx - 1].groupId
-                            );
-                            const isGroupedWithNext = !!(
-                              idx < dateOrders.length - 1 &&
-                              order.groupId &&
-                              order.groupId === dateOrders[idx + 1].groupId
-                            );
-
-                            return (
-                              <PatientOrderCard
-                                key={order.id}
-                                order={order}
-                                onUpdate={(u) =>
-                                  dispatchOrders(
-                                    orders.map((o) => (o.id === u.id ? u : o)),
-                                  )
-                                }
-                                onDelete={(id) =>
-                                  dispatchOrders(
-                                    orders.filter((o) => o.id !== id),
-                                  )
-                                }
-                                isNew={order.id === newOrderId}
-                                isSelectMode={isSelectMode}
-                                isSelected={selectedOrderIds.includes(order.id)}
-                                onToggleSelect={() =>
-                                  handleToggleSelectOrder(order.id)
-                                }
-                                isGroupedWithPrev={isGroupedWithPrev}
-                                isGroupedWithNext={isGroupedWithNext}
-                                onUngroup={() => {
-                                  dispatchOrders(
-                                    orders.map((o) =>
-                                      o.id === order.id
-                                        ? { ...o, groupId: undefined }
-                                        : o,
-                                    ),
-                                  );
-                                }}
-                              />
-                            );
-                          })}
+          <ResponsiveTableSurface
+            label="Diagnostic orders"
+            contentClassName={
+              filteredOrders.length > 0 ? "md:min-w-[900px]" : ""
+            }
+          >
+            {/* Grid Header */}
+            {filteredOrders.length > 0 && (
+              <div className="hidden md:grid md:grid-cols-[120px_1.5fr_100px_120px_1fr_100px_100px] items-center py-3 px-4 gap-4 bg-canvas border-b border-border-subtle">
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest text-center">
+                  Status
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Order
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Type
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Schedule
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Notes
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Ordered
+                </div>
+                <div className="text-left text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Actions
+                </div>
+              </div>
+            )}
+            <div className="divide-y divide-neutral-50">
+              {groupedOrders.length === 0 ? (
+                <EmptyOrders
+                  onBulkAdd={() => setIsBulkOverlayOpen(true)}
+                  onAdd={handleAddOrder}
+                  isFiltered={orders.length > 0}
+                />
+              ) : (
+                groupedOrders.map(([date, dateOrders]) => {
+                  const allDone = dateOrders.every(
+                    (o) => o.status === OrderStatus.DONE,
+                  );
+                  return (
+                    <div key={date}>
+                      <div className="bg-canvas/50 md:grid md:grid-cols-[120px_1.5fr_100px_120px_1fr_100px_100px] items-center py-2 px-4 gap-4 border-y border-border-subtle">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleMarkDateDone(date, !allDone)}
+                            className={`w-5 h-5 rounded transition-all flex items-center justify-center border-2 ${allDone ? "bg-action-subtle border-action-500 text-white" : "bg-surface border-border-default hover:border-action-400"}`}
+                          >
+                            {allDone && <Icons.Check className="w-3 h-3" />}
+                          </button>
                         </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
+                        <h3 className="text-[10px] font-black text-content-muted uppercase tracking-[0.2em]">
+                          {new Date(date).toLocaleDateString(undefined, {
+                            weekday: "long",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </h3>
+                      </div>
+                      {dateOrders.map((order, idx) => {
+                        const isGroupedWithPrev = !!(
+                          idx > 0 &&
+                          order.groupId &&
+                          order.groupId === dateOrders[idx - 1].groupId
+                        );
+                        const isGroupedWithNext = !!(
+                          idx < dateOrders.length - 1 &&
+                          order.groupId &&
+                          order.groupId === dateOrders[idx + 1].groupId
+                        );
+
+                        return (
+                          <PatientOrderCard
+                            key={order.id}
+                            order={order}
+                            onUpdate={(u) =>
+                              dispatchOrders(
+                                orders.map((o) => (o.id === u.id ? u : o)),
+                              )
+                            }
+                            onDelete={(id) =>
+                              dispatchOrders(orders.filter((o) => o.id !== id))
+                            }
+                            isNew={order.id === newOrderId}
+                            isSelectMode={isSelectMode}
+                            isSelected={selectedOrderIds.includes(order.id)}
+                            onToggleSelect={() =>
+                              handleToggleSelectOrder(order.id)
+                            }
+                            isGroupedWithPrev={isGroupedWithPrev}
+                            isGroupedWithNext={isGroupedWithNext}
+                            onUngroup={() => {
+                              dispatchOrders(
+                                orders.map((o) =>
+                                  o.id === order.id
+                                    ? { ...o, groupId: undefined }
+                                    : o,
+                                ),
+                              );
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })
+              )}
             </div>
-          </div>
+          </ResponsiveTableSurface>
         ) : (
-          <div className="bg-surface rounded-3xl border border-border-default shadow-sm overflow-hidden">
-            <div className="overflow-x-auto no-scrollbar">
-              <div
-                className={`w-full min-w-full ${filteredMeds.length > 0 ? "md:min-w-[950px]" : ""}`}
-              >
-                {/* Grid Header */}
-                {filteredMeds.length > 0 && (
-                  <div className="hidden md:grid md:grid-cols-[120px_1.5fr_80px_120px_120px_100px_1fr_100px] items-center py-3 px-4 gap-4 bg-canvas border-b border-border-subtle">
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest text-center">
-                      Status
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Medication
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Dose
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Route
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Frequency
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Duration
-                    </div>
-                    <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Sig
-                    </div>
-                    <div className="text-right text-[10px] font-black text-content-muted uppercase tracking-widest">
-                      Actions
-                    </div>
-                  </div>
-                )}
-                <div className="divide-y divide-neutral-50">
-                  {filteredMeds.length === 0 ? (
-                    <EmptyMedications
-                      onAdd={handleAddMed}
-                      isFiltered={medications.length > 0}
-                    />
-                  ) : (
-                    filteredMeds.map((med) => (
-                      <MedicationOrderRow
-                        key={med.id}
-                        med={med}
-                        onUpdate={handleUpdateMed}
-                        onDelete={handleDeleteMed}
-                        isNew={med.id === newMedId}
-                        isSelectMode={isSelectMode}
-                        isSelected={selectedMedIds.includes(med.id)}
-                        onToggleSelect={() => handleToggleSelectMed(med.id)}
-                      />
-                    ))
-                  )}
+          <ResponsiveTableSurface
+            label="Medications"
+            contentClassName={filteredMeds.length > 0 ? "md:min-w-[950px]" : ""}
+          >
+            {/* Grid Header */}
+            {filteredMeds.length > 0 && (
+              <div className="hidden md:grid md:grid-cols-[120px_1.5fr_80px_120px_120px_100px_1fr_100px] items-center py-3 px-4 gap-4 bg-canvas border-b border-border-subtle">
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest text-center">
+                  Status
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Medication
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Dose
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Route
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Frequency
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Duration
+                </div>
+                <div className="text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Sig
+                </div>
+                <div className="text-right text-[10px] font-black text-content-muted uppercase tracking-widest">
+                  Actions
                 </div>
               </div>
+            )}
+            <div className="divide-y divide-neutral-50">
+              {filteredMeds.length === 0 ? (
+                <EmptyMedications
+                  onAdd={handleAddMed}
+                  isFiltered={medications.length > 0}
+                />
+              ) : (
+                filteredMeds.map((med) => (
+                  <MedicationOrderRow
+                    key={med.id}
+                    med={med}
+                    onUpdate={handleUpdateMed}
+                    onDelete={handleDeleteMed}
+                    isNew={med.id === newMedId}
+                    isSelectMode={isSelectMode}
+                    isSelected={selectedMedIds.includes(med.id)}
+                    onToggleSelect={() => handleToggleSelectMed(med.id)}
+                  />
+                ))
+              )}
             </div>
-          </div>
+          </ResponsiveTableSurface>
         )}
       </div>
 
@@ -724,63 +722,54 @@ const OrdersView: React.FC<OrdersViewProps> = ({
         ? selectedOrderIds.length
         : selectedMedIds.length) >= 2 &&
         createPortal(
-          <AnimatePresence>
-            <motion.div
-              initial={{ y: 100, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 100, opacity: 0 }}
-              className="absolute bottom-8 left-0 w-full flex justify-center z-50 px-4 pointer-events-none"
-            >
-              <div className="bg-surface text-content-strong px-3 py-2.5 sm:px-6 sm:py-4 rounded-2xl shadow-2xl flex items-center justify-between sm:justify-start gap-3 sm:gap-6 border border-border-default backdrop-blur-md bg-opacity-95 pointer-events-auto min-w-[280px] sm:min-w-fit max-w-[95vw] sm:max-w-[90vw]">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-action-subtle rounded-lg flex items-center justify-center shrink-0">
-                    <Icons.Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-action" />
-                  </div>
-                  <span className="text-[11px] sm:text-sm font-bold tracking-tight text-content-strong whitespace-nowrap">
-                    {activeTab === "DIAGNOSTICS"
-                      ? selectedOrderIds.length
-                      : selectedMedIds.length}{" "}
-                    {activeTab === "DIAGNOSTICS" ? "Orders" : "Meds"}
-                  </span>
-                </div>
-
-                <div className="hidden md:block h-6 w-px bg-neutral-200 shrink-0"></div>
-
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  {activeTab === "DIAGNOSTICS" && (
-                    <button
-                      onClick={handleGroupOrders}
-                      className="bg-action hover:bg-action-hover text-white px-3 py-2 sm:px-6 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-lg shadow-action-600/20 whitespace-nowrap"
-                    >
-                      <Icons.Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      Group
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => setIsDeleteConfirmOpen(true)}
-                    className="bg-critical-50 hover:bg-critical-100 text-critical-600 px-3 py-2 sm:px-6 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Icons.Trash className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    Delete
-                  </button>
-                </div>
-
-                <div className="hidden md:block h-6 w-px bg-neutral-200 shrink-0"></div>
-
-                <button
-                  onClick={() => {
-                    setSelectedOrderIds([]);
-                    setSelectedMedIds([]);
-                    setIsSelectMode(false);
-                  }}
-                  className="text-content-muted hover:text-neutral-800 text-[10px] sm:text-xs font-bold transition-colors whitespace-nowrap px-1 sm:px-2"
-                >
-                  Cancel
-                </button>
+          <BottomActionBar isVisible label="Actions for selected records">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-action-subtle rounded-lg flex items-center justify-center shrink-0">
+                <Icons.Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-action" />
               </div>
-            </motion.div>
-          </AnimatePresence>,
+              <span className="text-[11px] sm:text-sm font-bold tracking-tight text-content-strong whitespace-nowrap">
+                {activeTab === "DIAGNOSTICS"
+                  ? selectedOrderIds.length
+                  : selectedMedIds.length}{" "}
+                {activeTab === "DIAGNOSTICS" ? "Orders" : "Meds"}
+              </span>
+            </div>
+
+            <div className="hidden md:block h-6 w-px bg-neutral-200 shrink-0"></div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {activeTab === "DIAGNOSTICS" && (
+                <button
+                  onClick={handleGroupOrders}
+                  className="bg-action hover:bg-action-hover text-white px-3 py-2 sm:px-6 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-lg shadow-action-600/20 whitespace-nowrap"
+                >
+                  <Icons.Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  Group
+                </button>
+              )}
+
+              <button
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                className="bg-critical-50 hover:bg-critical-100 text-critical-600 px-3 py-2 sm:px-6 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <Icons.Trash className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                Delete
+              </button>
+            </div>
+
+            <div className="hidden md:block h-6 w-px bg-neutral-200 shrink-0"></div>
+
+            <button
+              onClick={() => {
+                setSelectedOrderIds([]);
+                setSelectedMedIds([]);
+                setIsSelectMode(false);
+              }}
+              className="text-content-muted hover:text-neutral-800 text-[10px] sm:text-xs font-bold transition-colors whitespace-nowrap px-1 sm:px-2"
+            >
+              Cancel
+            </button>
+          </BottomActionBar>,
           document.getElementById("working-view") || document.body,
         )}
 

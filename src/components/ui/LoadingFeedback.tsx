@@ -132,13 +132,29 @@ interface ErrorStateProps {
   title: string;
   message: string;
   action?: ReactNode;
+  variant?: "section" | "inline" | "page";
+  className?: string;
 }
 
-export function ErrorState({ title, message, action }: ErrorStateProps) {
+export function ErrorState({
+  title,
+  message,
+  action,
+  variant = "section",
+  className = "",
+}: ErrorStateProps) {
+  const variantClasses = {
+    section: "m-4 rounded-control p-4 text-sm text-content-default",
+    inline: "rounded-control px-3 py-2 text-xs text-danger-700",
+    page: "mx-auto my-8 w-full max-w-2xl rounded-2xl p-6 text-sm text-content-default",
+  }[variant];
+
   return (
     <section
-      className="m-4 rounded-control border border-danger-200 bg-danger-50 p-4 text-sm text-content-default"
+      className={`${variantClasses} border border-danger-200 bg-danger-50 ${className}`}
       role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     >
       <h2 className="font-semibold">{title}</h2>
       <p className="mt-1">{message}</p>

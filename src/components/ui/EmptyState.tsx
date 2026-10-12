@@ -12,6 +12,7 @@ interface EmptyStateProps {
     icon?: React.ComponentType<{ className?: string }>;
   };
   className?: string;
+  variant?: "section" | "compact" | "page";
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -20,16 +21,34 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   action,
   className = "",
+  variant = "section",
 }) => {
+  const layoutClass = {
+    section:
+      "py-20 bg-surface rounded-3xl border border-dashed border-border-default",
+    compact:
+      "px-4 py-8 bg-surface rounded-2xl border border-dashed border-border-default",
+    page: "min-h-[40vh] px-6 py-16 bg-canvas rounded-3xl",
+  }[variant];
+  const iconClass = variant === "compact" ? "h-12 w-12" : "h-16 w-16";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`py-20 flex flex-col items-center justify-center text-center bg-surface rounded-3xl border border-dashed border-border-default ${className}`}
+      className={`flex flex-col items-center justify-center text-center ${layoutClass} ${className}`}
     >
-      <div className="w-16 h-16 bg-canvas rounded-full flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-neutral-300" />
+      <div
+        className={`${iconClass} bg-canvas rounded-full flex items-center justify-center mb-4`}
+      >
+        <Icon
+          className={
+            variant === "compact"
+              ? "h-6 w-6 text-neutral-300"
+              : "h-8 w-8 text-neutral-300"
+          }
+        />
       </div>
       <h3 className="text-content-strong font-bold">{title}</h3>
       <p className="text-content-secondary text-sm mt-1 max-w-xs">

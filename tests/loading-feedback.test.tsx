@@ -4,7 +4,10 @@ import {
   LoadingIndicator,
   LoadingScreen,
   Skeleton,
+  ErrorState,
 } from "../src/components/ui/LoadingFeedback";
+import EmptyState from "../src/components/ui/EmptyState";
+import { Icons } from "../src/components/ui/Icons";
 
 describe("loading feedback primitives", () => {
   it("announces the operation through a polite status", () => {
@@ -28,5 +31,38 @@ describe("loading feedback primitives", () => {
 
     expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
     expect(container.firstElementChild).toHaveClass("skeleton-shimmer");
+  });
+
+  it("offers a compact error composition with an action", () => {
+    render(
+      <ErrorState
+        variant="inline"
+        title="Could not save"
+        message="Your draft is still available."
+        action={<button>Retry</button>}
+      />,
+    );
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Your draft is still available.",
+    );
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+  });
+
+  it("supports compact empty-state composition with a workflow action", () => {
+    render(
+      <EmptyState
+        icon={Icons.Search}
+        title="No results"
+        description="Try a different search."
+        variant="compact"
+        action={{ label: "Clear search", onClick: () => undefined }}
+      />,
+    );
+
+    expect(screen.getByText("No results")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Clear search" }),
+    ).toBeInTheDocument();
   });
 });

@@ -16,6 +16,10 @@ interface ModalShellProps {
   bodyClassName?: string;
   showCloseButton?: boolean;
   ariaLabel?: string;
+  description?: React.ReactNode;
+  placement?: "center" | "bottom" | "right";
+  closeOnInteractOutside?: boolean;
+  closeOnEscape?: boolean;
 }
 
 const sizeClasses = {
@@ -28,6 +32,18 @@ const sizeClasses = {
   "4xl": "max-w-4xl",
   "5xl": "max-w-5xl",
   full: "max-w-full",
+} as const;
+
+const bottomSizeClasses = {
+  sm: "sm:max-w-sm",
+  md: "sm:max-w-md",
+  lg: "sm:max-w-lg",
+  xl: "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
+  "3xl": "sm:max-w-3xl",
+  "4xl": "sm:max-w-4xl",
+  "5xl": "sm:max-w-5xl",
+  full: "sm:max-w-full",
 } as const;
 
 const ModalShell = ({
@@ -44,6 +60,10 @@ const ModalShell = ({
   bodyClassName = "",
   showCloseButton = true,
   ariaLabel,
+  description,
+  placement = "center",
+  closeOnInteractOutside = true,
+  closeOnEscape = true,
 }: ModalShellProps) => (
   <Dialog.Root
     open={isOpen}
@@ -56,8 +76,19 @@ const ModalShell = ({
       <Dialog.Content
         aria-modal="true"
         aria-label={title ? undefined : ariaLabel || "Dialog"}
-        aria-describedby={undefined}
-        className={`dialog-content fixed left-1/2 top-1/2 z-[101] flex max-h-[85vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-border-default bg-surface shadow-2xl outline-none ${sizeClasses[size]} ${className}`}
+        onInteractOutside={(event) => {
+          if (!closeOnInteractOutside) event.preventDefault();
+        }}
+        onEscapeKeyDown={(event) => {
+          if (!closeOnEscape) event.preventDefault();
+        }}
+        className={`dialog-content fixed z-[101] flex max-h-[85dvh] flex-col overflow-hidden border border-border-default bg-surface shadow-2xl outline-none ${
+          placement === "bottom"
+            ? `inset-x-0 bottom-0 mx-auto max-h-[90dvh] w-full max-w-full translate-x-0 translate-y-0 rounded-t-2xl rounded-b-none pb-[env(safe-area-inset-bottom)] sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:w-[calc(100%-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl ${bottomSizeClasses[size]}`
+            : placement === "right"
+              ? "inset-y-0 right-0 h-[100dvh] max-h-none w-full max-w-full translate-x-0 translate-y-0 rounded-none sm:max-w-md sm:rounded-l-2xl"
+              : `left-1/2 top-1/2 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-2xl ${sizeClasses[size]}`
+        } ${className}`}
       >
         {!title && (
           <Dialog.Title className="sr-only">
@@ -91,6 +122,12 @@ const ModalShell = ({
               )}
             </div>
           </div>
+        )}
+
+        {description && (
+          <Dialog.Description className="sr-only">
+            {description}
+          </Dialog.Description>
         )}
 
         <div

@@ -127,6 +127,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     <ToolbarSearch
                       value={searchQuery}
                       onChange={setSearchQuery}
+                      onClear={() => setSearchQuery("")}
+                      label="Search patients"
                       placeholder="Search by name or MRN..."
                       className="w-full flex"
                     />
@@ -137,6 +139,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                     activeCount={activeAdvancedFilterCount}
                     hideLabelOnMobile={true}
+                    controlsId="dashboard-filters"
                   />
                 </div>
 
@@ -152,7 +155,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {isFilterExpanded && (
-                <div className="px-4 pb-4 pt-2 border-t border-neutral-50 bg-canvas/30 animate-fade-in">
+                <div
+                  id="dashboard-filters"
+                  className="px-4 pb-4 pt-2 border-t border-neutral-50 bg-canvas/30 animate-fade-in"
+                >
                   <div className="grid grid-cols-2 md:grid-cols-4 items-end gap-4">
                     <div className="flex flex-col">
                       <label className="text-[9px] font-bold text-content-muted uppercase tracking-wider mb-1 ml-0.5">

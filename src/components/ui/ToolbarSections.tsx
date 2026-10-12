@@ -23,11 +23,15 @@ export const ToolbarSearch: React.FC<{
   onChange: (val: string) => void;
   placeholder?: string;
   className?: string;
+  label?: string;
+  onClear?: () => void;
 }> = ({
   value,
   onChange,
   placeholder = "Search...",
   className = "max-w-sm hidden sm:flex",
+  label = "Search",
+  onClear,
 }) => (
   <div className={`relative flex-1 ${className} items-center gap-2`}>
     <div className="relative flex-1">
@@ -36,11 +40,22 @@ export const ToolbarSearch: React.FC<{
       </div>
       <input
         type="text"
+        aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-surface-muted/50 hover:bg-surface-muted border border-border-default rounded-lg text-xs pl-9 pr-3 py-2 focus:ring-1 focus:ring-focus-ring focus:border-action focus:bg-surface outline-none text-content-primary transition-all font-medium placeholder-neutral-400 shadow-inner"
+        className={`w-full bg-surface-muted/50 hover:bg-surface-muted border border-border-default rounded-lg text-xs pl-9 ${onClear && value ? "pr-9" : "pr-3"} py-2 focus:ring-1 focus:ring-focus-ring focus:border-action focus:bg-surface outline-none text-content-primary transition-all font-medium placeholder-neutral-400 shadow-inner`}
         placeholder={placeholder}
       />
+      {onClear && value && (
+        <button
+          type="button"
+          aria-label={`Clear ${label.toLowerCase()}`}
+          onClick={onClear}
+          className="absolute inset-y-0 right-0 flex items-center px-2 text-content-muted hover:text-content-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+        >
+          <Icons.Close className="h-3.5 w-3.5" />
+        </button>
+      )}
     </div>
   </div>
 );
@@ -51,9 +66,18 @@ export const ToolbarFilterToggle: React.FC<{
   onClick: () => void;
   activeCount?: number;
   hideLabelOnMobile?: boolean;
-}> = ({ isExpanded, onClick, activeCount = 0, hideLabelOnMobile = false }) => (
+  controlsId?: string;
+}> = ({
+  isExpanded,
+  onClick,
+  activeCount = 0,
+  hideLabelOnMobile = false,
+  controlsId,
+}) => (
   <button
     onClick={onClick}
+    aria-expanded={isExpanded}
+    aria-controls={isExpanded ? controlsId : undefined}
     className={`relative flex items-center ${hideLabelOnMobile ? "px-2 sm:px-3" : "px-3"} py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap group ${
       isExpanded
         ? "bg-action-subtle text-action-hover border border-action-100"

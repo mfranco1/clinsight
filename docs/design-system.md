@@ -13,10 +13,13 @@ Clinical information must remain readable and statuses distinct. Preserve meanin
 ## Component ownership and reuse
 
 - Generic controls belong in `src/components/ui/`. Use `Button`, `Badge`, `TextInput`, `TextArea`, `FieldLabel`, status selectors, toolbar controls, file-upload controls, and empty states where their contracts fit.
-- Shared dialogs live in `src/components/dialogs/` and compose through `ModalShell`. Dialog focus, Escape handling, and close behavior use Radix Dialog. Status selectors use Radix Select, while order and medication status meanings remain in their feature/domain adapters.
+- Shared dialogs live in `src/components/dialogs/` and compose through `ModalShell`. Dialog focus and close behavior use Radix Dialog. `ModalShell` supports a title or explicit accessible name, an optional description, center, bottom-sheet, or right-drawer placement, safe-area spacing for bottom sheets, and explicit Escape/outside-interaction close policies; preserve existing defaults and choose dismissal policy per workflow. Status selectors use Radix Select, while order and medication status meanings remain in their feature/domain adapters.
 - Clinical Markdown and chat input live in `src/components/clinical/`; keep source references and clinical workflow semantics there. Generic content parsing and rendering belongs in `src/components/ui/RichContent.tsx`.
 - Feature-specific views and components stay under their owning `src/features/` directory. Shared controls accept typed values and callbacks rather than clinical workflow decisions.
 - Navigation and application chrome belong in `src/app/shell/`.
+- `ViewNavigationItem` in `src/components/ui/` shares current-page semantics and item layout between the desktop sidebar and mobile bottom navigation. Keep view lists, navigation state, and navigation callbacks in `app/shell/` and `App.tsx`.
+- `BottomActionBar` is a nonmodal, named action group for view-scoped bulk actions. Use `ModalShell` for bottom-sheet dialogs; an action bar must not trap focus or block the underlying workflow.
+- `ResponsiveTableSurface` provides a labelled, horizontally scrollable frame for feature-owned responsive records. Its role is a named region; it does not claim ARIA table/grid semantics. Keep row editing, grouping, selection, and keyboard behavior with the owning feature until a complete table interaction model is implemented.
 
 Existing composable foundations serve multiple workflows: `SectionCard` is shared by chart and profile; `StickyToolbar` and `ToolbarButton` serve input, chart, notes, orders, course, and handoff; `DateRangeFields` serves chart and notes; `EditableTextArea` serves chart, input, orders, course, and handoff; and `StatusDropdown` backs separate order and medication adapters. Prefer these contracts over new feature-local copies. Keep their domain-specific semantics in the owning adapters.
 
@@ -40,7 +43,11 @@ Use native form elements for simple controls and Radix primitives for complex di
 
 Preserve accessible names, form labels, dialog roles, close behavior, keyboard interaction, existing feedback, and desktop/mobile layouts when changing shared controls. Keep menus and overlays within the viewport. Check affected paths on desktop and mobile with the offline browser suite.
 
-Keep loading, error, confirmation, and empty states clear and consistent with the owning workflow. AI-generated suggestions and clinical content must remain reviewable and editable through existing flows.
+Keep loading, error, confirmation, and empty states clear and consistent with the owning workflow. AI-generated suggestions and clinical content must remain reviewable and editable through existing flows. `LoadingFeedback.tsx` owns branded app loading, compact indicators, skeleton shapes, and shared error presentation; feature modules own their operation labels, retained content, safe user-facing messages, retries, and cancellation. `ErrorState` supports section, inline, and page presentation while preserving its section default. Keep failures actionable and scoped to the operation; a dismissed save error does not mean the data was saved. Do not retry mutations automatically or show raw provider errors or clinical content in shared feedback.
+
+`Toast` renders an error as an assertive alert and success/information as polite status feedback. Give search inputs an explicit accessible label independent of placeholder text. `ToolbarSearch` supports a caller-owned clear action so feature query and pagination rules stay with the feature. Use the existing shared toolbar, filter, and loading compositions before adding variants; document behavior changes such as toast queueing, retry timing, or dismissal policy separately.
+
+`EmptyState` supports `section` (the existing default), `compact`, and `page` compositions. The owning workflow supplies accurate empty-state copy and actions for its cause; no-results states should offer a way to clear or adjust the relevant query/filter when that action is available.
 
 The HTML bootstrap in `index.html` and React `LoadingScreen` use indeterminate loading bars with static reduced-motion feedback. The HTML bootstrap appears before React is available and needs its own inline styles. Privacy and terms modals are imported eagerly so their first opening shows the modal directly without a full-page fallback beside the application shell.
 

@@ -37,6 +37,7 @@ import { integrateClinicalData } from "../../services/ai/actions";
 import { logDiagnostic } from "../../services/diagnosticLogger";
 import { SPECIALIZATIONS } from "../../config/appConfig";
 import StickyToolbar from "../../components/ui/StickyToolbar";
+import { ErrorState } from "../../components/ui/LoadingFeedback";
 import {
   ToolbarButton,
   ToolbarPagination,
@@ -834,19 +835,21 @@ const SoapView: React.FC<SoapViewProps> = ({
   return (
     <>
       {workflowError && (
-        <div
-          role="alert"
-          className="fixed bottom-24 right-4 z-[120] max-w-md rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700 shadow-lg"
-        >
-          {workflowError}
-          <button
-            type="button"
-            className="ml-2 underline"
-            onClick={() => setWorkflowError(null)}
-          >
-            Dismiss
-          </button>
-        </div>
+        <ErrorState
+          variant="inline"
+          title="Chart action failed"
+          message={workflowError}
+          className="fixed bottom-24 right-4 z-[120] max-w-md shadow-lg"
+          action={
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setWorkflowError(null)}
+            >
+              Dismiss
+            </button>
+          }
+        />
       )}
       <div className="flex h-full relative overflow-hidden">
         {/* Chart History Timeline (Desktop Aside) */}
