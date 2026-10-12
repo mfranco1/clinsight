@@ -16,6 +16,9 @@ describe("loading feedback primitives", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Loading patient chart…",
     );
+    expect(screen.getByRole("status").firstElementChild).toHaveClass(
+      "motion-reduce:animate-none",
+    );
   });
 
   it("pairs the app logo and an accessible startup loading message with a bar", () => {
@@ -43,9 +46,9 @@ describe("loading feedback primitives", () => {
       />,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      "Your draft is still available.",
-    );
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Your draft is still available.");
+    expect(alert).toHaveAttribute("aria-live", "assertive");
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 

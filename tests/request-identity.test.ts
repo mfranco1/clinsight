@@ -53,4 +53,24 @@ describe("async request identity", () => {
       }),
     ).toBe(false);
   });
+
+  it("drops a controlled late completion after the active entry changes", async () => {
+    const request = { patientId: "patient-a", entryId: "entry-a", patient };
+    let current = request;
+    let resolveResult: (value: string) => void = () => {};
+    const pendingResult = new Promise<string>((resolve) => {
+      resolveResult = resolve;
+    });
+    let appliedResult: string | null = null;
+
+    const applyingResult = pendingResult.then((result) => {
+      if (isCurrentPatientEntryRequest(request, current))
+        appliedResult = result;
+    });
+    current = { ...request, entryId: "entry-b" };
+    resolveResult("late assessment");
+    await applyingResult;
+
+    expect(appliedResult).toBeNull();
+  });
 });

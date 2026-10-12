@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Icons } from "../../components/ui/Icons";
 import { SPECIALIZATIONS } from "../../config/appConfig";
+import { ErrorState } from "../../components/ui/LoadingFeedback";
+import { logDiagnostic } from "../../services/diagnosticLogger";
 
 interface SettingsViewProps {
   defaultSpecialization: string;
@@ -15,19 +17,53 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     defaultSpecialization,
   );
   const [isSaved, setIsSaved] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const savedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (savedTimeout.current) clearTimeout(savedTimeout.current);
+    },
+    [],
+  );
 
   const handleSave = () => {
     try {
+      setSaveError(null);
       setDefaultSpecialization(localSpecialization);
       setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-    } catch (err) {
-      console.error("Failed to save settings", err);
+      if (savedTimeout.current) clearTimeout(savedTimeout.current);
+      savedTimeout.current = setTimeout(() => {
+        setIsSaved(false);
+        savedTimeout.current = null;
+      }, 2000);
+    } catch {
+      logDiagnostic("error", "Default specialization update failed.");
+      setSaveError(
+        "Could not update the default specialization. Please try again.",
+      );
+      setIsSaved(false);
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 animate-fade-in-up">
+      {saveError && (
+        <ErrorState
+          variant="inline"
+          message={saveError}
+          inlineAction={
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setSaveError(null)}
+            >
+              Dismiss
+            </button>
+          }
+          className="mb-4"
+        />
+      )}
       <div className="space-y-8">
         {/* Profile Section */}
         <section className="bg-surface rounded-2xl border border-border-default shadow-sm overflow-hidden">
@@ -91,7 +127,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                 </label>
                 <select
                   value={localSpecialization}
-                  onChange={(e) => setLocalSpecialization(e.target.value)}
+                  onChange={(e) => {
+                    setLocalSpecialization(e.target.value);
+                    setIsSaved(false);
+                  }}
                   className="w-full px-4 py-2.5 bg-canvas border border-border-default rounded-xl text-sm focus:ring-2 focus:ring-focus-ring outline-none transition-all appearance-none"
                 >
                   {SPECIALIZATIONS.map((spec) => (
