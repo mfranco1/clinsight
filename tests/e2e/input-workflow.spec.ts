@@ -32,6 +32,21 @@ test("opens the input workflow and resets an unsaved draft", async ({
 
   await expect(editor).toHaveText("");
 
+  await page.getByRole("button", { name: "Suggestions" }).click();
+  const suggestionsPanel = page.getByRole("dialog", { name: "Suggestions" });
+  await expect(suggestionsPanel).toBeVisible();
+  await expect(
+    suggestionsPanel.getByText(
+      "Please type more notes to get meaningful suggestions",
+    ),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(suggestionsPanel).toBeVisible();
+  await suggestionsPanel
+    .getByRole("button", { name: "Close Suggestions" })
+    .click();
+  await expect(suggestionsPanel).toHaveCount(0);
+
   await page.getByRole("button", { name: "Lookup" }).click();
   const lookupDialog = page.getByRole("dialog", { name: "Lookup" });
   await expect(lookupDialog).toBeVisible();
