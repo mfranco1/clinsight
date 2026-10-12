@@ -158,7 +158,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             <div className="mt-3 pt-3 border-t border-danger-100 flex justify-end">
               <button
                 onClick={() => handleRetryMessage(idx)}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider text-danger-600 bg-danger-50 hover:bg-danger-100 transition-all active:scale-95"
+                disabled={isLoading}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider text-danger-600 bg-danger-50 hover:bg-danger-100 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Icons.Refresh className="w-3 h-3 text-danger-500" />
                 Retry

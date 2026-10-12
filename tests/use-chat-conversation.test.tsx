@@ -83,6 +83,39 @@ describe("useChatConversation", () => {
     ]);
   });
 
+  it("ignores a second retry while the first retry is pending", async () => {
+    vi.mocked(sendChatMessage)
+      .mockRejectedValueOnce(new Error("provider error"))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ text: "Recovered", groundingSources: [] }),
+              0,
+            ),
+          ),
+      );
+    const { result } = renderHook(() =>
+      useChatConversation({ chartData: null, isOpen: true }),
+    );
+
+    await act(async () => result.current.sendMessage("Retry once", []));
+
+    let firstRetry!: Promise<void>;
+    act(() => {
+      firstRetry = result.current.retryMessage(1);
+    });
+    expect(result.current.isLoading).toBe(true);
+    await act(async () => result.current.retryMessage(1));
+    await act(async () => firstRetry);
+
+    expect(sendChatMessage).toHaveBeenCalledTimes(2);
+    expect(result.current.messages).toMatchObject([
+      { role: "user", text: "Retry once" },
+      { role: "model", text: "Recovered" },
+    ]);
+  });
+
   it("aborts an active request when cancelled without adding a failure message", async () => {
     let observedSignal: AbortSignal | undefined;
     vi.mocked(sendChatMessage).mockImplementation(
