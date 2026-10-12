@@ -145,6 +145,7 @@ const InputSection: React.FC<InputSectionProps> = ({
 
   const handleTranscribe = async (audioBlob: Blob) => {
     setIsTranscribing(true);
+    setError(null);
     try {
       const transcription = await transcribeAudio(audioBlob);
       setTextInput((prev) =>
@@ -154,6 +155,7 @@ const InputSection: React.FC<InputSectionProps> = ({
       );
     } catch (error) {
       logDiagnostic("error", "Input transcription failed.");
+      setError("Could not transcribe audio. Please try recording again.");
     } finally {
       setIsTranscribing(false);
     }

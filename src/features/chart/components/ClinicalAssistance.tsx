@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Icons } from "../../../components/ui/Icons";
 import { ClinicalSectionTitle } from "../../../types";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
+import { ErrorState } from "../../../components/ui/LoadingFeedback";
 
 interface ClinicalAssistanceProps {
   content?: string[];
@@ -21,6 +22,7 @@ const ClinicalAssistance: React.FC<ClinicalAssistanceProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(
     new Set(),
   );
@@ -30,10 +32,14 @@ const ClinicalAssistance: React.FC<ClinicalAssistanceProps> = ({
     if (!onGenerateMore) return;
 
     setIsGenerating(true);
+    setGenerationError(null);
     try {
       await onGenerateMore();
     } catch (err) {
       logDiagnostic("error", "Clinical suggestions request failed.");
+      setGenerationError(
+        "Could not load more recommendations. Please try again.",
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -109,6 +115,13 @@ const ClinicalAssistance: React.FC<ClinicalAssistanceProps> = ({
 
       {isExpanded && (
         <div className="px-4 pb-4 animate-fade-in">
+          {generationError && (
+            <ErrorState
+              variant="inline"
+              message={generationError}
+              className="mb-3"
+            />
+          )}
           <div className="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
             {lines.length > 0 ? (
               lines.map((suggestion, i) => {

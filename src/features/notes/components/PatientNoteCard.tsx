@@ -388,6 +388,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
     enabled: !isEditing,
     onAudioReady: async (audioBlob) => {
       setIsThreadTranscribing(true);
+      setMicrophoneError(null);
       try {
         const transcription = await transcribeAudio(audioBlob);
         if (transcription)
@@ -396,6 +397,9 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
           );
       } catch (error) {
         logDiagnostic("error", "Note transcription failed.");
+        setMicrophoneError(
+          "Could not transcribe audio. Please try recording again.",
+        );
       } finally {
         setIsThreadTranscribing(false);
       }
@@ -412,6 +416,7 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
     enabled: Boolean(floatingPosition && selectedText),
     onAudioReady: async (audioBlob) => {
       setIsFloatingTranscribing(true);
+      setMicrophoneError(null);
       try {
         const transcription = await transcribeAudio(audioBlob);
         if (transcription)
@@ -420,6 +425,9 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
           );
       } catch (error) {
         logDiagnostic("error", "Note transcription failed.");
+        setMicrophoneError(
+          "Could not transcribe audio. Please try recording again.",
+        );
       } finally {
         setIsFloatingTranscribing(false);
       }

@@ -34,6 +34,9 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
           setUserInput((prev) =>
             prev ? `${prev} ${transcription}` : transcription,
           );
+      } catch (error) {
+        logDiagnostic("error", "Smart-append transcription failed.");
+        setError("Could not transcribe audio. Please try recording again.");
       } finally {
         setIsTranscribing(false);
       }
@@ -46,7 +49,7 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
     try {
       await onIntegrate(userInput);
     } catch (error) {
-      logDiagnostic("error", "Smart-append transcription failed.");
+      logDiagnostic("error", "Smart-append integration failed.");
     } finally {
       setIsIntegrating(false);
     }

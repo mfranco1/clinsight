@@ -61,6 +61,7 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
   // Prescription Items
   const [items, setItems] = useState<RxItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [printError, setPrintError] = useState<string | null>(null);
 
   // Delete Confirmation State
@@ -68,6 +69,7 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      setLoadError(null);
       setRxPatientName(patientName);
       setRxAddress(patientAddress);
       setRxAgeSex(ageSex);
@@ -125,6 +127,9 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
             setItems(rxItems);
           } catch (error) {
             logDiagnostic("error", "Prescription data could not be loaded.");
+            setLoadError(
+              "Plan details could not be prepared. Review and enter prescription items manually before printing.",
+            );
             setItems([
               {
                 id: Date.now(),
@@ -355,6 +360,23 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
 
         {/* Rx Paper Preview Area */}
         <div className="flex-1 overflow-y-auto p-6 bg-neutral-200 flex flex-col items-center gap-8 relative">
+          {loadError && (
+            <div className="w-full max-w-[600px]">
+              <ErrorState
+                variant="inline"
+                message={loadError}
+                inlineAction={
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => setLoadError(null)}
+                  >
+                    Dismiss
+                  </button>
+                }
+              />
+            </div>
+          )}
           {/* Printable Container */}
           <div id="printable-rx">
             {isLoading && (

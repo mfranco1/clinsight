@@ -1,9 +1,42 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { parsePrescriptions } from "../src/services/ai/actions";
 import PrescriptionModal from "../src/features/orders/components/PrescriptionModal";
 import { MedicationStatus } from "../src/types";
 
+vi.mock("../src/services/ai/actions", () => ({
+  parsePrescriptions: vi.fn(),
+}));
+
 describe("PrescriptionModal", () => {
+  it("warns when plan details could not be prepared for the prescription", async () => {
+    vi.mocked(parsePrescriptions).mockRejectedValueOnce(
+      new Error("provider details"),
+    );
+    render(
+      <PrescriptionModal
+        isOpen
+        onClose={vi.fn()}
+        patientName="Synthetic Patient"
+        patientAddress=""
+        ageSex=""
+        date="2026-10-12"
+        planData={[
+          {
+            problem: "Synthetic problem",
+            therapeutics: ["Synthetic medication"],
+          },
+        ]}
+      />,
+    );
+
+    expect(
+      await screen.findByText(/Plan details could not be prepared/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("provider details")).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Medication Name")).toBeInTheDocument();
+  });
+
   it("keeps the editor open on Escape and outside interaction, with an explicit close control", async () => {
     const onClose = vi.fn();
     render(

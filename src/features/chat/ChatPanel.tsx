@@ -19,6 +19,7 @@ import { useAudioRecorder } from "../../hooks/useAudioRecorder";
 import { useChatConversation } from "./useChatConversation";
 import { useChatPanelResize } from "./useChatPanelResize";
 import SidePanelShell from "../../components/ui/SidePanelShell";
+import { ErrorState } from "../../components/ui/LoadingFeedback";
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -55,10 +56,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
 
   // Audio Recording State
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(
+    null,
+  );
   const { isRecording, startRecording, stopRecording } = useAudioRecorder({
     enabled: isOpen,
     onAudioReady: async (audioBlob) => {
       setIsTranscribing(true);
+      setTranscriptionError(null);
       try {
         const transcription = await transcribeAudio(audioBlob);
         if (transcription)
@@ -67,6 +72,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           );
       } catch (error) {
         logDiagnostic("error", "Chat transcription failed.");
+        setTranscriptionError(
+          "Could not transcribe audio. Please try recording again.",
+        );
       } finally {
         setIsTranscribing(false);
       }
@@ -281,6 +289,22 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
 
         {/* Input Area */}
         <div className="p-4 bg-surface border-t border-border-default">
+          {transcriptionError && (
+            <ErrorState
+              variant="inline"
+              message={transcriptionError}
+              inlineAction={
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => setTranscriptionError(null)}
+                >
+                  Dismiss
+                </button>
+              }
+              className="mb-3"
+            />
+          )}
           <ClinicalChatInput
             value={inputValue}
             onChange={setInputValue}
