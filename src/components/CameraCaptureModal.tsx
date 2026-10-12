@@ -2,6 +2,8 @@ import { useRef, useEffect } from "react";
 import { Icons } from "./ui/Icons";
 import { useCameraCapture } from "../hooks/useCameraCapture";
 import ModalShell from "./ui/ModalShell";
+import Button from "./ui/Button";
+import { ErrorState } from "./ui/LoadingFeedback";
 
 interface CameraCaptureModalProps {
   isOpen: boolean;
@@ -79,16 +81,16 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
     >
       <div className="relative flex min-h-[300px] flex-1 items-center justify-center bg-black">
         {error ? (
-          <div role="alert" className="text-white text-center p-6">
-            <Icons.Alert className="w-12 h-12 text-danger-500 mx-auto mb-4" />
-            <p className="text-sm font-medium">{error}</p>
-            <button
-              onClick={startCamera}
-              className="mt-4 px-4 py-2 bg-surface text-content-strong rounded-lg text-xs font-bold uppercase tracking-wider"
-            >
-              Retry
-            </button>
-          </div>
+          <ErrorState
+            message={error}
+            variant="section"
+            className="m-0 max-w-md text-center [&_p]:!text-white"
+            action={
+              <Button variant="secondary" size="sm" onClick={startCamera}>
+                Retry
+              </Button>
+            }
+          />
         ) : (
           <>
             <video

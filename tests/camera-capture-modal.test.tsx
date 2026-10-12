@@ -51,4 +51,23 @@ describe("CameraCaptureModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close modal" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("uses the shared error presentation and keeps camera retry available", () => {
+    const startCamera = vi.fn();
+    cameraState.current = {
+      ...cameraState.current,
+      error: "Camera permission is required.",
+      startCamera,
+    };
+    render(<CameraCaptureModal isOpen onClose={vi.fn()} onCapture={vi.fn()} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Camera permission is required.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(startCamera).toHaveBeenCalledOnce();
+    expect(
+      screen.getByRole("button", { name: "Capture Photo" }),
+    ).toBeDisabled();
+  });
 });
