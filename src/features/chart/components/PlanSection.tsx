@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
 import {
   PlanItem,
   GeneralData,
@@ -12,6 +11,7 @@ import SectionCard from "../../../components/ui/SectionCard";
 import EditablePlanCard from "./EditablePlanCard";
 import BroaderManagementCard from "./BroaderManagementCard";
 import { Icons } from "../../../components/ui/Icons";
+import ConfirmationModal from "../../../components/dialogs/ConfirmationModal";
 
 interface PlanSectionProps {
   planData: PlanItem[];
@@ -148,36 +148,17 @@ const PlanSection: React.FC<PlanSectionProps> = ({
         </div>
       </SectionCard>
 
-      {planItemToDelete !== null &&
-        createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-surface rounded-xl shadow-2xl p-6 max-w-sm w-full border border-border-default transform scale-100 transition-all">
-              <div className="flex items-center mb-4 text-danger-600">
-                <Icons.Trash className="w-6 h-6 mr-2" />
-                <h3 className="text-lg font-bold">Delete Plan Item?</h3>
-              </div>
-              <p className="text-content-default mb-6 text-sm leading-relaxed">
-                Are you sure you want to delete this problem and its actions?
-                This cannot be undone.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={cancelDeletePlanItem}
-                  className="px-4 py-2 text-content-default font-medium text-sm hover:bg-surface-muted rounded transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDeletePlanItem}
-                  className="px-4 py-2 bg-danger-600 text-white font-medium text-sm rounded hover:bg-danger-700 shadow-sm transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      <ConfirmationModal
+        isOpen={planItemToDelete !== null}
+        onClose={cancelDeletePlanItem}
+        onConfirm={confirmDeletePlanItem}
+        title="Delete Plan Item?"
+        message="Are you sure you want to delete this problem and its actions? This cannot be undone."
+        confirmLabel="Delete"
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+        icon={Icons.Trash}
+      />
     </div>
   );
 };

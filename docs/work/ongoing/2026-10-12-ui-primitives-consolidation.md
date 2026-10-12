@@ -141,7 +141,7 @@ Progress: `ModalShell` now supports optional accessible descriptions, center/bot
 
 Confirmation contract: `ConfirmationModal` still calls `onConfirm` once and then `onClose` synchronously; focused tests protect call order and disabled behavior. No async pending contract has been added.
 
-Progress: input reset and clear-history confirmation overlays now use `ConfirmationModal` with Escape/backdrop dismissal disabled to match their previous explicit-choice behavior. Reset still archives the current note as a draft before clearing; history confirmation still deletes only when confirmed. The reset browser journey passes on desktop and mobile.
+Progress: input reset and clear-history confirmation overlays now use `ConfirmationModal` with Escape/backdrop dismissal disabled to match their previous explicit-choice behavior. Reset still archives the current note as a draft before clearing; history confirmation still deletes only when confirmed. The chart Plan section’s custom delete overlay now uses `ConfirmationModal`, retains explicit-choice dismissal, and deletes only the selected plan item. Its focused component test covers cancel, Escape/backdrop, and confirm behavior. The reset browser journey passes on desktop and mobile.
 
 ### Stage 3 — Unify toast, popup, and inline feedback
 
