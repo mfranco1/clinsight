@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ReactNode } from "react";
 import { motion } from "motion/react";
 import Button from "./Button";
 
@@ -11,6 +11,7 @@ interface EmptyStateProps {
     label: string;
     icon?: React.ComponentType<{ className?: string }>;
   };
+  footer?: ReactNode;
   className?: string;
   variant?: "section" | "compact" | "page";
 }
@@ -20,6 +21,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
+  footer,
   className = "",
   variant = "section",
 }) => {
@@ -62,6 +64,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           {action.label}
         </Button>
       )}
+      {footer}
     </motion.div>
   );
 };

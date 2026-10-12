@@ -29,6 +29,7 @@ import PrescriptionModal from "./components/PrescriptionModal";
 import ConfirmationModal from "../../components/dialogs/ConfirmationModal";
 import BottomActionBar from "../../components/ui/BottomActionBar";
 import ResponsiveTableSurface from "../../components/ui/ResponsiveTableSurface";
+import EmptyState from "../../components/ui/EmptyState";
 import { getLocalDateString } from "../../utils/date";
 import { createId } from "../../utils/ids";
 import {
@@ -809,25 +810,27 @@ const EmptyMedications: React.FC<{
   onAdd: () => void;
   isFiltered: boolean;
 }> = ({ onAdd, isFiltered }) => (
-  <div className="py-20 flex flex-col items-center justify-center text-center">
-    <div className="w-16 h-16 bg-canvas rounded-full flex items-center justify-center mb-4">
-      <Icons.Prescription className="w-8 h-8 text-neutral-300" />
-    </div>
-    <h3 className="text-content-strong font-bold">No medications found</h3>
-    <p className="text-content-secondary text-sm mt-1 max-w-xs">
-      {isFiltered
+  <EmptyState
+    icon={Icons.Prescription}
+    title="No medications found"
+    description={
+      isFiltered
         ? "No orders match your search criteria"
-        : "Start by adding your first medication"}
-    </p>
-    {!isFiltered && (
-      <button
-        onClick={onAdd}
-        className="mt-6 px-8 py-3 bg-action text-white rounded-xl text-sm font-bold hover:bg-action-hover shadow-lg shadow-action-500/20 flex items-center gap-2 transition-all active:scale-95"
-      >
-        <Icons.Plus className="w-4 h-4" /> Add Medication
-      </button>
-    )}
-  </div>
+        : "Start by adding your first medication"
+    }
+    className="py-20 bg-transparent border-0 rounded-none"
+    footer={
+      !isFiltered && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="mt-6 px-8 py-3 bg-action text-white rounded-xl text-sm font-bold hover:bg-action-hover shadow-lg shadow-action-500/20 flex items-center gap-2 transition-all active:scale-95"
+        >
+          <Icons.Plus className="w-4 h-4" /> Add Medication
+        </button>
+      )
+    }
+  />
 );
 
 const EmptyOrders: React.FC<{
@@ -835,33 +838,36 @@ const EmptyOrders: React.FC<{
   onAdd: () => void;
   isFiltered: boolean;
 }> = ({ onBulkAdd, onAdd, isFiltered }) => (
-  <div className="py-20 flex flex-col items-center justify-center text-center">
-    <div className="w-16 h-16 bg-canvas rounded-full flex items-center justify-center mb-4">
-      <Icons.ClipboardList className="w-8 h-8 text-neutral-300" />
-    </div>
-    <h3 className="text-content-strong font-bold">No orders found</h3>
-    <p className="text-content-secondary text-sm mt-1 max-w-xs">
-      {isFiltered
+  <EmptyState
+    icon={Icons.ClipboardList}
+    title="No orders found"
+    description={
+      isFiltered
         ? "No orders match your search criteria"
-        : "Start by adding your first order"}
-    </p>
-    {!isFiltered && (
-      <div className="flex items-center gap-3 mt-6">
-        <button
-          onClick={onBulkAdd}
-          className="px-6 py-2.5 bg-action text-white rounded-xl text-sm font-bold hover:bg-action-hover transition-all flex items-center gap-2 shadow-lg shadow-action-500/20"
-        >
-          <Icons.ListPlus className="w-4 h-4" /> Bulk Add
-        </button>
-        <button
-          onClick={onAdd}
-          className="px-6 py-2.5 bg-surface text-content-default border border-border-default rounded-xl text-sm font-bold hover:bg-canvas transition-all flex items-center gap-2"
-        >
-          <Icons.Plus className="w-4 h-4" /> Add Order
-        </button>
-      </div>
-    )}
-  </div>
+        : "Start by adding your first order"
+    }
+    className="py-20 bg-transparent border-0 rounded-none"
+    footer={
+      !isFiltered && (
+        <div className="flex items-center gap-3 mt-6">
+          <button
+            type="button"
+            onClick={onBulkAdd}
+            className="px-6 py-2.5 bg-action text-white rounded-xl text-sm font-bold hover:bg-action-hover transition-all flex items-center gap-2 shadow-lg shadow-action-500/20"
+          >
+            <Icons.ListPlus className="w-4 h-4" /> Bulk Add
+          </button>
+          <button
+            type="button"
+            onClick={onAdd}
+            className="px-6 py-2.5 bg-surface text-content-default border border-border-default rounded-xl text-sm font-bold hover:bg-canvas transition-all flex items-center gap-2"
+          >
+            <Icons.Plus className="w-4 h-4" /> Add Order
+          </button>
+        </div>
+      )
+    }
+  />
 );
 
 export default OrdersView;

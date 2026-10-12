@@ -80,4 +80,27 @@ describe("loading feedback primitives", () => {
       screen.getByRole("button", { name: "Clear search" }),
     ).toBeInTheDocument();
   });
+
+  it("allows feature-owned action groups in the shared empty state", () => {
+    render(
+      <EmptyState
+        icon={Icons.ClipboardList}
+        title="No orders found"
+        description="Start by adding your first order"
+        footer={
+          <div>
+            <button type="button">Bulk Add</button>
+            <button type="button">Add Order</button>
+          </div>
+        }
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Bulk Add" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add Order" }),
+    ).toBeInTheDocument();
+  });
 });
