@@ -36,7 +36,10 @@ import { openAttachment } from "../../services/fileService";
 import SuggestionsDrawer from "./components/SuggestionsDrawer";
 import { useAudioRecorder } from "../../hooks/useAudioRecorder";
 import { useInputDrafts } from "./useInputDrafts";
-import { parsePatientCaseFiles } from "./importCases";
+import {
+  getPatientCaseImportErrorMessage,
+  parsePatientCaseFiles,
+} from "./importCases";
 
 import EditableTextArea from "../../components/ui/EditableTextArea";
 
@@ -185,11 +188,7 @@ const InputSection: React.FC<InputSectionProps> = ({
       })
       .catch((err) => {
         logDiagnostic("error", "Batch case import failed.");
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred while batch uploading cases. Please ensure all uploaded files are valid patient JSON cases.",
-        );
+        setError(getPatientCaseImportErrorMessage(err));
       });
 
     e.target.value = "";

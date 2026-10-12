@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { structuredPatientCase } from "./fixtures/patient-cases";
 import {
+  getPatientCaseImportErrorMessage,
   parsePatientCaseFile,
   parsePatientCaseFiles,
 } from "../src/features/input/importCases";
@@ -40,6 +41,24 @@ describe("Input case import parsing", () => {
     );
     await expect(parsePatientCaseFile(invalid)).rejects.toThrow(
       "Invalid case format inside file: invalid.json",
+    );
+  });
+
+  it("maps import errors to useful guidance without exposing uploaded file names", () => {
+    expect(
+      getPatientCaseImportErrorMessage(
+        new Error("Invalid case format inside file: patient-identifier.json"),
+      ),
+    ).toBe(
+      "A selected file is not a valid patient case. Choose a valid case export and try again.",
+    );
+    expect(
+      getPatientCaseImportErrorMessage(
+        new Error("Failed to parse JSON inside file: patient-identifier.json"),
+      ),
+    ).not.toContain("patient-identifier.json");
+    expect(getPatientCaseImportErrorMessage("unexpected failure")).toContain(
+      "could not be imported",
     );
   });
 });
