@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { medicalLookup } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
-import { getErrorMessageCompat } from "../../../services/appErrors";
 
 const isAbortError = (error: unknown): boolean =>
   typeof error === "object" &&
@@ -15,7 +14,10 @@ import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import ModalShell from "../../../components/ui/ModalShell";
 import TextInput from "../../../components/ui/TextInput";
 import Button from "../../../components/ui/Button";
-import { LoadingIndicator } from "../../../components/ui/LoadingFeedback";
+import {
+  ErrorState,
+  LoadingIndicator,
+} from "../../../components/ui/LoadingFeedback";
 
 interface LookupModalProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [sources, setSources] = useState<GroundingSource[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -46,6 +49,7 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
 
     setIsLoading(true);
     setResult(null);
+    setErrorMessage(null);
     setSources([]);
 
     if (abortControllerRef.current) {
@@ -77,12 +81,10 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
     } catch (error: unknown) {
       if (lookupRequestId.current === requestId) {
         if (isAbortError(error)) {
-          setResult("Search timed out after 60 seconds. Please try again.");
+          setErrorMessage("Search timed out after 60 seconds.");
         } else {
           logDiagnostic("error", "Medical lookup failed.");
-          setResult(
-            "I'm sorry, I encountered an error during the lookup. Please try again.",
-          );
+          setErrorMessage("I'm sorry, I encountered an error during the lookup.");
         }
       }
     } finally {
@@ -102,6 +104,7 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
     }
     setIsLoading(false);
     setResult(null);
+    setErrorMessage(null);
     setSources([]);
   };
 
@@ -164,6 +167,17 @@ const LookupModal: React.FC<LookupModalProps> = ({ isOpen, onClose }) => {
               Cancel Search
             </button>
           </div>
+        ) : errorMessage ? (
+          <ErrorState
+            title="Lookup failed"
+            message={errorMessage}
+            action={
+              <Button variant="secondary" size="sm" onClick={() => void handleSearch()}>
+                Try again
+              </Button>
+            }
+            className="m-0"
+          />
         ) : result ? (
           <div className="animate-fade-in-up">
             <ClinicalMarkdown

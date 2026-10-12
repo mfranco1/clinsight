@@ -311,7 +311,7 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Progress
 
-Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. `SearchField` is now the shared controlled input under `ToolbarSearch`, with pending and disabled states while feature-owned matching and clear behavior remain intact. Notes, dashboard, medications, and diagnostics empty/no-match states compose through `EmptyState`; orders rows expose record-specific selection and action names. The latest full unit run passed 194 tests. Typecheck, lint, build, docs check, and diff check pass. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. The prescription print journey was not rerun because the configured preview port (4173) was occupied. Remaining consumers and families still need the staged migrations below.
+Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. `SearchField` is now the shared controlled input under `ToolbarSearch`, with pending and disabled states while feature-owned matching and clear behavior remain intact. Notes, dashboard, medications, and diagnostics empty/no-match states compose through `EmptyState`; orders rows expose record-specific selection and action names. Lookup failures now use `ErrorState` with a same-query retry; failures and timeout messages are no longer rendered as clinical Markdown results. A focused test verifies safe error display and successful retry. This slice passes its focused test, typecheck, and production build. The latest prior full unit run passed 194 tests. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. The prescription print journey was not rerun because the configured preview port (4173) was occupied. Remaining consumers and families still need the staged migrations below.
 
 ## Decisions
 
@@ -330,6 +330,7 @@ Implementation active. Stage 0 baseline is complete. Shared modal, popover, toas
 - Latest full `npm test`: 64 files, 184 tests passed. `npm run build`, `npm run lint`, `npm run docs:check`, and `git diff --check` pass. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); those added journeys, the template/draft popover, nested gallery menu, SuggestionsDrawer, and chat panel journeys passed on desktop/mobile.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
 - `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
+- Lookup recovery coverage, typecheck, and production build pass for this slice.
 
 ## Outcome
 
