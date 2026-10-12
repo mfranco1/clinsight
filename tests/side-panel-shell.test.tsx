@@ -27,4 +27,24 @@ describe("SidePanelShell", () => {
     fireEvent.click(screen.getByLabelText("Close Suggestions"));
     expect(onClose).toHaveBeenCalledTimes(2);
   });
+
+  it("supports a left-side drawer for navigation history panels", () => {
+    render(
+      <SidePanelShell
+        isOpen
+        onClose={vi.fn()}
+        title="Chart History"
+        side="left"
+      >
+        History entries
+      </SidePanelShell>,
+    );
+
+    expect(screen.getByRole("dialog", { name: "Chart History" })).toHaveClass(
+      "left-0",
+      "right-auto",
+      "border-r",
+      "data-[state=closed]:-translate-x-full",
+    );
+  });
 });

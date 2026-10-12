@@ -38,6 +38,7 @@ import { logDiagnostic } from "../../services/diagnosticLogger";
 import { SPECIALIZATIONS } from "../../config/appConfig";
 import StickyToolbar from "../../components/ui/StickyToolbar";
 import { ErrorState } from "../../components/ui/LoadingFeedback";
+import SidePanelShell from "../../components/ui/SidePanelShell";
 import {
   Popover,
   PopoverContent,
@@ -204,6 +205,8 @@ interface HistoryPanelProps {
   setEntryIdToDelete: (id: string) => void;
   collapsedEncounters: Set<string>;
   toggleEncounter: (id: string) => void;
+  hideHeading?: boolean;
+  showMobileClose?: boolean;
 }
 
 const getDisplayEntryTitle = (entry: ChartEntry, encounters?: Encounter[]) => {
@@ -246,6 +249,8 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
   setEntryIdToDelete,
   collapsedEncounters,
   toggleEncounter,
+  hideHeading = false,
+  showMobileClose = true,
 }) => {
   // Sort encounter IDs based on the latest entry date in each or encounter start date
   const sortedEncounterIds = useMemo(() => {
@@ -269,9 +274,11 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
       <div className="px-5 py-4 border-b border-border-subtle bg-canvas/50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex flex-col">
-            <h3 className="text-[10px] font-bold text-content-muted uppercase tracking-widest">
-              Chart History
-            </h3>
+            {!hideHeading && (
+              <h3 className="text-[10px] font-bold text-content-muted uppercase tracking-widest">
+                Chart History
+              </h3>
+            )}
             <span className="text-[9px] font-medium text-content-muted mt-0.5">
               {filteredHistory.length} total entries
             </span>
@@ -305,12 +312,16 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
               )}
             </button>
             {/* Mobile Close Button */}
-            <button
-              onClick={() => setIsMobileHistoryOpen(false)}
-              className="lg:hidden p-1 rounded text-content-muted hover:bg-neutral-200 ml-1"
-            >
-              <Icons.Close className="w-4 h-4" />
-            </button>
+            {showMobileClose && (
+              <button
+                type="button"
+                aria-label="Close Chart History"
+                onClick={() => setIsMobileHistoryOpen(false)}
+                className="lg:hidden p-1 rounded text-content-muted hover:bg-neutral-200 ml-1"
+              >
+                <Icons.Close className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -1474,20 +1485,21 @@ const SoapView: React.FC<SoapViewProps> = ({
           />
         )}
 
-        {/* Mobile History Drawer Overlay */}
-        {isMobileHistoryOpen && (
-          <div className="lg:hidden fixed inset-0 z-[60] flex overflow-hidden">
-            {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm animate-fade-in"
-              onClick={() => setIsMobileHistoryOpen(false)}
-            ></div>
-            {/* Panel */}
-            <div className="relative w-80 max-w-[calc(100%-48px)] bg-surface shadow-2xl h-full flex flex-col animate-slide-right">
-              <HistoryPanel {...historyPanelProps} />
-            </div>
-          </div>
-        )}
+        <SidePanelShell
+          isOpen={isMobileHistoryOpen}
+          onClose={() => setIsMobileHistoryOpen(false)}
+          title="Chart History"
+          side="left"
+          closeOnEscape={false}
+          backdropClassName="fixed inset-0 z-[60] bg-neutral-900/40 backdrop-blur-sm animate-fade-in lg:hidden"
+          className="z-[61] w-80 max-w-[calc(100%-48px)] bg-surface sm:w-80"
+        >
+          <HistoryPanel
+            {...historyPanelProps}
+            hideHeading
+            showMobileClose={false}
+          />
+        </SidePanelShell>
       </div>
 
       {/* Entry Deletion Confirmation Modal - Placed outside main container */}

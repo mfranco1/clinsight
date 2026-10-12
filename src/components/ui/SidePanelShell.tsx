@@ -18,6 +18,7 @@ interface SidePanelShellProps {
   bodyScrollable?: boolean;
   keepMounted?: boolean;
   closeOnEscape?: boolean;
+  side?: "left" | "right";
 }
 
 /** A nonmodal right panel with a dismissible mobile backdrop. */
@@ -37,6 +38,7 @@ const SidePanelShell = ({
   bodyScrollable = true,
   keepMounted = false,
   closeOnEscape = false,
+  side = "right",
 }: SidePanelShellProps) => (
   <Dialog.Root
     open={isOpen}
@@ -65,7 +67,7 @@ const SidePanelShell = ({
             }}
             onInteractOutside={(event) => event.preventDefault()}
             style={style}
-            className={`fixed inset-y-0 right-0 z-50 flex h-[100dvh] w-full flex-col border-l border-border-default bg-canvas shadow-2xl outline-none transition-transform duration-300 data-[state=open]:translate-x-0 data-[state=closed]:translate-x-full sm:w-[400px] ${className}`}
+            className={`fixed inset-y-0 z-50 flex h-[100dvh] w-full flex-col border-border-default bg-canvas shadow-2xl outline-none transition-transform duration-300 sm:w-[400px] ${side === "left" ? "left-0 right-auto border-r border-l-0 data-[state=open]:translate-x-0 data-[state=closed]:-translate-x-full" : "right-0 border-l data-[state=open]:translate-x-0 data-[state=closed]:translate-x-full"} ${className}`}
           >
             {beforeHeader}
             <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-border-default bg-surface p-4 shadow-sm">
