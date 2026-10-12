@@ -18,6 +18,7 @@ import { createId } from "../../utils/ids";
 import DateRangeFields from "../../components/ui/DateRangeFields";
 import { filterAndSortNotes, paginateNotes } from "./listing";
 import { useRetainedState } from "../../app/ViewState";
+import EmptyState from "../../components/ui/EmptyState";
 
 interface NotesViewProps {
   notes: PatientNote[];
@@ -299,26 +300,24 @@ const NotesView: React.FC<NotesViewProps> = ({
               />
             ))
           ) : (
-            <div className="py-20 flex flex-col items-center justify-center text-center bg-surface rounded-3xl border border-dashed border-border-default">
-              <div className="w-16 h-16 bg-canvas rounded-full flex items-center justify-center mb-4">
-                <Icons.Edit3 className="w-8 h-8 text-neutral-300" />
-              </div>
-              <h3 className="text-content-strong font-bold">No notes found</h3>
-              <p className="text-content-secondary text-sm mt-1 max-w-xs">
-                {searchQuery
+            <EmptyState
+              icon={Icons.Edit3}
+              title="No notes found"
+              description={
+                searchQuery
                   ? "No notes match your search criteria"
-                  : "Start by adding your first note"}
-              </p>
-              {!searchQuery && (
-                <button
-                  onClick={handleAddNote}
-                  className="mt-6 px-6 py-2.5 bg-action text-white rounded-xl text-sm font-bold hover:bg-action-hover transition-all flex items-center gap-2"
-                >
-                  <Icons.Plus className="w-4 h-4" />
-                  Add Note
-                </button>
-              )}
-            </div>
+                  : "Start by adding your first note"
+              }
+              action={
+                !searchQuery
+                  ? {
+                      onClick: handleAddNote,
+                      label: "Add Note",
+                      icon: Icons.Plus,
+                    }
+                  : undefined
+              }
+            />
           )}
         </div>
       </div>

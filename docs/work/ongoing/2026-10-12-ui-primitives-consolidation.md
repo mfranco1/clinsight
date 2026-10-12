@@ -238,7 +238,7 @@ Dependencies: Stages 1 and 6; verify against migrated panels. Risk: medium to hi
 
 Exit gate: navigation round trips restore the same patient context, controls, and scroll; empty versus filtered versus loading states are accurate; startup/legal-dialog behavior remains intact.
 
-Progress: added a shared `ViewNavigationItem` for desktop sidebar/mobile bottom navigation with `aria-current="page"` and accessible collapsed/icon-only labels. `EmptyState` now offers compact and page variants while retaining its section default and owner-provided actions. Automated route round-trip and visual regression checks are still pending.
+Progress: added a shared `ViewNavigationItem` for desktop sidebar/mobile bottom navigation with `aria-current="page"` and accessible collapsed/icon-only labels. `EmptyState` offers compact and page variants, optional descriptions, and owner-provided actions. Notes and dashboard empty/no-match states now compose through it while retaining their distinct copy and add/reset actions. Automated route round-trip and visual regression checks are still pending.
 
 ### Stage 8 — Extract reusable operational table/list composition
 
@@ -309,7 +309,7 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Progress
 
-Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. `SearchField` is now the shared controlled input under `ToolbarSearch`, with pending and disabled states while feature-owned matching and clear behavior remain intact; its focused tests, typecheck, production build, docs check, and diff check pass. The latest full unit run passed 184 tests. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. Remaining consumers and families still need the staged migrations below.
+Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. `SearchField` is now the shared controlled input under `ToolbarSearch`, with pending and disabled states while feature-owned matching and clear behavior remain intact. Notes and dashboard empty/no-match states compose through `EmptyState`. The latest full unit run passed 185 tests; typecheck, build, docs check, and diff check pass. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. Remaining consumers and families still need the staged migrations below.
 
 ## Decisions
 

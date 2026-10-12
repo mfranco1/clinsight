@@ -5,7 +5,7 @@ import Button from "./Button";
 interface EmptyStateProps {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
-  description: string;
+  description?: string;
   action?: {
     onClick: () => void;
     label: string;
@@ -51,9 +51,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         />
       </div>
       <h3 className="text-content-strong font-bold">{title}</h3>
-      <p className="text-content-secondary text-sm mt-1 max-w-xs">
-        {description}
-      </p>
+      {description && (
+        <p className="text-content-secondary text-sm mt-1 max-w-xs">
+          {description}
+        </p>
+      )}
       {action && (
         <Button variant="primary" className="mt-6" onClick={action.onClick}>
           {action.icon && <action.icon className="w-4 h-4" />}

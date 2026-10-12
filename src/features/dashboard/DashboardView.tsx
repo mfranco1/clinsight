@@ -26,6 +26,7 @@ import {
 } from "../../components/ui/ToolbarSections";
 import TodayTasksSidebar from "./components/TodayTasksSidebar";
 import { getTodayLocalDateString } from "../../utils/date";
+import EmptyState from "../../components/ui/EmptyState";
 
 interface DashboardViewProps {
   patients: MedicalChartResponse[];
@@ -197,36 +198,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
             {filteredPatients.length === 0 ? (
               searchQuery || startDate || endDate ? (
-                <div className="text-center py-20 bg-surface border border-border-default rounded-3xl">
-                  <Icons.Search className="w-10 h-10 text-neutral-300 mx-auto mb-4" />
-                  <p className="text-sm text-content-secondary font-medium">
-                    No patients found matching your search
-                  </p>
-                  <button
-                    onClick={resetFilters}
-                    className="mt-4 text-sm text-action font-bold hover:text-action-hover"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
+                <EmptyState
+                  icon={Icons.Search}
+                  title="No patients found matching your search"
+                  action={{ onClick: resetFilters, label: "Clear all filters" }}
+                />
               ) : (
-                <div className="bg-surface border border-border-default rounded-3xl p-20 text-center">
-                  <div className="w-20 h-20 bg-canvas rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Icons.General className="w-10 h-10 text-neutral-300" />
-                  </div>
-                  <h3 className="text-xl font-bold text-neutral-800">
-                    No active patients
-                  </h3>
-                  <p className="text-content-secondary mt-2 max-w-xs mx-auto text-xs">
-                    Start by adding your first patient
-                  </p>
-                  <button
-                    onClick={onAddPatient}
-                    className="mt-8 flex items-center px-6 py-2.5 text-action-hover bg-action-subtle rounded-xl text-xs font-bold tracking-wide hover:bg-action-100 transition-all active:scale-95 mx-auto"
-                  >
-                    Add Patient
-                  </button>
-                </div>
+                <EmptyState
+                  icon={Icons.General}
+                  title="No active patients"
+                  description="Start by adding your first patient"
+                  action={{ onClick: onAddPatient, label: "Add Patient" }}
+                  className="py-20"
+                />
               )
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
