@@ -6,6 +6,8 @@ import { parsePrescriptions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import { Icons } from "../../../components/ui/Icons";
 import { ErrorState } from "../../../components/ui/LoadingFeedback";
+import ModalShell from "../../../components/ui/ModalShell";
+import ConfirmationModal from "../../../components/dialogs/ConfirmationModal";
 
 interface PrescriptionModalProps {
   isOpen: boolean;
@@ -314,22 +316,19 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm sm:p-4 overflow-y-auto">
-      <div className="relative w-full h-full sm:h-auto sm:max-w-3xl bg-neutral-200 sm:rounded-xl shadow-2xl flex flex-col sm:max-h-[90vh] overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-surface border-b border-border-default">
-          <h2 className="text-lg font-bold text-neutral-800 flex items-center">
-            <Icons.Prescription className="w-5 h-5 mr-2 text-action" />
-            Prescription
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-content-muted hover:text-content-default"
-          >
-            <Icons.Close className="w-6 h-6" />
-          </button>
-        </div>
-
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Prescription"
+      icon={Icons.Prescription}
+      iconBgColor="bg-action-subtle text-action"
+      size="3xl"
+      className="h-[100dvh] w-full max-h-[100dvh] max-w-full rounded-none bg-neutral-200 sm:h-auto sm:max-h-[90vh] sm:w-[calc(100%-2rem)] sm:max-w-3xl sm:rounded-xl"
+      bodyClassName="min-h-0 flex flex-col p-0"
+      closeOnInteractOutside={false}
+      closeOnEscape={false}
+    >
+      <div className="flex h-full min-h-0 flex-col">
         {/* Toolbar */}
         <div className="bg-surface-muted px-4 sm:px-6 py-3 border-b border-border-default flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center text-sm">
           <div className="text-content-secondary italic text-xs sm:text-sm">
@@ -606,36 +605,18 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
             className="mx-6 mt-3 font-medium"
           />
         )}
-
-        {/* Delete Confirmation Overlay - Moved to be a direct child of the relative container, outside the scrollview */}
-        {itemToDelete !== null && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-neutral-900/30 backdrop-blur-[1px] rounded-xl">
-            <div className="bg-surface rounded-lg shadow-xl p-6 max-w-xs w-full border border-border-default animate-fade-in-up">
-              <h3 className="text-lg font-bold text-content-strong mb-2">
-                Delete Item?
-              </h3>
-              <p className="text-content-default mb-6 text-sm">
-                Are you sure you want to remove this medication?
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={cancelDelete}
-                  className="px-4 py-2 text-content-default font-medium text-sm hover:bg-surface-muted rounded transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 bg-danger-600 text-white font-medium text-sm rounded hover:bg-danger-700 shadow-sm transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+      <ConfirmationModal
+        isOpen={itemToDelete !== null}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Item?"
+        message="Are you sure you want to remove this medication?"
+        confirmLabel="Delete"
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+      />
+    </ModalShell>
   );
 };
 
