@@ -55,6 +55,8 @@ Keep loading, error, confirmation, and empty states clear and consistent with th
 
 `EmptyState` provides section, compact, and page layouts with owner-supplied copy, an optional single action, and a footer slot for feature-owned action groups; its description can be omitted when the source workflow has no supporting message. Keep separate actions and wording for a genuinely empty collection versus no search/filter matches, and retain the feature’s reset/add flow.
 
+Use `ModalShell` for blocking policy and workflow dialogs. Legal disclosures that require an explicit acknowledgment can disable Escape and outside-interaction dismissal while keeping the named close control and acknowledgment action available. Keep disclosure content and acceptance handling in their owning components.
+
 `Popover` composes Radix's nonmodal, portalled popover with the app's shared surface styling, viewport collision padding, and available-size constraints. Use it for anchored rich content such as template choices, draft history, and checkbox management; keep a menu's action semantics and a select's value semantics distinct. Provide an accessible label for the content, use a real button trigger, and let the primitive own Escape, outside dismissal, and focus restoration. Default z-order stays below modal content; a popover inside a dialog may opt into the dialog's local layer when its content must sit above that dialog.
 
 `EmptyState` supports `section` (the existing default), `compact`, and `page` compositions. The owning workflow supplies accurate empty-state copy and actions for its cause; no-results states should offer a way to clear or adjust the relevant query/filter when that action is available.
