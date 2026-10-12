@@ -39,6 +39,7 @@ import { SPECIALIZATIONS } from "../../config/appConfig";
 import StickyToolbar from "../../components/ui/StickyToolbar";
 import { ErrorState } from "../../components/ui/LoadingFeedback";
 import SidePanelShell from "../../components/ui/SidePanelShell";
+import { SearchField } from "../../components/ui/SearchField";
 import {
   Popover,
   PopoverContent,
@@ -53,6 +54,7 @@ import {
 } from "../../components/ui/DropdownMenu";
 import {
   ToolbarButton,
+  ToolbarFilterToggle,
   ToolbarPagination,
   ToolbarSeparator,
 } from "../../components/ui/ToolbarSections";
@@ -207,6 +209,7 @@ interface HistoryPanelProps {
   toggleEncounter: (id: string) => void;
   hideHeading?: boolean;
   showMobileClose?: boolean;
+  filterRegionId?: string;
 }
 
 const getDisplayEntryTitle = (entry: ChartEntry, encounters?: Encounter[]) => {
@@ -251,6 +254,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
   toggleEncounter,
   hideHeading = false,
   showMobileClose = true,
+  filterRegionId = "chart-history-filters",
 }) => {
   // Sort encounter IDs based on the latest entry date in each or encounter start date
   const sortedEncounterIds = useMemo(() => {
@@ -301,16 +305,14 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
               <Icons.ChevronRight className="w-4 h-4" />
             </button>
             <div className="h-4 w-px bg-neutral-200 mx-1"></div>
-            <button
+            <ToolbarFilterToggle
+              isExpanded={showFilters}
               onClick={() => setShowFilters(!showFilters)}
-              className={`p-1 rounded transition-colors relative ${showFilters ? "bg-action-100 text-action" : "text-content-muted hover:bg-neutral-200"}`}
-              title="Filter History"
-            >
-              <Icons.Filter className="w-4 h-4" />
-              {activeFilterCount > 0 && !showFilters && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-action-subtle rounded-full border border-white"></span>
-              )}
-            </button>
+              activeCount={activeFilterCount}
+              hideLabelOnMobile
+              ariaLabel="Filter chart history"
+              controlsId={filterRegionId}
+            />
             {/* Mobile Close Button */}
             {showMobileClose && (
               <button
@@ -325,17 +327,14 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-2">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search history..."
-              className="w-full pl-8 pr-3 py-1.5 bg-surface border border-border-default rounded-lg text-xs focus:ring-1 focus:ring-focus-ring focus:border-action outline-none transition-all font-medium"
-            />
-            <Icons.Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-content-muted" />
-          </div>
+        <div className="mb-2 flex items-center gap-2">
+          <SearchField
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery("")}
+            label="Search chart history"
+            placeholder="Search history..."
+          />
 
           {totalHistoryPages > 1 && (
             <ToolbarPagination
@@ -349,7 +348,10 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({
         </div>
 
         {showFilters && (
-          <div className="mt-3 p-3 bg-surface rounded-lg border border-border-default shadow-inner space-y-4 animate-fade-in max-h-[60vh] overflow-y-auto custom-scrollbar">
+          <div
+            id={filterRegionId}
+            className="mt-3 p-3 bg-surface rounded-lg border border-border-default shadow-inner space-y-4 animate-fade-in max-h-[60vh] overflow-y-auto custom-scrollbar"
+          >
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-content-secondary uppercase tracking-widest">
                 Active Filters
@@ -895,7 +897,10 @@ const SoapView: React.FC<SoapViewProps> = ({
           className={`bg-surface hidden lg:flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out relative border-r ${isHistoryCollapsed ? "w-0 border-transparent" : "w-80 border-border-default"}`}
         >
           <div className="w-80 h-full">
-            <HistoryPanel {...historyPanelProps} />
+            <HistoryPanel
+              {...historyPanelProps}
+              filterRegionId="chart-history-filters"
+            />
           </div>
 
           {/* Ghost Toggle Stripe */}
@@ -1516,6 +1521,7 @@ const SoapView: React.FC<SoapViewProps> = ({
             {...historyPanelProps}
             hideHeading
             showMobileClose={false}
+            filterRegionId="chart-history-mobile-filters"
           />
         </SidePanelShell>
       </div>

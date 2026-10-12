@@ -138,6 +138,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                     activeCount={activeAdvancedFilterCount}
                     hideLabelOnMobile={true}
+                    ariaLabel="Filter patients"
                     controlsId="dashboard-filters"
                   />
                 </div>

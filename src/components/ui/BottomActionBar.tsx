@@ -22,7 +22,7 @@ export default function BottomActionBar({
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="absolute bottom-8 left-0 z-50 flex w-full justify-center px-4 pointer-events-none"
+          className="pointer-events-none absolute bottom-[calc(4rem+env(safe-area-inset-bottom)+0.5rem)] left-0 z-50 flex w-full justify-center px-4 md:bottom-8"
         >
           <div
             role="group"

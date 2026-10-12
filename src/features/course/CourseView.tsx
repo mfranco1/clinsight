@@ -14,6 +14,7 @@ import {
 } from "../../components/ui/ToolbarSections";
 
 import EditableTextArea from "../../components/ui/EditableTextArea";
+import EmptyState from "../../components/ui/EmptyState";
 
 interface CourseViewProps {
   patientId?: string;
@@ -197,6 +198,7 @@ const CourseView: React.FC<CourseViewProps> = ({
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 activeCount={activeAdvancedFilterCount}
                 hideLabelOnMobile={true}
+                ariaLabel="Filter clinical events"
               />
             </div>
 
@@ -401,9 +403,13 @@ const CourseView: React.FC<CourseViewProps> = ({
           })}
 
           {filteredEvents.length === 0 && (
-            <div className="pl-12 text-content-muted italic py-16 text-center">
-              No clinical events found matching your current filter criteria.
-            </div>
+            <EmptyState
+              icon={Icons.Filter}
+              title="No clinical events found"
+              description="No clinical events match your current filter criteria."
+              variant="compact"
+              className="mx-4"
+            />
           )}
         </div>
 

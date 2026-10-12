@@ -316,8 +316,15 @@ const OrdersView: React.FC<OrdersViewProps> = ({
     setIsSelectMode(false);
   };
 
+  const selectedActionCount =
+    activeTab === "DIAGNOSTICS"
+      ? selectedOrderIds.length
+      : selectedMedIds.length;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-4 pb-12 animate-slide-up-fade">
+    <div
+      className={`max-w-5xl mx-auto px-4 pt-4 ${selectedActionCount >= 2 ? "pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-32" : "pb-12"} animate-slide-up-fade`}
+    >
       {/* Tab Switcher */}
       <div className="flex bg-surface p-1 rounded-xl mb-4 w-fit mx-auto shadow-sm">
         <button
@@ -380,6 +387,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 activeCount={activeFilterCount}
                 hideLabelOnMobile={true}
+                ariaLabel={`Filter ${activeTab.toLowerCase()}`}
                 controlsId="orders-filters"
               />
             </div>
@@ -722,9 +730,7 @@ const OrdersView: React.FC<OrdersViewProps> = ({
       />
 
       {/* Multi-Selection Overlay */}
-      {(activeTab === "DIAGNOSTICS"
-        ? selectedOrderIds.length
-        : selectedMedIds.length) >= 2 &&
+      {selectedActionCount >= 2 &&
         createPortal(
           <BottomActionBar isVisible label="Actions for selected records">
             <div className="flex items-center gap-2 sm:gap-3">

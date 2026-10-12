@@ -31,10 +31,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         className={`hidden md:flex flex-col bg-surface h-screen border-r border-border-default shrink-0 z-30 transition-all duration-300 ease-in-out relative ${isCollapsed ? "w-20" : "w-64"}`}
       >
         {/* Ghost Toggle Stripe */}
-        <div
+        <button
+          type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute inset-y-0 -right-1 w-3 group/stripe cursor-pointer z-50"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-expanded={!isCollapsed}
+          aria-controls="primary-navigation"
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          className="absolute inset-y-0 -right-1 w-3 group/stripe cursor-pointer z-50 border-0 bg-transparent p-0"
         >
           {/* Vertical Line on Hover */}
           <div
@@ -53,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             <Icons.ChevronLeft className="w-3 h-3" />
           </div>
-        </div>
+        </button>
 
         {/* Branding Area */}
         <div
@@ -63,10 +67,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+        <nav
+          id="primary-navigation"
+          aria-label="Primary navigation"
+          className="flex-1 px-3 py-6 space-y-1 overflow-y-auto custom-scrollbar"
+        >
           {NAV_ITEMS.map((item) => {
             const isActive = currentView === item.id;
-            const isDisabled = false; // Sidebar items are now always enabled
             const IconComponent =
               Icons[item.icon as keyof typeof Icons] || Icons.Document;
 
@@ -88,24 +95,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`mt-auto border-t border-border-subtle bg-canvas/50 transition-all duration-300 ${isCollapsed ? "p-2" : "p-4"}`}
         >
-          <button
+          <ViewNavigationItem
+            icon={Icons.Settings}
+            label="Settings"
+            active={currentView === ViewMode.SETTINGS}
+            layout="sidebar"
+            collapsed={isCollapsed}
             onClick={() => onNavigate(ViewMode.SETTINGS)}
-            title={isCollapsed ? "Settings" : undefined}
-            className={`
-              w-full flex items-center rounded-xl transition-all duration-200 group mb-1
-              ${isCollapsed ? "justify-center h-12 p-0 text-content-default hover:text-action hover:bg-action-subtle" : "px-4 py-3 text-sm font-semibold text-content-default hover:text-action hover:bg-action-subtle"}
-              ${currentView === ViewMode.SETTINGS ? "bg-action-subtle text-action-hover ring-1 ring-action-100" : ""}
-            `}
-          >
-            <Icons.Settings
-              className={`w-5 h-5 shrink-0 ${currentView === ViewMode.SETTINGS ? "text-action" : ""}`}
-            />
-            {!isCollapsed && (
-              <span className="ml-3 whitespace-nowrap animate-fade-in">
-                Settings
-              </span>
-            )}
-          </button>
+          />
 
           {!isCollapsed ? (
             <div className="mt-4 px-4 py-3 bg-surface border border-border-default rounded-2xl animate-fade-in shadow-sm">
@@ -146,6 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Mobile Bottom Navigation */}
       <nav
+        aria-label="Mobile primary navigation"
         className={`md:hidden fixed bottom-0 inset-x-0 h-16 bg-surface border-t border-border-default flex items-center justify-around px-2 z-50 transition-transform duration-300 ${showMobileNav ? "translate-y-0" : "translate-y-full"}`}
       >
         {NAV_ITEMS.map((item) => {
@@ -167,16 +165,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
           );
         })}
-        {/* Settings Button for Mobile */}
-        <button
+        <ViewNavigationItem
+          icon={Icons.Settings}
+          label="Settings"
+          active={currentView === ViewMode.SETTINGS}
+          layout="bottom"
           onClick={() => handleNavClick(ViewMode.SETTINGS)}
-          className={`flex flex-col items-center justify-center flex-1 h-full px-1 transition-all ${currentView === ViewMode.SETTINGS ? "text-action scale-110" : "text-content-strong"}`}
-        >
-          <Icons.Settings className="w-5 h-5 mb-1" />
-          <span className="text-[10px] font-bold uppercase tracking-tighter truncate w-full text-center">
-            Settings
-          </span>
-        </button>
+        />
       </nav>
     </>
   );

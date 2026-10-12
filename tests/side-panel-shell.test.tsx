@@ -47,4 +47,47 @@ describe("SidePanelShell", () => {
       "data-[state=closed]:-translate-x-full",
     );
   });
+
+  it("unmounts closed panel content by default", () => {
+    const { rerender } = render(
+      <SidePanelShell isOpen onClose={vi.fn()} title="Suggestions">
+        <button type="button">Retry</button>
+      </SidePanelShell>,
+    );
+
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+    rerender(
+      <SidePanelShell isOpen={false} onClose={vi.fn()} title="Suggestions">
+        <button type="button">Retry</button>
+      </SidePanelShell>,
+    );
+
+    expect(screen.queryByRole("dialog", { name: "Suggestions" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
+  });
+
+  it("keeps opt-in retained content inert and hidden while closed", () => {
+    const { rerender } = render(
+      <SidePanelShell isOpen keepMounted onClose={vi.fn()} title="Assistant">
+        <button type="button">Send message</button>
+      </SidePanelShell>,
+    );
+
+    rerender(
+      <SidePanelShell
+        isOpen={false}
+        keepMounted
+        onClose={vi.fn()}
+        title="Assistant"
+      >
+        <button type="button">Send message</button>
+      </SidePanelShell>,
+    );
+
+    const closedPanel = document.querySelector('[role="dialog"]');
+    expect(closedPanel).toHaveAttribute("aria-hidden", "true");
+    expect(closedPanel).toHaveAttribute("inert");
+    expect(closedPanel?.querySelector("button")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Send message" })).toBeNull();
+  });
 });

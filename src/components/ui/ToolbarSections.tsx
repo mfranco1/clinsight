@@ -53,15 +53,18 @@ export const ToolbarFilterToggle: React.FC<{
   activeCount?: number;
   hideLabelOnMobile?: boolean;
   controlsId?: string;
+  ariaLabel?: string;
 }> = ({
   isExpanded,
   onClick,
   activeCount = 0,
   hideLabelOnMobile = false,
   controlsId,
+  ariaLabel = "Filters",
 }) => (
   <button
     onClick={onClick}
+    aria-label={ariaLabel}
     aria-expanded={isExpanded}
     aria-controls={isExpanded ? controlsId : undefined}
     className={`relative flex items-center ${hideLabelOnMobile ? "px-2 sm:px-3" : "px-3"} py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-200 whitespace-nowrap group ${

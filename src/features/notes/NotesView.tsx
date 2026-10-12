@@ -213,6 +213,7 @@ const NotesView: React.FC<NotesViewProps> = ({
                 onClick={() => setIsFilterExpanded(!isFilterExpanded)}
                 activeCount={activeAdvancedFilterCount}
                 hideLabelOnMobile={true}
+                ariaLabel="Filter notes"
                 controlsId="notes-filters"
               />
             </div>

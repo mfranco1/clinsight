@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ToolbarSearch } from "../src/components/ui/ToolbarSections";
+import {
+  ToolbarFilterToggle,
+  ToolbarSearch,
+} from "../src/components/ui/ToolbarSections";
 import { SearchField } from "../src/components/ui/SearchField";
 
 describe("ToolbarSearch", () => {
@@ -51,5 +54,43 @@ describe("ToolbarSearch", () => {
     expect(
       screen.queryByRole("button", { name: "Clear search patients" }),
     ).toBeNull();
+  });
+});
+
+describe("ToolbarFilterToggle", () => {
+  it("has a fallback accessible name when its visible label is hidden on mobile", () => {
+    render(
+      <ToolbarFilterToggle
+        isExpanded={false}
+        onClick={vi.fn()}
+        hideLabelOnMobile
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Filters" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+  });
+
+  it("supports a contextual accessible name and expanded filter region", () => {
+    render(
+      <>
+        <ToolbarFilterToggle
+          isExpanded
+          onClick={vi.fn()}
+          ariaLabel="Filter chart history"
+          controlsId="chart-history-filters"
+        />
+        <div id="chart-history-filters">History filters</div>
+      </>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Filter chart history" }),
+    ).toHaveAttribute("aria-expanded", "true");
+    expect(
+      screen.getByRole("button", { name: "Filter chart history" }),
+    ).toHaveAttribute("aria-controls", "chart-history-filters");
   });
 });
