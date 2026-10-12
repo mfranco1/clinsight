@@ -222,7 +222,7 @@ Dependencies: Stages 1, 3–5. Risk: medium; matching/state preservation is crit
 
 Exit gate: identical fixtures produce identical ordered results before/after migration; clear/reset and navigation retention match existing contracts; search and filter controls remain labelled on mobile.
 
-Progress: `ToolbarSearch` now requires no consumer changes but accepts an explicit accessible label and optional caller-owned clear action. Dashboard, notes, orders, and course provide labels and clear behavior; course resets pagination when cleared. Filter toggles expose `aria-expanded` and connect to existing dashboard/notes/orders panels. Matching, filtering, and retained state remain in feature owners.
+Progress: extracted `SearchField` with controlled value, explicit label, optional caller-owned clear action, pending indicator, and disabled state; `ToolbarSearch` now adapts it for sticky toolbars without changing consumer query behavior. Dashboard, notes, orders, and course provide labels and clear behavior; course resets pagination when cleared. Filter toggles expose `aria-expanded` and connect to existing dashboard/notes/orders panels. Matching, filtering, and retained state remain in feature owners.
 
 ### Stage 7 — Align page navigation and empty/loading/splash states
 
@@ -309,7 +309,7 @@ Prefer backwards-compatible component props and incremental consumer migration o
 
 ## Progress
 
-Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. The latest full unit run passed 184 tests. Typecheck, lint, production build, docs check, and diff check pass. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. Remaining consumers and families still need the staged migrations below.
+Implementation active. Stage 0 baseline is complete. Shared modal, popover, toast viewport, search/filter, navigation, empty-state, loading/error, bottom action, responsive table-surface, and status-label contracts have started. `SearchField` is now the shared controlled input under `ToolbarSearch`, with pending and disabled states while feature-owned matching and clear behavior remain intact; its focused tests, typecheck, production build, docs check, and diff check pass. The latest full unit run passed 184 tests. Browser journeys cover the chart section menu, dashboard deletion, nested gallery menu, SuggestionsDrawer, and retained chat panel on desktop/mobile; input template/draft popover journeys also pass. Remaining consumers and families still need the staged migrations below.
 
 ## Decisions
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { Icons } from "./Icons";
+import { SearchField } from "./SearchField";
 
 /**
  * Reusable sections for the StickyToolbar to ensure consistency across views.
@@ -34,29 +35,14 @@ export const ToolbarSearch: React.FC<{
   onClear,
 }) => (
   <div className={`relative flex-1 ${className} items-center gap-2`}>
-    <div className="relative flex-1">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-        <Icons.Search className="h-3.5 w-3.5 text-content-secondary" />
-      </div>
-      <input
-        type="text"
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full bg-surface-muted/50 hover:bg-surface-muted border border-border-default rounded-lg text-xs pl-9 ${onClear && value ? "pr-9" : "pr-3"} py-2 focus:ring-1 focus:ring-focus-ring focus:border-action focus:bg-surface outline-none text-content-primary transition-all font-medium placeholder-neutral-400 shadow-inner`}
-        placeholder={placeholder}
-      />
-      {onClear && value && (
-        <button
-          type="button"
-          aria-label={`Clear ${label.toLowerCase()}`}
-          onClick={onClear}
-          className="absolute inset-y-0 right-0 flex items-center px-2 text-content-muted hover:text-content-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-        >
-          <Icons.Close className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
+    <SearchField
+      value={value}
+      onChange={onChange}
+      label={label}
+      placeholder={placeholder}
+      onClear={onClear}
+      className="min-w-0"
+    />
   </div>
 );
 
