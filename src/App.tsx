@@ -96,6 +96,10 @@ import {
 } from "./services/attachmentPersistence";
 import { logDiagnostic } from "./services/diagnosticLogger";
 import { useViewStateCache } from "./app/ViewState";
+import {
+  isCurrentPatientEntryRequest,
+  isCurrentPatientRequest,
+} from "./app/requestIdentity";
 
 function ViewLoadingFallback({ title }: { title: string }) {
   return (
@@ -323,6 +327,34 @@ function AppContent() {
 
   // Ref to track the current generation request ID to handle cancellations
   const generationRequestId = useRef<number>(0);
+  const clinicalActionRequestId = useRef(0);
+  const clinicalActionPending = useRef(false);
+  const summaryRefreshRequestId = useRef(0);
+  const summaryRefreshPending = useRef(false);
+  const activeClinicalScope = useRef({
+    patientId: activePatientId,
+    entryId: activeEntryId,
+    patient: activePatient,
+  });
+  activeClinicalScope.current = {
+    patientId: activePatientId,
+    entryId: activeEntryId,
+    patient: activePatient,
+  };
+  const activeSummaryPatient = useRef(activePatient);
+  activeSummaryPatient.current = activePatient;
+
+  useEffect(() => {
+    clinicalActionRequestId.current += 1;
+    clinicalActionPending.current = false;
+    setIsReassessing(false);
+  }, [activePatientId, activeEntryId]);
+
+  useEffect(() => {
+    summaryRefreshRequestId.current += 1;
+    summaryRefreshPending.current = false;
+    setIsRefreshingSummary(false);
+  }, [activePatientId]);
 
   // Ref for the main scrollable container
   const mainContentRef = useRef<HTMLElement>(null);
@@ -787,12 +819,37 @@ function AppContent() {
   };
 
   const handleReassess = async () => {
-    if (!activePatient || !activeEntryId || isReassessing) return;
+    if (
+      !activePatient ||
+      !activeEntryId ||
+      isReassessing ||
+      clinicalActionPending.current
+    )
+      return;
+
+    clinicalActionPending.current = true;
+    const requestId = ++clinicalActionRequestId.current;
+    const requestPatient = activePatient;
+    const requestPatientId = activePatientId;
+    const requestEntryId = activeEntryId;
+    const isCurrentRequest = () =>
+      clinicalActionRequestId.current === requestId &&
+      isCurrentPatientEntryRequest(
+        {
+          patientId: requestPatientId,
+          entryId: requestEntryId,
+          patient: requestPatient,
+        },
+        activeClinicalScope.current,
+      );
 
     const activeEntry = activePatient.entries.find(
       (e) => e.id === activeEntryId,
     );
-    if (!activeEntry || !activeEntry.soap) return;
+    if (!activeEntry || !activeEntry.soap) {
+      clinicalActionPending.current = false;
+      return;
+    }
 
     setIsReassessing(true);
     setError(null);
@@ -812,6 +869,8 @@ function AppContent() {
         useSearch: true,
       });
 
+      if (!isCurrentRequest()) return;
+
       updateActivePatient((p) =>
         applyEntryReassessment(p, activeEntryId, {
           assessment: result.assessment,
@@ -827,6 +886,7 @@ function AppContent() {
         tag: "reassessment",
       });
     } catch (err: unknown) {
+      if (!isCurrentRequest()) return;
       logDiagnostic("error", "SOAP reassessment failed.");
       setError(
         getErrorMessageCompat(
@@ -835,17 +895,45 @@ function AppContent() {
         ),
       );
     } finally {
-      setIsReassessing(false);
+      if (clinicalActionRequestId.current === requestId) {
+        clinicalActionPending.current = false;
+        setIsReassessing(false);
+      }
     }
   };
 
   const handleAssess = async () => {
-    if (!activePatient || !activeEntryId || isReassessing) return;
+    if (
+      !activePatient ||
+      !activeEntryId ||
+      isReassessing ||
+      clinicalActionPending.current
+    )
+      return;
+
+    clinicalActionPending.current = true;
+    const requestId = ++clinicalActionRequestId.current;
+    const requestPatient = activePatient;
+    const requestPatientId = activePatientId;
+    const requestEntryId = activeEntryId;
+    const isCurrentRequest = () =>
+      clinicalActionRequestId.current === requestId &&
+      isCurrentPatientEntryRequest(
+        {
+          patientId: requestPatientId,
+          entryId: requestEntryId,
+          patient: requestPatient,
+        },
+        activeClinicalScope.current,
+      );
 
     const activeEntry = activePatient.entries.find(
       (e) => e.id === activeEntryId,
     );
-    if (!activeEntry || activeEntry.entryType !== "raw") return;
+    if (!activeEntry || activeEntry.entryType !== "raw") {
+      clinicalActionPending.current = false;
+      return;
+    }
 
     setIsReassessing(true);
     setError(null);
@@ -866,6 +954,8 @@ function AppContent() {
         useSearch: true,
         history,
       });
+
+      if (!isCurrentRequest()) return;
 
       const getTodayISO = () => getTodayDate();
       const getNowTime24 = () => getCurrentTime24();
@@ -894,6 +984,7 @@ function AppContent() {
         tag: "assessment",
       });
     } catch (err: unknown) {
+      if (!isCurrentRequest()) return;
       logDiagnostic("error", "Clinical assessment failed.");
       setError(
         getErrorMessageCompat(
@@ -902,7 +993,10 @@ function AppContent() {
         ),
       );
     } finally {
-      setIsReassessing(false);
+      if (clinicalActionRequestId.current === requestId) {
+        clinicalActionPending.current = false;
+        setIsReassessing(false);
+      }
     }
   };
 
@@ -973,7 +1067,22 @@ function AppContent() {
   };
 
   const handleRefreshSummary = async () => {
-    if (!activePatient || isRefreshingSummary) return;
+    if (!activePatient || isRefreshingSummary || summaryRefreshPending.current)
+      return;
+
+    summaryRefreshPending.current = true;
+    const requestId = ++summaryRefreshRequestId.current;
+    const requestPatient = activePatient;
+    const requestPatientId = activePatientId;
+    const isCurrentRequest = () =>
+      summaryRefreshRequestId.current === requestId &&
+      isCurrentPatientRequest(
+        { patientId: requestPatientId, patient: requestPatient },
+        {
+          patientId: activePatientId,
+          patient: activeSummaryPatient.current,
+        },
+      );
     setIsRefreshingSummary(true);
     try {
       const recentEntries = activePatient.entries.slice(0, 3);
@@ -987,18 +1096,24 @@ function AppContent() {
         specialization,
       });
 
+      if (!isCurrentRequest()) return;
+
       handleUpdateHandoff(updatedSummary);
       sendNotification("Summary Updated", {
         body: `The patient summary has been refreshed with the latest clinical data.`,
         tag: "summary-refresh",
       });
     } catch (err: unknown) {
+      if (!isCurrentRequest()) return;
       logDiagnostic("error", "Patient summary refresh failed.");
       setError(
         getErrorMessageCompat(err, "Failed to refresh patient summary."),
       );
     } finally {
-      setIsRefreshingSummary(false);
+      if (summaryRefreshRequestId.current === requestId) {
+        summaryRefreshPending.current = false;
+        setIsRefreshingSummary(false);
+      }
     }
   };
 

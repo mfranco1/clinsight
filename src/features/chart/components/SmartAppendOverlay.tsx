@@ -50,6 +50,9 @@ const SmartAppendOverlay: React.FC<SmartAppendOverlayProps> = ({
       await onIntegrate(userInput);
     } catch (error) {
       logDiagnostic("error", "Smart-append integration failed.");
+      setError(
+        "Could not merge this information. Your draft is still available; please try again.",
+      );
     } finally {
       setIsIntegrating(false);
     }
