@@ -87,6 +87,10 @@ describe("shared application identity", () => {
       `Loading ${alternate.name}…`,
     );
     expect(
+      document.querySelector(".app-bootstrap__bar")?.getAttribute("aria-hidden"),
+    ).toBe("true");
+    expect(document.querySelector(".app-bootstrap__spinner")).toBeNull();
+    expect(
       document.querySelector('link[rel="icon"]')?.getAttribute("href"),
     ).toBe(brandIconDataUrl(alternate));
     expect(document.querySelector("svg > circle")?.getAttribute("cx")).toBe(

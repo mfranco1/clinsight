@@ -13,8 +13,8 @@ import type ProfileViewComponent from "./features/profile/ProfileView";
 import type SettingsViewComponent from "./features/settings/SettingsView";
 import type LoginPageComponent from "./features/access/LoginPage";
 import type ChatPanelComponent from "./features/chat/ChatPanel";
-import type PrivacyPolicyModalComponent from "./components/PrivacyPolicyModal";
-import type TermsOfServiceModalComponent from "./components/TermsOfServiceModal";
+import PrivacyPolicyModal from "./components/PrivacyPolicyModal";
+import TermsOfServiceModal from "./components/TermsOfServiceModal";
 import { createLazyFeature } from "./components/ui/LazyFeature";
 import {
   LoadingScreen,
@@ -169,18 +169,6 @@ const LoginPage = createLazyFeature<
 const ChatPanel = createLazyFeature<
   React.ComponentProps<typeof ChatPanelComponent>
 >(() => import("./features/chat/ChatPanel"));
-const PrivacyPolicyModal = createLazyFeature<
-  React.ComponentProps<typeof PrivacyPolicyModalComponent>
->(
-  () => import("./components/PrivacyPolicyModal"),
-  <LoadingScreen label="Loading privacy policy…" />,
-);
-const TermsOfServiceModal = createLazyFeature<
-  React.ComponentProps<typeof TermsOfServiceModalComponent>
->(
-  () => import("./components/TermsOfServiceModal"),
-  <LoadingScreen label="Loading terms…" />,
-);
 
 function App() {
   const viewStateCache = useViewStateCache();

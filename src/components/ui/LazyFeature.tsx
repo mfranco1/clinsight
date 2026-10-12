@@ -8,7 +8,7 @@ import React, {
   type ReactNode,
 } from "react";
 import Button from "./Button";
-import { ErrorState, LoadingIndicator } from "./LoadingFeedback";
+import { ErrorState, LoadingBarIndicator } from "./LoadingFeedback";
 
 interface LazyFeatureErrorBoundaryProps {
   children: ReactNode;
@@ -82,7 +82,7 @@ export function createLazyFeature<P extends object>(
         onRetry={retry}
       >
         <Suspense
-          fallback={fallback ?? <LoadingIndicator label="Loading view…" />}
+          fallback={fallback ?? <LoadingBarIndicator label="Loading view…" />}
         >
           <Feature {...props} />
         </Suspense>

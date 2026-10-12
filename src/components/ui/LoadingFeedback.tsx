@@ -7,7 +7,11 @@ interface LoadingIndicatorProps {
   size?: "sm" | "md" | "lg";
 }
 
-export function LoadingBar({ tone = "default" }: { tone?: "default" | "inverse" }) {
+export function LoadingBar({
+  tone = "default",
+}: {
+  tone?: "default" | "inverse";
+}) {
   const colors =
     tone === "inverse"
       ? "bg-white/35 before:bg-white"
@@ -18,6 +22,22 @@ export function LoadingBar({ tone = "default" }: { tone?: "default" | "inverse" 
       aria-hidden="true"
       className={`loading-bar relative block h-1 w-48 overflow-hidden rounded-full ${colors}`}
     />
+  );
+}
+
+export function LoadingBarIndicator({
+  label = "Loading…",
+}: {
+  label?: string;
+}) {
+  return (
+    <span
+      className="inline-flex flex-col items-center gap-3 text-sm text-content-secondary"
+      role="status"
+    >
+      <LoadingBar />
+      <span>{label}</span>
+    </span>
   );
 }
 
@@ -57,10 +77,7 @@ export function LoadingScreen({
     >
       <div className="flex flex-col items-center gap-4">
         <BrandMark size="lg" className="mb-1" />
-        <div className="flex flex-col items-center gap-3" role="status">
-          <LoadingBar />
-          <span className="text-sm text-content-secondary">{label}</span>
-        </div>
+        <LoadingBarIndicator label={label} />
       </div>
     </main>
   );
