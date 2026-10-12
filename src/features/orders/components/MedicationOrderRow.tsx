@@ -82,10 +82,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
       <div className="bg-surface border-2 border-action-500 rounded-2xl p-5 shadow-xl z-20 relative my-2">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div className="md:col-span-2">
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-drug`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Medication Name
             </label>
             <input
+              id={`medication-${med.id}-drug`}
               autoFocus
               className="w-full px-3 py-2 bg-canvas border border-border-default rounded-xl text-sm font-bold focus:bg-surface focus:border-action outline-none"
               value={editDrug}
@@ -94,10 +98,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
             />
           </div>
           <div>
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-status`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Status
             </label>
             <select
+              id={`medication-${med.id}-status`}
               value={editStatus}
               onChange={(e) =>
                 setEditStatus(e.target.value as MedicationStatus)
@@ -112,10 +120,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-dose`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Dose
             </label>
             <input
+              id={`medication-${med.id}-dose`}
               className="w-full px-3 py-2 bg-canvas border border-border-default rounded-xl text-sm font-bold focus:bg-surface focus:border-action outline-none"
               value={editDose}
               onChange={(e) => setEditDose(e.target.value)}
@@ -125,10 +137,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-route`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Route
             </label>
             <input
+              id={`medication-${med.id}-route`}
               className="w-full px-3 py-2 bg-canvas border border-border-default rounded-xl text-sm font-bold focus:bg-surface focus:border-action outline-none"
               value={editRoute}
               onChange={(e) => setEditRoute(e.target.value)}
@@ -136,10 +152,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
             />
           </div>
           <div>
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-frequency`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Frequency
             </label>
             <input
+              id={`medication-${med.id}-frequency`}
               className="w-full px-3 py-2 bg-canvas border border-border-default rounded-xl text-sm font-bold focus:bg-surface focus:border-action outline-none"
               value={editFrequency}
               onChange={(e) => setEditFrequency(e.target.value)}
@@ -147,10 +167,14 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
             />
           </div>
           <div className="col-span-2 lg:col-span-1">
-            <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+            <label
+              htmlFor={`medication-${med.id}-duration`}
+              className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1"
+            >
               Duration
             </label>
             <input
+              id={`medication-${med.id}-duration`}
               className="w-full px-3 py-2 bg-canvas border border-border-default rounded-xl text-sm font-bold focus:bg-surface focus:border-action outline-none"
               value={editDuration}
               onChange={(e) => setEditDuration(e.target.value)}
@@ -159,10 +183,11 @@ const MedicationOrderRow: React.FC<MedicationOrderRowProps> = ({
           </div>
         </div>
         <div className="mb-4">
-          <label className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
+          <span className="text-[10px] font-black text-content-muted uppercase tracking-widest ml-1">
             Notes
-          </label>
+          </span>
           <EditableTextArea
+            ariaLabel="Medication notes"
             value={editNotes}
             onChange={setEditNotes}
             placeholder="Sig or other notes..."

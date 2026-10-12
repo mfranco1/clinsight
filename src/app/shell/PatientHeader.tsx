@@ -167,7 +167,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
         </div>
 
         {/* Bottom Row: Contextual Tabs */}
-        <div className="flex items-center gap-1 pb-2 overflow-x-auto no-scrollbar">
+        <nav
+          aria-label="Patient sections"
+          className="flex items-center gap-1 pb-2 overflow-x-auto no-scrollbar"
+        >
           {tabs.map((tab) => {
             const isActive = currentView === tab.id;
             const Icon = tab.icon;
@@ -175,7 +178,9 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => onNavigate(tab.id)}
+                aria-current={isActive ? "page" : undefined}
                 className={`
                   flex items-center px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all whitespace-nowrap
                   ${
@@ -192,7 +197,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
               </button>
             );
           })}
-        </div>
+        </nav>
       </div>
     </div>
   );

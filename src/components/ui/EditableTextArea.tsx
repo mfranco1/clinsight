@@ -33,6 +33,7 @@ interface EditableTextAreaProps {
   searchQuery?: string;
   disabled?: boolean;
   editorMode?: "native" | "source" | "document";
+  ariaLabel?: string;
 }
 
 const EditableTextArea: React.FC<EditableTextAreaProps> = ({
@@ -53,7 +54,9 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
   searchQuery,
   disabled = false,
   editorMode = "native",
+  ariaLabel,
 }) => {
+  const accessibleLabel = ariaLabel ?? placeholder;
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const isEditing =
     externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
@@ -203,7 +206,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
             onChange?.(event.target.value);
           }}
           onKeyDown={handleFallbackKeyDown}
-          aria-label={placeholder}
+          aria-label={accessibleLabel}
           disabled={disabled}
           autoFocus={autoFocus}
           className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
@@ -224,7 +227,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
                     onChange?.(event.target.value);
                   }}
                   onKeyDown={handleFallbackKeyDown}
-                  aria-label={placeholder}
+                  aria-label={accessibleLabel}
                   disabled={disabled}
                   autoFocus={autoFocus}
                   className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl p-4 ${minHeight} resize-y`}
@@ -238,7 +241,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
                     setEditValue(newValue);
                     onChange?.(newValue);
                   }}
-                  ariaLabel={placeholder}
+                  ariaLabel={accessibleLabel}
                   disabled={disabled}
                   autoFocus={autoFocus}
                   minHeightClass={minHeight}
@@ -252,7 +255,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
                     setEditValue(newValue);
                     onChange?.(newValue);
                   }}
-                  aria-label={placeholder}
+                  aria-label={accessibleLabel}
                   disabled={disabled}
                   autoFocus={autoFocus}
                   onSave={handleSave}
@@ -273,7 +276,7 @@ const EditableTextArea: React.FC<EditableTextAreaProps> = ({
             onKeyDown={handleKeyDown}
             onMouseDown={handleMouseDown}
             placeholder={placeholder}
-            aria-label={placeholder}
+            aria-label={accessibleLabel}
             className={`w-full text-[13px] text-content-primary bg-surface border border-border-default rounded-xl focus:ring-2 focus:ring-focus-ring focus:border-action p-4 ${minHeight} transition-all resize-y`}
           />
         )}
