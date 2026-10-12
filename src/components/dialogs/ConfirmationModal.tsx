@@ -14,6 +14,8 @@ interface ConfirmationModalProps {
   variant?: "danger" | "warning" | "info";
   icon?: React.ElementType;
   isConfirmDisabled?: boolean;
+  closeOnInteractOutside?: boolean;
+  closeOnEscape?: boolean;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -27,6 +29,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   variant = "danger",
   icon: IconOverride,
   isConfirmDisabled = false,
+  closeOnInteractOutside = true,
+  closeOnEscape = true,
 }) => {
   if (!isOpen) return null;
 
@@ -61,6 +65,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       size="sm"
       showCloseButton={false}
       ariaLabel={title}
+      closeOnInteractOutside={closeOnInteractOutside}
+      closeOnEscape={closeOnEscape}
       bodyClassName="p-6"
     >
       <div className={`flex items-center mb-4 ${styles.iconColor}`}>

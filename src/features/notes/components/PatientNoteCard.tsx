@@ -8,6 +8,7 @@ import {
 } from "../../../types";
 import { Icons } from "../../../components/ui/Icons";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
+import { ErrorState } from "../../../components/ui/LoadingFeedback";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import {
   createFileUploads,
@@ -830,19 +831,20 @@ const PatientNoteCard: React.FC<PatientNoteCardProps> = ({
         className={`px-6 py-4 border-b border-neutral-50 flex items-center justify-between bg-canvas/30 rounded-t-2xl ${!isEditing ? "cursor-pointer hover:bg-surface-muted/50" : ""} transition-colors`}
       >
         {microphoneError && (
-          <div
-            role="alert"
-            className="mb-3 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700"
-          >
-            {microphoneError}
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => setMicrophoneError(null)}
-            >
-              Dismiss
-            </button>
-          </div>
+          <ErrorState
+            variant="inline"
+            message={microphoneError}
+            inlineAction={
+              <button
+                type="button"
+                className="underline"
+                onClick={() => setMicrophoneError(null)}
+              >
+                Dismiss
+              </button>
+            }
+            className="mb-3 font-medium"
+          />
         )}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2">

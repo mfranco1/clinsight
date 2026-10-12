@@ -11,6 +11,7 @@ import ClinicalAssistance from "./ClinicalAssistance";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import { Icons } from "../../../components/ui/Icons";
+import { ErrorState } from "../../../components/ui/LoadingFeedback";
 import { generateClinicalSuggestions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import {
@@ -153,19 +154,20 @@ const ObjectiveSection: React.FC<ObjectiveSectionProps> = ({
       headerActions={headerActions}
     >
       {assistanceError && (
-        <div
-          role="alert"
-          className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700"
-        >
-          {assistanceError}
-          <button
-            type="button"
-            className="ml-2 underline"
-            onClick={() => setAssistanceError(null)}
-          >
-            Dismiss
-          </button>
-        </div>
+        <ErrorState
+          variant="inline"
+          message={assistanceError}
+          inlineAction={
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setAssistanceError(null)}
+            >
+              Dismiss
+            </button>
+          }
+          className="mb-4 font-medium"
+        />
       )}
       {(visibleSubsections.vitals || visibleSubsections.anthropometrics) && (
         <div

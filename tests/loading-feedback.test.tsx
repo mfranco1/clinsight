@@ -49,6 +49,21 @@ describe("loading feedback primitives", () => {
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 
+  it("supports concise dismissible inline errors without inventing a title", () => {
+    render(
+      <ErrorState
+        variant="inline"
+        message="Microphone access is unavailable."
+        inlineAction={<button>Dismiss</button>}
+      />,
+    );
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent("Microphone access is unavailable.");
+    expect(alert.querySelector("h2")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dismiss" })).toBeInTheDocument();
+  });
+
   it("supports compact empty-state composition with a workflow action", () => {
     render(
       <EmptyState

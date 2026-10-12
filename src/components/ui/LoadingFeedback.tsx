@@ -129,9 +129,10 @@ export function SkeletonSection({
 }
 
 interface ErrorStateProps {
-  title: string;
-  message: string;
+  title?: string;
+  message: ReactNode;
   action?: ReactNode;
+  inlineAction?: ReactNode;
   variant?: "section" | "inline" | "page";
   className?: string;
 }
@@ -140,6 +141,7 @@ export function ErrorState({
   title,
   message,
   action,
+  inlineAction,
   variant = "section",
   className = "",
 }: ErrorStateProps) {
@@ -156,8 +158,13 @@ export function ErrorState({
       aria-live="assertive"
       aria-atomic="true"
     >
-      <h2 className="font-semibold">{title}</h2>
-      <p className="mt-1">{message}</p>
+      {title && <h2 className="font-semibold">{title}</h2>}
+      <p className={title ? "mt-1" : undefined}>
+        {message}
+        {inlineAction && (
+          <span className="ml-2 inline-block">{inlineAction}</span>
+        )}
+      </p>
       {action && <div className="mt-3">{action}</div>}
     </section>
   );

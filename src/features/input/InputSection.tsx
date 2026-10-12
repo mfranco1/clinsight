@@ -20,7 +20,9 @@ import { CLINICAL_TEMPLATES } from "./templates";
 import { Icons } from "../../components/ui/Icons";
 import LookupModal from "./components/LookupModal";
 import CameraCaptureModal from "../../components/CameraCaptureModal";
+import ConfirmationModal from "../../components/dialogs/ConfirmationModal";
 import StickyToolbar from "../../components/ui/StickyToolbar";
+import { ErrorState } from "../../components/ui/LoadingFeedback";
 import {
   ToolbarButton,
   ToolbarSeparator,
@@ -285,19 +287,20 @@ const InputSection: React.FC<InputSectionProps> = ({
     <>
       <div className="max-w-5xl mx-auto px-4 py-6 animate-fade-in-up">
         {error && (
-          <div
-            role="alert"
-            className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700"
-          >
-            {error}
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => setError(null)}
-            >
-              Dismiss
-            </button>
-          </div>
+          <ErrorState
+            variant="inline"
+            message={error}
+            inlineAction={
+              <button
+                type="button"
+                className="underline"
+                onClick={() => setError(null)}
+              >
+                Dismiss
+              </button>
+            }
+            className="mb-4 font-medium"
+          />
         )}
 
         {/* Workspace Context Header for Append Mode */}
@@ -771,69 +774,34 @@ const InputSection: React.FC<InputSectionProps> = ({
         onCapture={(file) => onAddFiles([file])}
       />
 
-      {/* Reset Confirmation Modal */}
-      {isResetModalOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-surface rounded-xl shadow-2xl p-6 max-w-sm w-full border border-border-default transform scale-100 transition-all">
-              <div className="flex items-center mb-4 text-danger-600">
-                <Icons.Alert className="w-6 h-6 mr-2" />
-                <h3 className="text-lg font-bold">Clear current data?</h3>
-              </div>
-              <p className="text-content-default mb-6 text-sm leading-relaxed">
-                This will clear the editor. A copy of your notes will be saved
-                to <strong>Drafts</strong> for recovery if needed.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setIsResetModalOpen(false)}
-                  className="px-4 py-2 text-content-default font-medium text-sm hover:bg-surface-muted rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleResetConfirm}
-                  className="px-4 py-2 bg-danger-600 text-white font-bold text-sm rounded-lg hover:bg-danger-700 shadow-sm transition-colors"
-                >
-                  Confirm Reset
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      <ConfirmationModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetConfirm}
+        title="Clear current data?"
+        message={
+          <>
+            This will clear the editor. A copy of your notes will be saved to{" "}
+            <strong>Drafts</strong> for recovery if needed.
+          </>
+        }
+        confirmLabel="Confirm Reset"
+        icon={Icons.Alert}
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+      />
 
-      {/* Clear History Confirmation Modal */}
-      {isClearHistoryModalOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-surface rounded-xl shadow-2xl p-6 max-w-sm w-full border border-border-default transform scale-100 transition-all">
-              <div className="flex items-center mb-4 text-danger-600">
-                <Icons.Trash className="w-6 h-6 mr-2" />
-                <h3 className="text-lg font-bold">Clear history?</h3>
-              </div>
-              <p className="text-content-default mb-6 text-sm leading-relaxed">
-                This will permanently delete all saved drafts from your local
-                history. This action cannot be undone.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setIsClearHistoryModalOpen(false)}
-                  className="px-4 py-2 text-content-default font-medium text-sm hover:bg-surface-muted rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleClearHistoryConfirm}
-                  className="px-4 py-2 bg-danger-600 text-white font-bold text-sm rounded-lg hover:bg-danger-700 shadow-sm transition-colors"
-                >
-                  Clear All
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      <ConfirmationModal
+        isOpen={isClearHistoryModalOpen}
+        onClose={() => setIsClearHistoryModalOpen(false)}
+        onConfirm={handleClearHistoryConfirm}
+        title="Clear history?"
+        message="This will permanently delete all saved drafts from your local history. This action cannot be undone."
+        confirmLabel="Clear All"
+        icon={Icons.Trash}
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+      />
     </>
   );
 };

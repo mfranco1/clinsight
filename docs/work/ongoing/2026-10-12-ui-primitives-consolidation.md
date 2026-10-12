@@ -141,6 +141,8 @@ Progress: `ModalShell` now supports optional accessible descriptions, center/bot
 
 Confirmation contract: `ConfirmationModal` still calls `onConfirm` once and then `onClose` synchronously; focused tests protect call order and disabled behavior. No async pending contract has been added.
 
+Progress: input reset and clear-history confirmation overlays now use `ConfirmationModal` with Escape/backdrop dismissal disabled to match their previous explicit-choice behavior. Reset still archives the current note as a draft before clearing; history confirmation still deletes only when confirmed. The reset browser journey passes on desktop and mobile.
+
 ### Stage 3 — Unify toast, popup, and inline feedback
 
 Dependencies: Stage 1 layer policy; validate interaction with Stage 2. Risk: medium.
@@ -173,7 +175,7 @@ Dependencies: Stages 1–3. Execute before Stage 4; the suffix preserves existin
 
 Exit gate: each inventoried loading/error state has an appropriate shared composition and explicit owner; recovery preserves drafts and valid content; retries cannot silently duplicate mutations; stale completion cannot affect another patient/entry; reduced-motion and accessible feedback pass verification. Do not claim new lifecycle guarantees without tests.
 
-Progress: the existing foundations are reused without adding a competing async framework. `SuggestionsDrawer` now renders initial and refresh failures through `ErrorState`, retaining its retry action and previously generated suggestions on refresh failure. Medication approval uses the same shared error treatment for initial and refresh failures. Feature-owned request IDs, cancellation/stale-result guards, skeletons, and pending indicators remain in place. Other AI/media/chat/import/storage failure paths still need inventory and migration.
+Progress: the existing foundations are reused without adding a competing async framework. `SuggestionsDrawer` now renders initial and refresh failures through `ErrorState`, retaining its retry action and previously generated suggestions on refresh failure. Medication approval uses the same shared error treatment for initial and refresh failures. `ErrorState` supports title-free inline alerts with a beside-message dismissal action; chart assistance, input, note dictation, and prescription-print errors now share this presentation while their feature owners retain message and dismissal state. Feature-owned request IDs, cancellation/stale-result guards, skeletons, and pending indicators remain in place. Other AI/media/chat/import/storage failure paths still need inventory and migration.
 
 ### Stage 4 — Consolidate menus, selects, and popovers
 
@@ -321,8 +323,8 @@ Implementation active. Stage 0 baseline is complete. Shared modal, toast announc
 ## Verification
 
 - Baseline before code changes: typecheck, build, 156 unit tests, docs check, and 36 desktop/mobile E2E tests passed (2 skipped). Full format check failed on existing formatting in `tests/brand.test.tsx`.
-- Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility and order/medication status Playwright journeys passed on desktop and mobile (4 tests).
-- Latest full `npm test`: 60 files, 175 tests passed. Latest `npm run build`, `npm run lint`, and `npm run docs:check` passed after smart-append migration. The full E2E suite passed before adding the chart section test (36 passed, 2 skipped); the new chart section journey passed in both desktop/mobile projects.
+- Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility, order/medication status, and reset-confirmation journeys passed on desktop and mobile (6 tests). Loading/feedback plus note/input tests passed after the inline-error slice (11 tests).
+- Latest full `npm test`: 60 files, 177 tests passed after the input confirmation migration. Latest `npm run build`, `npm run lint`, and `npm run docs:check` passed after the current code changes. The full E2E suite passed before adding the chart section and reset confirmation journeys (36 passed, 2 skipped); both added journeys passed on desktop/mobile.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
 - `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
 

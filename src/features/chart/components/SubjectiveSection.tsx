@@ -10,6 +10,7 @@ import EditableSubsection from "./EditableSubsection";
 import ClinicalAssistance from "./ClinicalAssistance";
 import EditableTextArea from "../../../components/ui/EditableTextArea";
 import { Icons } from "../../../components/ui/Icons";
+import { ErrorState } from "../../../components/ui/LoadingFeedback";
 import ClinicalMarkdown from "../../../components/clinical/ClinicalMarkdown";
 import { generateClinicalSuggestions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
@@ -304,19 +305,20 @@ const SubjectiveSection: React.FC<SubjectiveSectionProps> = ({
   return (
     <SectionCard title="Subjective" icon={<Icons.Subjective />} collapsible>
       {assistanceError && (
-        <div
-          role="alert"
-          className="mb-4 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700"
-        >
-          {assistanceError}
-          <button
-            type="button"
-            className="ml-2 underline"
-            onClick={() => setAssistanceError(null)}
-          >
-            Dismiss
-          </button>
-        </div>
+        <ErrorState
+          variant="inline"
+          message={assistanceError}
+          inlineAction={
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setAssistanceError(null)}
+            >
+              Dismiss
+            </button>
+          }
+          className="mb-4 font-medium"
+        />
       )}
       {visibleSubsections.chiefComplaint && (
         <EditableSubsection

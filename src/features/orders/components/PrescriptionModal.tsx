@@ -5,6 +5,7 @@ import { PlanItem, MedicationOrder, MedicationStatus } from "../../../types";
 import { parsePrescriptions } from "../../../services/ai/actions";
 import { logDiagnostic } from "../../../services/diagnosticLogger";
 import { Icons } from "../../../components/ui/Icons";
+import { ErrorState } from "../../../components/ui/LoadingFeedback";
 
 interface PrescriptionModalProps {
   isOpen: boolean;
@@ -590,19 +591,20 @@ const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
         </div>
 
         {printError && (
-          <div
-            role="alert"
-            className="mx-6 mt-3 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700"
-          >
-            {printError}
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => setPrintError(null)}
-            >
-              Dismiss
-            </button>
-          </div>
+          <ErrorState
+            variant="inline"
+            message={printError}
+            inlineAction={
+              <button
+                type="button"
+                className="underline"
+                onClick={() => setPrintError(null)}
+              >
+                Dismiss
+              </button>
+            }
+            className="mx-6 mt-3 font-medium"
+          />
         )}
 
         {/* Delete Confirmation Overlay - Moved to be a direct child of the relative container, outside the scrollview */}

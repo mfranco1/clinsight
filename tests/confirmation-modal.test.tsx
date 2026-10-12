@@ -47,4 +47,26 @@ describe("ConfirmationModal", () => {
     expect(onConfirm).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it("allows workflows to disable Escape and backdrop dismissal", () => {
+    const onClose = vi.fn();
+
+    render(
+      <ConfirmationModal
+        isOpen
+        onClose={onClose}
+        onConfirm={vi.fn()}
+        title="Clear current data?"
+        message="The existing workflow requires an explicit choice."
+        confirmLabel="Clear"
+        closeOnInteractOutside={false}
+        closeOnEscape={false}
+      />,
+    );
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.pointerDown(document.body);
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
 });

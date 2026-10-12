@@ -22,8 +22,13 @@ test("opens the input workflow and resets an unsaved draft", async ({
   );
 
   await page.getByRole("button", { name: "Reset Form" }).click();
-  await expect(page.getByText("Clear current data?")).toBeVisible();
-  await page.getByRole("button", { name: "Confirm Reset" }).click();
+  const resetConfirmation = page.getByRole("dialog", {
+    name: "Clear current data?",
+  });
+  await expect(resetConfirmation).toBeVisible();
+  await resetConfirmation
+    .getByRole("button", { name: "Confirm Reset" })
+    .click();
 
   await expect(editor).toHaveText("");
 
