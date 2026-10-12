@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRetainedState } from "../../app/ViewState";
 import { createPortal } from "react-dom";
 import {
@@ -120,6 +120,40 @@ const OrdersView: React.FC<OrdersViewProps> = ({
   const [selectedMedIds, setSelectedMedIds] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const selectionPatientIdRef = useRef(patientId);
+
+  useEffect(() => {
+    const patientChanged = selectionPatientIdRef.current !== patientId;
+    selectionPatientIdRef.current = patientId;
+
+    if (patientChanged) {
+      setSelectedOrderIds([]);
+      setSelectedMedIds([]);
+      setIsSelectMode(false);
+      setIsDeleteConfirmOpen(false);
+      setIsBulkOverlayOpen(false);
+      setIsRxOpen(false);
+      setActiveId(null);
+      setNewOrderId(null);
+      setNewMedId(null);
+      return;
+    }
+
+    const availableOrderIds = new Set(orders.map((order) => order.id));
+    const availableMedicationIds = new Set(
+      medications.map((medication) => medication.id),
+    );
+    setSelectedOrderIds((selectedIds) => {
+      const nextIds = selectedIds.filter((id) => availableOrderIds.has(id));
+      return nextIds.length === selectedIds.length ? selectedIds : nextIds;
+    });
+    setSelectedMedIds((selectedIds) => {
+      const nextIds = selectedIds.filter((id) =>
+        availableMedicationIds.has(id),
+      );
+      return nextIds.length === selectedIds.length ? selectedIds : nextIds;
+    });
+  }, [patientId, orders, medications]);
 
   const dispatchOrders = (newOrders: PatientOrder[]) => {
     onUpdateOrders(cleanupGroups(newOrders));

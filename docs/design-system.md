@@ -37,6 +37,8 @@ Long patient-note, chart-section, course-detail, and handoff-summary editing use
 
 Operational order and medication rows keep their domain-owned editors, but every visible editor caption must label its input. Record-specific edit, delete, and grouping actions need contextual names. When an inline editor closes, restore focus to its row edit action; give only the primary field autofocus when rich notes editors are present so competing autofocus does not move focus unexpectedly.
 
+Orders-view selection is scoped to the current patient and existing record IDs. Filtering does not discard hidden selected records; deletion removes stale IDs, and changing patients clears selection and closes patient-specific order surfaces before bulk actions can apply to another record set. Diagnostic grouping operates on selected IDs only and retains the current latest-selected-target-date behavior.
+
 See [architecture](architecture.md#repository-ownership) for module ownership. Promote an abstraction when multiple consumers need the same behavior; keep feature-specific detail local. Do not introduce a second component suite or replace unique clinical workflow semantics with generic flags.
 
 ## Application branding

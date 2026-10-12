@@ -37,10 +37,22 @@ test("keeps orders bulk actions above navigation and the final row", async ({
   await page
     .getByRole("button", { name: "Select order Synthetic imaging order 2" })
     .click();
+  await page
+    .getByRole("button", { name: "Select order Synthetic imaging order 3" })
+    .click();
+
+  await page
+    .getByRole("button", {
+      name: "Delete order Synthetic imaging order 1",
+      exact: true,
+    })
+    .click();
+  await page.getByRole("button", { name: "Delete Order", exact: true }).click();
 
   const actionGroup = page.getByRole("group", {
     name: "Actions for selected records",
   });
+  await expect(actionGroup).toContainText("2 Orders");
   const finalOrderName = page.getByText("Synthetic imaging order 6", {
     exact: true,
   });
