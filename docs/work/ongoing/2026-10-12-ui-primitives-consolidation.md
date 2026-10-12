@@ -137,7 +137,9 @@ Dependencies: Stage 1. Risk: high for focus, drafts, and action timing.
 
 Exit gate: migrated dialogs use the shared foundation without duplicate listeners or changed callback counts; all dismissal and retention differences are documented and tested. Remaining exceptions have explicit owners and migration stages.
 
-Progress: `ModalShell` now supports optional accessible descriptions, center/bottom/right placement, bottom safe-area space, and explicit Escape/outside close policies. Existing center defaults remain. `AddOrderModal` and medication approval are migrated and explicitly retain their prior behavior of not dismissing from Escape or backdrop interaction. Bulk Orders is also migrated while retaining backdrop dismissal, Ctrl/Cmd+Enter, and owner-held draft state. Added placement/description/dismissal characterization tests; broader modal consumers remain.
+Progress: `ModalShell` now supports optional accessible descriptions, center/bottom/right placement, bottom safe-area space, explicit Escape/outside close policies, and a feature-owned overlay class. Existing center defaults remain. `AddOrderModal`, medication approval, camera capture, and smart append are migrated and explicitly retain their prior backdrop/Escape dismissal behavior. Bulk Orders is also migrated while retaining backdrop dismissal, Ctrl/Cmd+Enter, and owner-held draft state. Camera device selection, retry, capture, audio dictation, smart-append draft, and merge behavior remain feature-owned. Added placement/description/dismissal tests; broader modal consumers remain.
+
+Confirmation contract: `ConfirmationModal` still calls `onConfirm` once and then `onClose` synchronously; focused tests protect call order and disabled behavior. No async pending contract has been added.
 
 ### Stage 3 — Unify toast, popup, and inline feedback
 
@@ -186,9 +188,13 @@ Dependencies: Stages 1–2 and 3A. Risk: medium.
 
 Exit gate: no clipping in toolbars/panels/dialogs; selecting a status does not accidentally activate its row; custom positioning remains only for documented special cases.
 
+Progress: the chart section manager remains a checkbox popover, but its category accordions now use labelled native buttons with `aria-expanded`/`aria-controls`; “Show all”/“Hide all” actions have contextual accessible names and are visible on keyboard focus. Visibility remains controlled by the existing per-entry owner. Other feature menus and custom positioning remain to be migrated or dispositioned.
+
 ### Stage 5 — Standardize side panels, bottom sheets, and bottom actions
 
 Dependencies: Stages 1–2 and 4. Risk: high for hidden state and responsive behavior.
+
+Progress: chart smart append now uses `ModalShell` bottom placement, which centers at the larger breakpoint and reserves bottom safe-area space on mobile. Its prior Escape/backdrop non-dismissal, editor draft, microphone actions, and submit callback remain with the feature. A focused test covers placement, dismissal, empty-submit disabling, and callback payload. Suggestions/chat panels and the remaining panel inventory are still outstanding.
 
 1. Share panel header/body/footer and surface styling. Offer explicit compositions for inline complementary panels, nonmodal overlay panels, and modal drawers. Reuse the dialog foundation for modal side/bottom placements.
 2. Migrate suggestions first. Preserve its existing breakpoint behavior, result/error state, generation triggers, and review flow. Do not make desktop background content inert if the current workflow requires it to stay usable.
@@ -315,11 +321,10 @@ Implementation active. Stage 0 baseline is complete. Shared modal, toast announc
 ## Verification
 
 - Baseline before code changes: typecheck, build, 156 unit tests, docs check, and 36 desktop/mobile E2E tests passed (2 skipped). Full format check failed on existing formatting in `tests/brand.test.tsx`.
-- Focused modal/loading tests passed (11 tests); contextual order/medication status browser journey passed on desktop and mobile (2 tests).
-- Latest `npm test`: 56 files, 169 tests passed. Latest `npm run build`, `npm run docs:check`, and full `npm run test:e2e` passed; E2E reports 36 passed and 2 skipped across desktop/mobile.
-- `npm run lint` passed after migration of medication approval and suggestions error feedback.
+- Focused modal/confirmation/camera/smart-append tests passed (11 tests); focused menu-popover test passed (1 test). The chart section-visibility and order/medication status Playwright journeys passed on desktop and mobile (4 tests).
+- Latest full `npm test`: 60 files, 175 tests passed. Latest `npm run build`, `npm run lint`, and `npm run docs:check` passed after smart-append migration. The full E2E suite passed before adding the chart section test (36 passed, 2 skipped); the new chart section journey passed in both desktop/mobile projects.
 - `npm run format:check` remains blocked by the pre-existing formatting issue in unchanged `tests/brand.test.tsx`; changed files are formatted individually.
-- `git diff --check` passed. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
+- `git diff --check` passed after the latest slice. The full acceptance sweep and manual responsive, keyboard, focus, reduced-motion, and screen-reader checks remain outstanding.
 
 ## Outcome
 

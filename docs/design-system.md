@@ -13,13 +13,15 @@ Clinical information must remain readable and statuses distinct. Preserve meanin
 ## Component ownership and reuse
 
 - Generic controls belong in `src/components/ui/`. Use `Button`, `Badge`, `TextInput`, `TextArea`, `FieldLabel`, status selectors, toolbar controls, file-upload controls, and empty states where their contracts fit.
-- Shared dialogs live in `src/components/dialogs/` and compose through `ModalShell`. Dialog focus and close behavior use Radix Dialog. `ModalShell` supports a title or explicit accessible name, an optional description, center, bottom-sheet, or right-drawer placement, safe-area spacing for bottom sheets, and explicit Escape/outside-interaction close policies; preserve existing defaults and choose dismissal policy per workflow. Status selectors use Radix Select, while order and medication status meanings remain in their feature/domain adapters.
+- Shared dialogs live in `src/components/dialogs/` and compose through `ModalShell`. Dialog focus and close behavior use Radix Dialog. `ModalShell` supports a title or explicit accessible name, an optional description, center, bottom-sheet, or right-drawer placement, safe-area spacing for bottom sheets, explicit Escape/outside-interaction close policies, and an optional feature-owned overlay class for established visual needs. Preserve existing defaults and choose dismissal policy per workflow. Status selectors use Radix Select, while order and medication status meanings remain in their feature/domain adapters.
 - Clinical Markdown and chat input live in `src/components/clinical/`; keep source references and clinical workflow semantics there. Generic content parsing and rendering belongs in `src/components/ui/RichContent.tsx`.
 - Feature-specific views and components stay under their owning `src/features/` directory. Shared controls accept typed values and callbacks rather than clinical workflow decisions.
 - Navigation and application chrome belong in `src/app/shell/`.
 - `ViewNavigationItem` in `src/components/ui/` shares current-page semantics and item layout between the desktop sidebar and mobile bottom navigation. Keep view lists, navigation state, and navigation callbacks in `app/shell/` and `App.tsx`.
 - `BottomActionBar` is a nonmodal, named action group for view-scoped bulk actions. Use `ModalShell` for bottom-sheet dialogs; an action bar must not trap focus or block the underlying workflow.
+- Chart smart append uses `ModalShell` with bottom-sheet placement on narrow screens and a centered dialog at larger breakpoints. Dictation, draft content, merge behavior, and cancellation stay with the chart feature.
 - `ResponsiveTableSurface` provides a labelled, horizontally scrollable frame for feature-owned responsive records. Its role is a named region; it does not claim ARIA table/grid semantics. Keep row editing, grouping, selection, and keyboard behavior with the owning feature until a complete table interaction model is implemented.
+- Multi-control popovers remain distinct from action menus. The chart section manager uses labelled accordion buttons with expanded state and contextual “Show all”/“Hide all” checkbox actions; preserve its per-entry visibility owner and do not give it menu keyboard semantics.
 
 Existing composable foundations serve multiple workflows: `SectionCard` is shared by chart and profile; `StickyToolbar` and `ToolbarButton` serve input, chart, notes, orders, course, and handoff; `DateRangeFields` serves chart and notes; `EditableTextArea` serves chart, input, orders, course, and handoff; and `StatusDropdown` backs separate order and medication adapters. Prefer these contracts over new feature-local copies. Keep their domain-specific semantics in the owning adapters.
 
@@ -59,7 +61,7 @@ Dashboard search/date controls and patient-scoped order/note filters retain thei
 
 ## Browser resource lifecycle
 
-Recording/camera workflows use shared hooks for capture and stream cleanup; file upload/drop workflows use existing conversion and preview ownership patterns. Stop media tracks, revoke object URLs, and clean up listeners/timers when their owner closes, is removed, or unmounts. Keep transcription or error behavior in the owning feature.
+Recording/camera workflows use shared hooks for capture and stream cleanup; camera capture composes through `ModalShell` while retaining its stronger backdrop and explicit dismissal policy. File upload/drop workflows use existing conversion and preview ownership patterns. Stop media tracks, revoke object URLs, and clean up listeners/timers when their owner closes, is removed, or unmounts. Keep transcription or error behavior in the owning feature.
 
 ## Print and export surfaces
 

@@ -65,6 +65,93 @@ const sections = {
   }>,
 };
 
+interface SectionCategoryGroupProps {
+  category: keyof SectionVisibility;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items: ReadonlyArray<{ id: string; label: string }>;
+  visibility: Record<string, boolean>;
+  isExpanded: boolean;
+  isAllEnabled: boolean;
+  onToggleExpanded: () => void;
+  onToggleAll: () => void;
+  onToggleItem: (id: string) => void;
+}
+
+const SectionCategoryGroup: React.FC<SectionCategoryGroupProps> = ({
+  category,
+  title,
+  icon: Icon,
+  items,
+  visibility,
+  isExpanded,
+  isAllEnabled,
+  onToggleExpanded,
+  onToggleAll,
+  onToggleItem,
+}) => {
+  const contentId = `manage-sections-${category}`;
+  const titleId = `${contentId}-title`;
+
+  return (
+    <section className="space-y-2" aria-labelledby={titleId}>
+      <div className="group/header flex items-center justify-between">
+        <button
+          id={titleId}
+          type="button"
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          onClick={onToggleExpanded}
+          className="flex flex-1 items-center gap-2 rounded-md p-1 text-left transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+        >
+          <Icons.ChevronDown
+            aria-hidden="true"
+            className={`h-3 w-3 text-content-muted transition-transform duration-200 ${isExpanded ? "" : "-rotate-90"}`}
+          />
+          <Icon aria-hidden="true" className="h-3.5 w-3.5 text-action" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-content-muted">
+            {title}
+          </span>
+        </button>
+        <button
+          type="button"
+          aria-label={`${isAllEnabled ? "Hide" : "Show"} all ${title.toLowerCase()} sections`}
+          onClick={onToggleAll}
+          className="rounded px-1 text-[9px] font-bold uppercase tracking-wider text-action opacity-0 transition-opacity hover:text-action-hover focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring group-hover/header:opacity-100"
+        >
+          {isAllEnabled ? "Hide all" : "Show all"}
+        </button>
+      </div>
+      <div
+        id={contentId}
+        role="region"
+        aria-labelledby={titleId}
+        hidden={!isExpanded}
+        className="space-y-1 pl-1"
+      >
+        {items.map((item) => (
+          <label
+            key={item.id}
+            className="group flex cursor-pointer items-center gap-3 rounded-lg p-1.5 transition-colors hover:bg-canvas"
+          >
+            <input
+              type="checkbox"
+              checked={visibility[item.id]}
+              onChange={() => onToggleItem(item.id)}
+              className="h-4 w-4 cursor-pointer rounded border-neutral-300 text-action transition-all focus:ring-focus-ring"
+            />
+            <span
+              className={`text-xs font-medium transition-colors ${visibility[item.id] ? "text-content-primary" : "text-content-muted"}`}
+            >
+              {item.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const ManageSectionsDropdown: React.FC<ManageSectionsDropdownProps> = ({
   visibility,
   onChange,
@@ -106,108 +193,41 @@ const ManageSectionsDropdown: React.FC<ManageSectionsDropdownProps> = ({
 
   return (
     <div className="absolute right-0 top-full mt-2 w-72 bg-surface rounded-2xl shadow-xl border border-border-default z-[100] overflow-hidden animate-fade-in origin-top-right">
-      <div className="max-h-[400px] overflow-y-auto p-4 space-y-6 custom-scrollbar">
-        {/* Subjective Group */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between group/header">
-            <div
-              className="flex items-center gap-2 cursor-pointer hover:bg-transparent p-1 rounded-md transition-colors flex-1"
-              onClick={() => toggleExpanded("subjective")}
-            >
-              <Icons.ChevronDown
-                className={`w-3 h-3 text-content-muted transition-transform duration-200 ${expanded.subjective ? "" : "-rotate-90"}`}
-              />
-              <Icons.Subjective className="w-3.5 h-3.5 text-action" />
-              <span className="text-[10px] font-bold text-content-muted uppercase tracking-widest">
-                Subjective
-              </span>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCategory("subjective");
-              }}
-              className="text-[9px] font-bold text-action hover:text-action-hover uppercase tracking-wider opacity-0 group-hover/header:opacity-100 transition-opacity"
-            >
-              Toggle All
-            </button>
-          </div>
-          {expanded.subjective && (
-            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
-              {sections.subjective.map((section) => (
-                <label
-                  key={section.id}
-                  className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-canvas cursor-pointer transition-colors group"
-                >
-                  <div className="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={visibility.subjective[section.id]}
-                      onChange={() => toggleSection("subjective", section.id)}
-                      className="w-4 h-4 rounded border-neutral-300 text-action focus:ring-focus-ring transition-all cursor-pointer"
-                    />
-                  </div>
-                  <span
-                    className={`text-xs font-medium transition-colors ${visibility.subjective[section.id] ? "text-content-primary" : "text-content-muted"}`}
-                  >
-                    {section.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Objective Group */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between group/header">
-            <div
-              className="flex items-center gap-2 cursor-pointer hover:bg-transparent p-1 rounded-md transition-colors flex-1"
-              onClick={() => toggleExpanded("objective")}
-            >
-              <Icons.ChevronDown
-                className={`w-3 h-3 text-content-muted transition-transform duration-200 ${expanded.objective ? "" : "-rotate-90"}`}
-              />
-              <Icons.Objective className="w-3.5 h-3.5 text-action" />
-              <span className="text-[10px] font-bold text-content-muted uppercase tracking-widest">
-                Objective
-              </span>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCategory("objective");
-              }}
-              className="text-[9px] font-bold text-action hover:text-action-hover uppercase tracking-wider opacity-0 group-hover/header:opacity-100 transition-opacity"
-            >
-              Toggle All
-            </button>
-          </div>
-          {expanded.objective && (
-            <div className="space-y-1 pl-1 animate-in fade-in slide-in-from-top-1 duration-200">
-              {sections.objective.map((section) => (
-                <label
-                  key={section.id}
-                  className="flex items-center gap-3 p-1.5 rounded-lg hover:bg-canvas cursor-pointer transition-colors group"
-                >
-                  <div className="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={visibility.objective[section.id]}
-                      onChange={() => toggleSection("objective", section.id)}
-                      className="w-4 h-4 rounded border-neutral-300 text-action focus:ring-focus-ring transition-all cursor-pointer"
-                    />
-                  </div>
-                  <span
-                    className={`text-xs font-medium transition-colors ${visibility.objective[section.id] ? "text-content-primary" : "text-content-muted"}`}
-                  >
-                    {section.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="max-h-[400px] space-y-6 overflow-y-auto p-4 custom-scrollbar">
+        <SectionCategoryGroup
+          category="subjective"
+          title="Subjective"
+          icon={Icons.Subjective}
+          items={sections.subjective}
+          visibility={visibility.subjective}
+          isExpanded={expanded.subjective}
+          isAllEnabled={Object.values(visibility.subjective).every(Boolean)}
+          onToggleExpanded={() => toggleExpanded("subjective")}
+          onToggleAll={() => toggleCategory("subjective")}
+          onToggleItem={(id) =>
+            toggleSection(
+              "subjective",
+              id as keyof SectionVisibility["subjective"],
+            )
+          }
+        />
+        <SectionCategoryGroup
+          category="objective"
+          title="Objective"
+          icon={Icons.Objective}
+          items={sections.objective}
+          visibility={visibility.objective}
+          isExpanded={expanded.objective}
+          isAllEnabled={Object.values(visibility.objective).every(Boolean)}
+          onToggleExpanded={() => toggleExpanded("objective")}
+          onToggleAll={() => toggleCategory("objective")}
+          onToggleItem={(id) =>
+            toggleSection(
+              "objective",
+              id as keyof SectionVisibility["objective"],
+            )
+          }
+        />
       </div>
 
       <div className="p-3 bg-canvas border-t border-border-subtle text-[10px] text-content-muted font-medium text-center">

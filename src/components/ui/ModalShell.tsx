@@ -13,6 +13,7 @@ interface ModalShellProps {
   footerActions?: React.ReactNode;
   headerActions?: React.ReactNode;
   className?: string;
+  overlayClassName?: string;
   bodyClassName?: string;
   showCloseButton?: boolean;
   ariaLabel?: string;
@@ -57,6 +58,7 @@ const ModalShell = ({
   footerActions,
   headerActions,
   className = "",
+  overlayClassName = "",
   bodyClassName = "",
   showCloseButton = true,
   ariaLabel,
@@ -72,7 +74,9 @@ const ModalShell = ({
     }}
   >
     <Dialog.Portal>
-      <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[100] bg-neutral-900/50 backdrop-blur-sm" />
+      <Dialog.Overlay
+        className={`dialog-overlay fixed inset-0 z-[100] bg-neutral-900/50 backdrop-blur-sm ${overlayClassName}`}
+      />
       <Dialog.Content
         aria-modal="true"
         aria-label={title ? undefined : ariaLabel || "Dialog"}

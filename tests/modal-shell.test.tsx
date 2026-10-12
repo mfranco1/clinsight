@@ -98,4 +98,21 @@ describe("ModalShell", () => {
       "sm:max-w-3xl",
     );
   });
+
+  it("allows feature-owned overlay treatment without changing dialog behavior", () => {
+    render(
+      <ModalShell
+        isOpen
+        onClose={vi.fn()}
+        title="Capture Attachment"
+        overlayClassName="bg-neutral-900/80"
+      >
+        Camera content
+      </ModalShell>,
+    );
+
+    expect(document.querySelector(".dialog-overlay")).toHaveClass(
+      "bg-neutral-900/80",
+    );
+  });
 });

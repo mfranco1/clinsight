@@ -46,6 +46,36 @@ test("opens a structured chart and preserves its SOAP presentation", async ({
   ).toBeVisible();
 });
 
+test("manages chart section visibility through accessible accordion controls", async ({
+  page,
+}) => {
+  await page.addInitScript(
+    (serializedCase) => {
+      window.localStorage.setItem("clinsight_patients", serializedCase);
+    },
+    JSON.stringify([structuredPatientCase]),
+  );
+
+  await page.goto("/");
+  await page.getByText("Test Patient").first().click();
+  await page.getByRole("button", { name: "Manage" }).click();
+
+  const subjectiveToggle = page.getByRole("button", {
+    name: "Subjective",
+    exact: true,
+  });
+  await expect(subjectiveToggle).toHaveAttribute("aria-expanded", "false");
+  await subjectiveToggle.click();
+  await expect(subjectiveToggle).toHaveAttribute("aria-expanded", "true");
+
+  const chiefComplaint = page.getByRole("checkbox", {
+    name: "Chief Complaint",
+  });
+  const wasChecked = await chiefComplaint.isChecked();
+  await chiefComplaint.click();
+  await expect(chiefComplaint).toHaveJSProperty("checked", !wasChecked);
+});
+
 test("restores a loaded chart position when returning from orders", async ({
   page,
 }) => {
