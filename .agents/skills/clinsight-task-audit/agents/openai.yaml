@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clinsight Task Audit"
+  short_description: "Verify acceptance criteria and completion evidence"
+  default_prompt: "Use $clinsight-task-audit for the requested Clinsight work, following repository guidance and the relevant task scope."

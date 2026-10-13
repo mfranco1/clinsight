@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clinsight Spec and Plan"
+  short_description: "Write implementation-ready feature and task specifications"
+  default_prompt: "Use $clinsight-spec for the requested Clinsight work, following repository guidance and the relevant task scope."

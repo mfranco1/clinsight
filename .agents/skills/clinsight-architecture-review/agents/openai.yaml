@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clinsight Architecture Review"
+  short_description: "Assess module ownership, contracts, and change boundaries"
+  default_prompt: "Use $clinsight-architecture-review for the requested Clinsight work, following repository guidance and the relevant task scope."

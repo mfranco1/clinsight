@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clinsight Code Review"
+  short_description: "Find actionable defects in changes and affected workflows"
+  default_prompt: "Use $clinsight-code-review for the requested Clinsight work, following repository guidance and the relevant task scope."

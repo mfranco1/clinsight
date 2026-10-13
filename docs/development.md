@@ -35,6 +35,19 @@ Vite listens on port 3000 and binds to `0.0.0.0` by default. To use AI features 
 
 See [testing](testing.md) for selecting checks. The Playwright web server builds with `npm run build:test` and starts Vite preview on port 4173 with external traffic blocked. The test build never loads local environment files and makes the Gemini transport reject before creating its SDK client.
 
+## Project skills
+
+Reusable agent workflows live in `.agents/skills/`, following the [repository skill convention](https://developers.openai.com/blog/skills-agents-sdk). Invoke one by name with the task context, for example: `Use $clinsight-spec to plan attachment import validation`.
+
+- [clinsight-spec](../.agents/skills/clinsight-spec/SKILL.md): feature/task specifications with an agent-ready template, traceable requirements, acceptance criteria, implementation steps, and verification plans.
+- [clinsight-docs](../.agents/skills/clinsight-docs/SKILL.md): reconcile documentation with implementation and update the authoritative document.
+- [clinsight-task-audit](../.agents/skills/clinsight-task-audit/SKILL.md): assess task completion against acceptance criteria and actual evidence.
+- [clinsight-code-review](../.agents/skills/clinsight-code-review/SKILL.md): find actionable defects in a change and its affected workflows.
+- [clinsight-architecture-review](../.agents/skills/clinsight-architecture-review/SKILL.md): evaluate ownership, dependency direction, contracts, and design tradeoffs.
+- [clinsight-maintenance](../.agents/skills/clinsight-maintenance/SKILL.md): implement scoped refactoring, restructuring, cleanup, and dependency maintenance.
+
+Skills allow automatic selection for matching requests and can also be invoked explicitly. They supplement `AGENTS.md` and the owning documentation. Planning alone does not authorize feature implementation; a review alone does not authorize fixes or external publication. Completion audits verify the agreed task, while code and architecture reviews examine their respective technical concerns. Multi-step work uses the existing [task lifecycle](work/README.md).
+
 ## Environment and configuration
 
 Vite reads environment files and maps `GEMINI_API_KEY` to the client bundle in `vite.config.ts`. `.env.local` is ignored by Git. Never commit a key or use a private/production key in this client-side arrangement. App model defaults and shared UI configuration live in `src/config/appConfig.ts`.

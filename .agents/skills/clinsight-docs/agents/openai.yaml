@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clinsight Documentation"
+  short_description: "Keep authoritative project documentation aligned with code"
+  default_prompt: "Use $clinsight-docs for the requested Clinsight work, following repository guidance and the relevant task scope."
