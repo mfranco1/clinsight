@@ -1,100 +1,33 @@
 import type {
-  ChartEntry,
-  ChatMessage,
-  CourseEvent,
-  FileUpload,
-  GeneralData,
-  GroundingSource,
-  HandoffSummary,
-  MedicalChartResponse,
+  GenerateChartRequest,
+  GenerateProgressNoteRequest,
+  ReassessNoteRequest,
+  ChatRequest,
+  NoteThreadRequest,
+  RefreshSummaryRequest,
+  GenerateChartResult,
   PlanItem,
-  SoapNote,
   SuggestionsData,
-} from "../../types";
-
-interface GenerateChartRequest {
-  text: string;
-  files: File[];
-  specialization?: string;
-  useSearch?: boolean;
-  history?: ChartEntry[];
-  currentPatientInfo?: GeneralData | null;
-}
-
-interface GenerateProgressNoteRequest {
-  text: string;
-  files: File[];
-  specialization?: string;
-  useSearch?: boolean;
-  history?: ChartEntry[];
-}
-
-interface ReassessNoteRequest {
-  soap: SoapNote;
-  history?: ChartEntry[];
-  specialization?: string;
-  useSearch?: boolean;
-}
-
-interface ChatRequest {
-  history: ChatMessage[];
-  message: string;
-  patient: MedicalChartResponse | null;
-  useSearch?: boolean;
-  signal?: AbortSignal;
-  attachments?: FileUpload[];
-}
-
-interface NoteThreadRequest {
-  history: ChatMessage[];
-  message: string;
-  noteContent: string;
-  noteTitle: string;
-  highlightedContext?: string;
-  patient?: MedicalChartResponse | null;
-  signal?: AbortSignal;
-  attachments?: FileUpload[];
-}
-
-interface RefreshSummaryRequest {
-  currentSummary: HandoffSummary;
-  patientInfo: GeneralData;
-  recentEntries: ChartEntry[];
-  recentCourse: CourseEvent[];
-  specialization: string;
-}
+  HandoffSummary,
+  GenerateProgressNoteResult,
+  ReassessNoteResult,
+  TextResult,
+  ChatResult,
+  LabAnalysisResult,
+  ImagingAnalysisResult,
+  ParsedPrescription,
+} from "./contracts";
 
 export interface ClinicalAiGateway {
-  generateChart(
-    request: GenerateChartRequest,
-  ): Promise<Omit<MedicalChartResponse, "entries"> & { soap: SoapNote }>;
-  generateProgressNote(request: GenerateProgressNoteRequest): Promise<{
-    soap: SoapNote;
-    courseEvent: { event: string; details: string };
-    inferredDate?: string | null;
-    inferredTime?: string | null;
-    groundingSources?: GroundingSource[];
-    references?: string[];
-  }>;
-  reassessNote(request: ReassessNoteRequest): Promise<{
-    assessment: SoapNote["assessment"];
-    plan: PlanItem[];
-    groundingSources?: GroundingSource[];
-    references?: string[];
-  }>;
-  sendChatMessage(request: ChatRequest): Promise<{
-    text: string;
-    title?: string;
-    groundingSources?: GroundingSource[];
-  }>;
-  sendNoteThreadMessage(
-    request: NoteThreadRequest,
-  ): Promise<{ text: string; groundingSources?: GroundingSource[] }>;
+  generateChart(request: GenerateChartRequest): Promise<GenerateChartResult>;
+  generateProgressNote(
+    request: GenerateProgressNoteRequest,
+  ): Promise<GenerateProgressNoteResult>;
+  reassessNote(request: ReassessNoteRequest): Promise<ReassessNoteResult>;
+  sendChatMessage(request: ChatRequest): Promise<ChatResult>;
+  sendNoteThreadMessage(request: NoteThreadRequest): Promise<TextResult>;
   transcribeAudio(audio: Blob): Promise<string>;
-  lookup(
-    query: string,
-    signal?: AbortSignal,
-  ): Promise<{ text: string; groundingSources?: GroundingSource[] }>;
+  lookup(query: string, signal?: AbortSignal): Promise<TextResult>;
   generateClinicalSuggestions(
     section: "Subjective" | "Objective",
     context: string,
@@ -113,27 +46,17 @@ export interface ClinicalAiGateway {
     files: File[],
     currentLabs?: string,
     currentInterpretation?: string,
-  ): Promise<{ labs: string; labInterpretation: string[] }>;
+  ): Promise<LabAnalysisResult>;
   analyzeImagingPhotos(
     files: File[],
     currentImaging?: string,
     currentCorrelation?: string,
-  ): Promise<{ imaging: string; imagingCorrelation: string[] }>;
+  ): Promise<ImagingAnalysisResult>;
   generateInputSuggestions(notes: string): Promise<SuggestionsData>;
   generateResponseTitle(
     userMessage: string,
     responseContent: string,
   ): Promise<string>;
   refreshSummary(request: RefreshSummaryRequest): Promise<HandoffSummary>;
-  parsePrescriptions(plan: PlanItem[]): Promise<
-    Array<{
-      drug: string;
-      dose: string;
-      route: string;
-      frequency: string;
-      duration: string;
-      sig: string;
-      quantity: string;
-    }>
-  >;
+  parsePrescriptions(plan: PlanItem[]): Promise<ParsedPrescription[]>;
 }

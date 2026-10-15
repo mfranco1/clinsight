@@ -2,9 +2,10 @@ import type { Content, Part } from "@google/genai";
 import type {
   ChatMessage,
   FileUpload,
-  GroundingSource,
-  MedicalChartResponse,
-} from "../../../types";
+  TextResult,
+  ChatResult,
+  AiPatientContext,
+} from "../contracts";
 import {
   CHAT_SYSTEM_INSTRUCTION,
   NOTE_THREAD_SYSTEM_INSTRUCTION,
@@ -14,15 +15,11 @@ import { callGemini, convertFilesToParts } from "../geminiTransport";
 export const sendChatMessage = async (
   history: ChatMessage[],
   newMessage: string,
-  chartContext: MedicalChartResponse | null,
+  chartContext: AiPatientContext | null,
   useGoogleSearch = false,
   signal?: AbortSignal,
   attachments?: FileUpload[],
-): Promise<{
-  text: string;
-  title?: string;
-  groundingSources?: GroundingSource[];
-}> => {
+): Promise<ChatResult> => {
   const historyContent: Content[] = history.map((message) => ({
     role: message.role === "user" ? "user" : "model",
     parts: [{ text: message.text }],
@@ -61,10 +58,10 @@ export const sendNoteThreadMessage = async (
   originalNoteContent: string,
   originalNoteTitle: string,
   highlightedContext?: string,
-  chartContext?: MedicalChartResponse | null,
+  chartContext?: AiPatientContext | null,
   signal?: AbortSignal,
   attachments?: FileUpload[],
-): Promise<{ text: string; groundingSources?: GroundingSource[] }> => {
+): Promise<TextResult> => {
   const historyContent: Content[] = history.map((message) => ({
     role: message.role === "user" ? "user" : "model",
     parts: [{ text: message.text }],

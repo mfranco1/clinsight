@@ -104,3 +104,80 @@ export const legacyPatientCase = {
     toDoList: [],
   },
 } satisfies MedicalChartResponse;
+
+/** Compatibility fixture: synthetic source text, legacy unions and all attachment owners. */
+export const contractPatientCase: MedicalChartResponse = {
+  ...structuredPatientCase,
+  id: "legacy-17",
+  entries: [
+    {
+      ...structuredEntry,
+      originalNote: "  Source: 5 mg/L\n\n<2 mmol/L; α  ",
+      references: ["Synthetic guideline [1]"],
+      groundingSources: [{ title: "Fixture", uri: "https://example.test/ref" }],
+      attachments: [],
+    },
+    {
+      ...structuredEntry,
+      id: "entry-string-sections",
+      soap: {
+        ...structuredEntry.soap,
+        subjective: {
+          ...structuredEntry.soap.subjective,
+          ros: "No fever\nNo cough",
+        },
+        objective: {
+          ...structuredEntry.soap.objective,
+          physicalExam: "Warm\nAlert",
+        },
+      },
+    },
+    {
+      ...legacyPatientCase.entries[0],
+      id: "old-entry-9",
+      rawText: "  Raw 5 mg\n\n[1]  ",
+    },
+  ],
+  handoff: {
+    ...structuredPatientCase.handoff,
+    patientId: "legacy-17",
+    clinicalPearl: "Legacy source",
+  },
+  notes: [
+    {
+      id: "note-1",
+      content: "  Note\n\n",
+      createdAt: "2026-08-26",
+      updatedAt: "2026-08-26",
+      attachments: [],
+      subNotes: [
+        {
+          id: "subnote-1",
+          content: "Source reply",
+          createdAt: "2026-08-26",
+          attachments: [],
+        },
+      ],
+    },
+  ],
+};
+
+/** Files are created on demand so importing fixtures does not allocate browser resources. */
+export const createContractAttachment = () => ({
+  file: new File([Uint8Array.from([0, 1, 127, 128, 255])], "synthetic.png", {
+    type: "image/png",
+    lastModified: 123,
+  }),
+  base64: "AAF/gP8=",
+  mimeType: "image/png",
+  category: "Imaging" as const,
+  previewUrl: "blob:synthetic-source",
+});
+
+export const createAttachmentPatientCase = (): MedicalChartResponse => {
+  const patient = structuredClone(contractPatientCase);
+  patient.entries[0].attachments = [createContractAttachment()];
+  patient.notes![0].attachments = [createContractAttachment()];
+  patient.notes![0].subNotes![0].attachments = [createContractAttachment()];
+  return patient;
+};

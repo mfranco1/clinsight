@@ -1,3 +1,4 @@
+import type { LabAnalysisResult, ImagingAnalysisResult } from "../contracts";
 import { Type } from "@google/genai";
 import {
   CLINICAL_PHOTO_PROMPT,
@@ -39,7 +40,7 @@ export const analyzeLabPhotos = async (
   files: File[],
   currentLabs = "",
   currentInterpretation = "",
-): Promise<{ labs: string; labInterpretation: string[] }> => {
+): Promise<LabAnalysisResult> => {
   const parts = await convertFilesToParts(files);
   parts.push({ text: LAB_PHOTO_PROMPT(currentLabs, currentInterpretation) });
   const result = await callGemini({
@@ -61,7 +62,7 @@ export const analyzeImagingPhotos = async (
   files: File[],
   currentImaging = "",
   currentCorrelation = "",
-): Promise<{ imaging: string; imagingCorrelation: string[] }> => {
+): Promise<ImagingAnalysisResult> => {
   const parts = await convertFilesToParts(files);
   parts.push({
     text: IMAGING_PHOTO_PROMPT(currentImaging, currentCorrelation),

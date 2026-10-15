@@ -1,5 +1,5 @@
 import { Type } from "@google/genai";
-import type { GroundingSource, SuggestionsData } from "../../../types";
+import type { TextResult, SuggestionsData } from "../contracts";
 import { INPUT_SUGGESTIONS_PROMPT, MEDICAL_LOOKUP_PROMPT } from "../prompts";
 import { callGemini } from "../geminiTransport";
 import { extractAndParseJSON } from "../responseParsing";
@@ -47,7 +47,7 @@ export const generateInputSuggestions = async (
 export const medicalLookup = async (
   query: string,
   signal?: AbortSignal,
-): Promise<{ text: string; groundingSources?: GroundingSource[] }> =>
+): Promise<TextResult> =>
   callGemini({
     systemInstruction: MEDICAL_LOOKUP_PROMPT,
     contents: { parts: [{ text: query }] },

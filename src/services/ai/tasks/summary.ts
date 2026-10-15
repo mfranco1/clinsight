@@ -4,7 +4,7 @@ import type {
   CourseEvent,
   GeneralData,
   HandoffSummary,
-} from "../../../types";
+} from "../contracts";
 import { REFRESH_SUMMARY_SYSTEM_INSTRUCTION } from "../prompts";
 import { SCHEMA_DESCRIPTIONS } from "../schemaDescriptions";
 import { callGemini } from "../geminiTransport";

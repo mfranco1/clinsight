@@ -1,19 +1,9 @@
 import { Type } from "@google/genai";
-import type { PlanItem } from "../../../types";
+import type { PlanItem, ParsedPrescription } from "../contracts";
 import { PRESCRIPTION_PARSE_PROMPT } from "../prompts";
 import { callGemini } from "../geminiTransport";
 import { extractAndParseJSON } from "../responseParsing";
 import { logDiagnostic } from "../../diagnosticLogger";
-
-export type ParsedPrescription = {
-  drug: string;
-  dose: string;
-  route: string;
-  frequency: string;
-  duration: string;
-  sig: string;
-  quantity: string;
-};
 
 export const parsePrescriptions = async (
   plan: PlanItem[],

@@ -1,9 +1,9 @@
 import {
   ChartHistoryEntry,
-  MedicalChartResponse,
+  AiPatientContext,
   PlanItem,
   SoapNote,
-} from "../../types";
+} from "./contracts";
 import { formatChartHistory, keyValueToString } from "../../utils/clinicalText";
 import { arrayToMarkdownBullets } from "../../utils/markdown";
 import { SCHEMA_DESCRIPTIONS } from "./schemaDescriptions";
@@ -253,7 +253,7 @@ ${PLAN_RULES}
 };
 
 export const CHAT_SYSTEM_INSTRUCTION = (
-  chartContext: MedicalChartResponse | null,
+  chartContext: AiPatientContext | null,
   useGoogleSearch: boolean,
 ) => {
   let context = "You are a professional medical knowledge utility. ";
@@ -280,7 +280,7 @@ export const CHAT_SYSTEM_INSTRUCTION = (
 };
 
 export const NOTE_THREAD_SYSTEM_INSTRUCTION = (
-  chartContext: MedicalChartResponse | null,
+  chartContext: AiPatientContext | null,
   originalNoteContent: string,
   originalNoteTitle: string,
   highlightedContext?: string,

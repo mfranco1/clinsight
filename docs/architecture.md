@@ -27,7 +27,7 @@ Preserve the storage key and backward-compatible hydration unless a deliberate m
 
 ## AI request flow
 
-Feature components call typed functions in `src/services/ai/actions.ts`. Those functions target `ClinicalAiGateway`; `geminiGateway.ts` maps gateway operations to task modules, and `geminiTransport.ts` owns SDK calls and provider-specific transport handling. Task modules own prompts, schemas, parsing, and task result contracts. Keep provider-specific types and behavior behind this seam.
+Feature components call typed functions in `src/services/ai/actions.ts`. Those functions target `ClinicalAiGateway`; `geminiGateway.ts` maps gateway operations to task modules, and `geminiTransport.ts` owns SDK calls and provider-specific transport handling. `contracts.ts` owns explicit AI task input/result DTOs and nested structures; `contextAdapters.ts` selects existing fields before task context serialization, so adding a domain field does not implicitly change provider context. Task modules own prompts, provider schemas, parsing and fallbacks. Keep provider-specific types and behavior behind this seam.
 
 The gateway is an interface boundary inside the client bundle, not a server proxy. Vite injects `GEMINI_API_KEY` into the browser build today. A private credential must not be used with this setup. Moving provider credentials and calls to a server remains explicitly deferred. See [AI integration](ai-integration.md).
 

@@ -1,3 +1,11 @@
+import {
+  toAiPatientContext,
+  toAiPatientInfo,
+  toAiEntries,
+  toAiCourse,
+  toAiSoap,
+  toAiPlan,
+} from "./contextAdapters";
 import type { ClinicalAiGateway } from "./clinicalAiGateway";
 
 const throwIfAborted = (signal?: AbortSignal) => {
@@ -16,8 +24,8 @@ export const geminiGateway: ClinicalAiGateway = {
       request.files,
       request.specialization,
       request.useSearch,
-      request.history,
-      request.currentPatientInfo,
+      toAiEntries(request.history),
+      toAiPatientInfo(request.currentPatientInfo),
     ),
   generateProgressNote: async (request) =>
     (await import("./tasks/chartGeneration")).generateProgressNote(
@@ -25,12 +33,12 @@ export const geminiGateway: ClinicalAiGateway = {
       request.files,
       request.specialization,
       request.useSearch,
-      request.history,
+      toAiEntries(request.history),
     ),
   reassessNote: async (request) =>
     (await import("./tasks/chartGeneration")).reassessSoapNote(
-      request.soap,
-      request.history,
+      toAiSoap(request.soap),
+      toAiEntries(request.history),
       request.specialization,
       request.useSearch,
     ),
@@ -41,7 +49,7 @@ export const geminiGateway: ClinicalAiGateway = {
     return sendChatMessage(
       request.history,
       request.message,
-      request.patient,
+      toAiPatientContext(request.patient) ?? null,
       request.useSearch,
       request.signal,
       request.attachments,
@@ -57,7 +65,7 @@ export const geminiGateway: ClinicalAiGateway = {
       request.noteContent,
       request.noteTitle,
       request.highlightedContext,
-      request.patient,
+      toAiPatientContext(request.patient) ?? null,
       request.signal,
       request.attachments,
     );
@@ -115,11 +123,11 @@ export const geminiGateway: ClinicalAiGateway = {
   refreshSummary: async (request) =>
     (await import("./tasks/summary")).refreshPatientSummary(
       request.currentSummary,
-      request.patientInfo,
-      request.recentEntries,
-      request.recentCourse,
+      toAiPatientInfo(request.patientInfo)!,
+      toAiEntries(request.recentEntries)!,
+      toAiCourse(request.recentCourse),
       request.specialization,
     ),
   parsePrescriptions: async (plan) =>
-    (await import("./tasks/discharge")).parsePrescriptions(plan),
+    (await import("./tasks/discharge")).parsePrescriptions(toAiPlan(plan)),
 };

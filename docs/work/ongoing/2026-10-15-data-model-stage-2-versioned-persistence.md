@@ -5,11 +5,11 @@ Owner: unassigned
 Updated: 2026-10-15
 
 Parent: [Data model roadmap](2026-10-14-data-model-postgresql-fhir-plan.md)
-Prerequisite: [Contract baseline and isolation](2026-10-15-data-model-stage-1-contract-isolation.md)
+Prerequisite: [Contract baseline and isolation](../done/2026-10-15-data-model-stage-1-contract-isolation.md)
 
 ## Goal
 
-Unify durable-data validation without changing the current writer, then introduce a versioned writer only after its recovery and compatibility decisions are resolved. This tracker owns W04–W05. The current request creates planning files only.
+Unify durable-data validation without changing the current writer, then introduce a versioned writer only after its recovery and compatibility decisions are resolved. This tracker owns W04–W05. Stage 1 is complete; this stage remains planned and unstarted.
 
 ## Scope
 
@@ -27,7 +27,7 @@ W04 can begin after stage 1 supplies its accepted-shape inventory, isolated AI c
 
 ## Package state
 
-- W04: not started; owner unassigned; dependency: stage 1 exit evidence.
+- W04: ready, not started; owner unassigned; stage 1 prerequisites complete; next action when authorized: claim W04 and compare validator approaches.
 - W05: not started; owner unassigned; dependencies: W04, exact envelope contract and D1 resolution.
 
 ## Shared constraints and source documents
@@ -129,3 +129,7 @@ Planning-document checks passed: `npm run docs:check` and `npm run format:check`
 ## Outcome
 
 Execution tracker prepared. No implementation started; implementation acceptance remains unchecked.
+
+## Stage 1 handoff
+
+The [completed prerequisite tracker](../done/2026-10-15-data-model-stage-1-contract-isolation.md#w01-contract-inventory-and-exit-evidence) contains the W01 accepted-shape inventory, unsafe current behaviors and reproducible browser baseline, plus W02/W03 boundary changes and verification evidence. Use that inventory before choosing W04 validation rules; do not infer new file-format support from the internal batch handler. Current startup, single-file and handler paths deliberately still differ. Duplicate IDs, malformed nested records and corrupt attachment fallback remain W04 work. `src/services/ai/contracts.ts`/`contextAdapters.ts` own the frozen task boundary; `PersistedAttachment`, `PersistedFileMetadata` and `SerializedAttachments<T>` in `attachmentPersistence.ts` describe the unchanged durable attachment writer. No stage 2 implementation is included in stage 1.

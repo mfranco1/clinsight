@@ -1,12 +1,12 @@
 # Data model preparation for PostgreSQL and FHIR
 
-Status: planned
+Status: active
 Owner: unassigned
 Updated: 2026-10-15
 
 ## Goal
 
-Prepare a clinically faithful, efficiently queryable data model that can move from browser persistence to PostgreSQL without coupling database changes to AI request/response schemas. This record is the parent roadmap; linked stage trackers are the canonical execution references for their scopes. The current request authorizes preparing the plan for concrete work; application implementation is not started. Follow the work packages and decision gates below when implementation is authorized.
+Prepare a clinically faithful, efficiently queryable data model that can move from browser persistence to PostgreSQL without coupling database changes to AI request/response schemas. This record is the parent roadmap; linked stage trackers are the canonical execution references for their scopes. Stage 1 implementation was authorized on 2026-10-15 and is complete; its linked tracker owns detailed evidence. Later stages remain unstarted and retain the work-package dependencies and decision gates below.
 
 ## Scope
 
@@ -24,7 +24,7 @@ Prepare a clinically faithful, efficiently queryable data model that can move fr
 
 The existing boundaries are useful: pure transitions in `src/domain/`, persistence services, and the typed AI gateway. Preserve them.
 
-- `src/types.ts`: `MedicalChartResponse` combines demographics, encounters, entries, course, handoff, orders, medications and notes. The same types also enter `src/services/ai/ClinicalAiGateway.ts`. Changing the shared aggregate can therefore unintentionally change AI context or result requirements.
+- `src/types.ts`: `MedicalChartResponse` combines demographics, encounters, entries, course, handoff, orders, medications and notes. The same types also enter `src/services/ai/clinicalAiGateway.ts`. Changing the shared aggregate can therefore unintentionally change AI context or result requirements.
 - `GeneralData` mixes patient identity with admission/discharge, location and encounter state. `ageSex`, `age`, `sex` and `dob` overlap. Historical encounters need their own facts, without rewriting old notes when demographics change.
 - `SoapNote` stores vitals, labs and medications mainly as narrative. That is valuable source content but insufficient for reliable longitudinal numeric queries. Assessment text and ICD strings do not establish confirmed conditions.
 - `CourseEvent.id` and several encounter links are optional. `PatientNote` is patient-scoped; do not invent an encounter link. The existing ID helper supports prefixes and legacy IDs are not guaranteed UUIDs.
@@ -130,9 +130,9 @@ Keep patient information out of telemetry, URLs and audit event payloads unless 
 
 ## Stage roadmap and ownership
 
-This parent owns shared scope, design rationale, requirement/outcome IDs, dependencies and D1–D6 decision gates. Linked stages own their package checklists, acceptance evidence, status and handoffs. Do not maintain duplicate task checklists here. All implementation remains unstarted; this request prepares documentation only.
+This parent owns shared scope, design rationale, requirement/outcome IDs, dependencies and D1–D6 decision gates. Linked stages own their package checklists, acceptance evidence, status and handoffs. Do not maintain duplicate task checklists here. Stage 1 is complete; stages 2–6 remain unstarted.
 
-1. [Stage 1: contract baseline and isolation](2026-10-15-data-model-stage-1-contract-isolation.md) — W01–W03. Start with W01; W02/W03 follow its evidence. Produces the inventory, AI compatibility boundary, durable attachment types and baseline needed by stage 2.
+1. [Stage 1: contract baseline and isolation](../done/2026-10-15-data-model-stage-1-contract-isolation.md) — W01–W03 complete. Contains the contract inventory, isolated AI boundary, durable attachment types, synthetic benchmark and verification evidence needed by stage 2.
 2. [Stage 2: validated, versioned persistence](2026-10-15-data-model-stage-2-versioned-persistence.md) — W04–W05. Depends on stage 1. Validated readers precede writer changes; W05 requires D1. Its document explicitly distinguishes the executable reader scope from the gated writer scope.
 3. **Clinical domain and provenance — W06–W07.** Create a stage document after W05 and D2/D3 clarify encounter ownership and reviewed-fact workflows. Scope: field ownership/migration map, compatibility projections, source/revision metadata and a clinically approved first fact workflow. Preserve original narrative and distinguish fact review from document review.
 4. **FHIR exchange — W08.** Create a stage document after D4 identifies the partner/release/profiles and required domain records exist. Begin with Patient/Encounter/DocumentReference; Observation depends on reviewed facts. Require pinned validator evidence, explicit mappings and a loss report; do not create a server/API by implication.
@@ -158,7 +158,7 @@ W04's atomic rejection and duplicate-ID rejection are bounded execution defaults
 
 Each stage contains its applicable verification commands, acceptance checklist and handoff requirements. The outcome IDs below are shared roadmap targets, not a second execution checklist. Use linked stage evidence to assess them; a single stage does not satisfy every outcome.
 
-The first implementation action, when authorized, is W01 in stage 1. Claim it there, preserve behavior and record contract gaps and reproducible baseline measurements. Do not start implementation as part of creating these planning files.
+Stage 1 records the preserved contracts, known validation gaps and reproducible baseline. The next implementation package, when authorized, is W04 in stage 2; use that evidence before selecting validation rules and limits.
 
 ## Shared acceptance outcomes
 
@@ -189,20 +189,20 @@ Planning baseline: hybrid relational/document model, frozen AI contracts with ad
 - **Offline and retention:** must edits work offline after server migration; who can amend/delete records and what must be retained? This blocks sync and production retention design.
 - **Security ownership:** who determines HIPAA applicability, signs processor arrangements and approves the production deployment?
 
-Readiness: W01 is ready; W02–W04 have concrete scope and become ready after their dependencies. W05–W10 require the named decision gates. Collision behavior for W04 is specified as atomic rejection; interactive reconciliation is excluded. No backend implementation is authorized now.
+Readiness: W01–W03 are complete; W04 has its stage 1 prerequisites and is ready for a separately authorized stage 2 implementation. W05–W10 require the named decision gates. Collision behavior for W04 is specified as atomic rejection; interactive reconciliation is excluded. No backend implementation is authorized now.
 
 ## Documentation impact
 
-Current implementation facts have not changed, so authoritative architecture/data/AI/operations documents remain unchanged. Upon implementation, update `docs/data-and-persistence.md` for durable versions/migrations, `docs/ai-integration.md` for DTO boundaries, `docs/architecture.md` for ownership, and product/testing/operations docs for actual workflows and deployment capabilities. This roadmap owns the shared proposal; linked stage records own their execution details without duplicating this design.
+Stage 1 updated `docs/data-and-persistence.md` for durable attachment types, `docs/ai-integration.md` for explicit DTOs/projections and `docs/architecture.md` for implemented ownership. Later changes must update their authoritative documents when runtime facts change; storage versions, backend operations and clinical workflows remain future work. This roadmap owns the shared proposal; linked stage records own their execution details without duplicating this design.
 
 ## Progress
 
-Stages 1 and 2 have linked execution trackers; W01–W05 details and package evidence ownership moved there. Stages 3–6 remain gated roadmap summaries without placeholder documents. Implementation has not started. Next action when authorized: claim W01 in stage 1. Resolve later decisions only before the work they gate.
+Stage 1 is complete and archived under `done/`; stage 2 retains its planned tracker under `ongoing/`. Stages 3–6 remain gated roadmap summaries without placeholder documents. Next action when authorized: claim W04 in stage 2 using stage 1 evidence. Resolve later decisions only before the work they gate.
 
 ## Verification
 
-Planning-document checks passed for this split: `npm run docs:check` and `npm run format:check`. No application code changed; implementation tests, benchmarks, FHIR validation, database migration and security assessment have not run for this split.
+Stage 1 contains actual focused/full unit, browser, build, bundle-size, documentation and synthetic benchmark evidence. Its passing checks do not establish live AI correctness, FHIR conformance, database migration or production readiness. This roadmap update passes `npm run docs:check` and `npm run format:check`.
 
 ## Outcome
 
-Staged execution references prepared. Only stages with sufficient scope have files; later stages will be specified as decisions become clear. The roadmap and stage trackers remain planned. No application implementation, PostgreSQL migration, FHIR compatibility or HIPAA readiness is claimed.
+Stage 1 completed without changing provider prompts/schemas or durable patient formats. The parent remains active; stage 2 is planned and later stages remain gated. No PostgreSQL migration, FHIR compatibility or production readiness is claimed.

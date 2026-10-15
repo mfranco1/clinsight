@@ -6,10 +6,12 @@ import type {
   GeneralData,
   GroundingSource,
   HandoffSummary,
-  MedicalChartResponse,
+  GenerateChartResult,
+  GenerateProgressNoteResult,
+  ReassessNoteResult,
   PlanItem,
   SoapNote,
-} from "../../../types";
+} from "../contracts";
 import { formatChartHistory } from "../../../utils/clinicalText";
 import { getCurrentTime24, getTodayDate } from "../../../utils/date";
 import { createId } from "../../../utils/ids";
@@ -44,10 +46,10 @@ interface GeneratedProgressNote {
   references?: string[];
 }
 
-interface ReassessedNote extends Pick<
-  SoapNote,
-  "assessment" | "plan" | "broaderManagement"
-> {
+interface ReassessedNote {
+  assessment: SoapNote["assessment"];
+  plan: PlanItem[];
+  broaderManagement?: SoapNote["broaderManagement"];
   references?: string[];
   groundingSources?: GroundingSource[];
 }
@@ -59,7 +61,7 @@ export const generateMedicalChart = async (
   useGoogleSearch = false,
   history: ChartEntry[] = [],
   currentPatientInfo: GeneralData | null = null,
-): Promise<Omit<MedicalChartResponse, "entries"> & { soap: SoapNote }> => {
+): Promise<GenerateChartResult> => {
   const parts: Part[] = [];
 
   if (currentPatientInfo) {
@@ -250,14 +252,7 @@ export const generateProgressNote = async (
   specialization: string = "General Practice",
   useGoogleSearch = false,
   history: ChartEntry[] = [],
-): Promise<{
-  soap: SoapNote;
-  courseEvent: { event: string; details: string };
-  inferredDate?: string | null;
-  inferredTime?: string | null;
-  groundingSources?: GroundingSource[];
-  references?: string[];
-}> => {
+): Promise<GenerateProgressNoteResult> => {
   const parts: Part[] = [];
   const nowRef = `${getTodayDate()} ${getCurrentTime24()}`;
   parts.push({
@@ -346,12 +341,7 @@ export const reassessSoapNote = async (
   history: ChartEntry[] = [],
   specialization: string = "General Practice",
   useGoogleSearch = false,
-): Promise<{
-  assessment: SoapNote["assessment"];
-  plan: PlanItem[];
-  groundingSources?: GroundingSource[];
-  references?: string[];
-}> => {
+): Promise<ReassessNoteResult> => {
   const prompt = REASSESS_SOAP_PROMPT(
     currentSoap,
     history,
