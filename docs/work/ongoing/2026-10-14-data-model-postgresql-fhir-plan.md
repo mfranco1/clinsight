@@ -2,11 +2,11 @@
 
 Status: planned
 Owner: unassigned
-Updated: 2026-10-14
+Updated: 2026-10-15
 
 ## Goal
 
-Prepare a clinically faithful, efficiently queryable data model that can move from browser persistence to PostgreSQL without coupling database changes to AI request/response schemas. This record is the canonical execution reference. The current request authorizes preparing the plan for concrete work; application implementation is not started. Follow the work packages and decision gates below when implementation is authorized.
+Prepare a clinically faithful, efficiently queryable data model that can move from browser persistence to PostgreSQL without coupling database changes to AI request/response schemas. This record is the parent roadmap; linked stage trackers are the canonical execution references for their scopes. The current request authorizes preparing the plan for concrete work; application implementation is not started. Follow the work packages and decision gates below when implementation is authorized.
 
 ## Scope
 
@@ -128,112 +128,20 @@ Review hosting, storage, AI and other relevant processors and applicable BAAs. H
 
 Keep patient information out of telemetry, URLs and audit event payloads unless specifically required and protected. Audit logs should capture actor/action/target/outcome/time without duplicating clinical narrative; they can themselves be sensitive. A browser log is not tamper-resistant evidence. Separate original clinical source retention from raw AI prompt logging: retaining source documents does not authorize retaining every provider request/response. Retention periods require a policy decision; do not apply a blanket duration to all medical records.
 
-## Execution work packages
+## Stage roadmap and ownership
 
-Use this section as the implementation checklist. All packages are initially **not started**, owner **unassigned**. “Ready” describes specification readiness, not authorization to modify application code. Claim one package here before work, record its commit/PR and actual checks at completion, and do not mark downstream packages complete from upstream evidence. Keep this as the canonical tracker rather than creating competing phase trackers.
+This parent owns shared scope, design rationale, requirement/outcome IDs, dependencies and D1–D6 decision gates. Linked stages own their package checklists, acceptance evidence, status and handoffs. Do not maintain duplicate task checklists here. All implementation remains unstarted; this request prepares documentation only.
 
-Dependency order: **W01 → W02 and W03 → W04 → W05 → W06**. W07 follows W06 and its clinical gate; W08 follows the required domain packages and its interoperability gate. W09/W10 are separately scoped future projects. Each package should form one reviewable change; split within a package if needed without mixing compatibility work with behavior changes.
+1. [Stage 1: contract baseline and isolation](2026-10-15-data-model-stage-1-contract-isolation.md) — W01–W03. Start with W01; W02/W03 follow its evidence. Produces the inventory, AI compatibility boundary, durable attachment types and baseline needed by stage 2.
+2. [Stage 2: validated, versioned persistence](2026-10-15-data-model-stage-2-versioned-persistence.md) — W04–W05. Depends on stage 1. Validated readers precede writer changes; W05 requires D1. Its document explicitly distinguishes the executable reader scope from the gated writer scope.
+3. **Clinical domain and provenance — W06–W07.** Create a stage document after W05 and D2/D3 clarify encounter ownership and reviewed-fact workflows. Scope: field ownership/migration map, compatibility projections, source/revision metadata and a clinically approved first fact workflow. Preserve original narrative and distinguish fact review from document review.
+4. **FHIR exchange — W08.** Create a stage document after D4 identifies the partner/release/profiles and required domain records exist. Begin with Patient/Encounter/DocumentReference; Observation depends on reviewed facts. Require pinned validator evidence, explicit mappings and a loss report; do not create a server/API by implication.
+5. **PostgreSQL migration — W09.** Create a separately authorized stage after D5 resolves tenancy, offline behavior and deployment. Scope the actual SQL/API constraints, auth, revisions, attachment lifecycle, proxy dependency, migration rehearsal and rollback including post-cutover writes.
+6. **Production readiness — W10.** Create a stage document once deployment and security/privacy owners are known under D5/D6. Require deployment-specific risk/vendor/access/audit/retention/incident and restore evidence, not schema-based compliance claims.
 
-### W01 — Freeze existing behavior and establish baselines
+Dependency order: **W01 → W02 and W03 → W04 → W05 → W06 → W07**. W08 depends on D4 and the records it exports; document-only exchange need not wait for W07. W09/W10 remain separately scoped and gated. No placeholder files are created for stages 3–6.
 
-Readiness: ready. Requirements: R1–R3, R5. Acceptance: baseline evidence for AC1–AC3, AC5–AC6.
-
-- Inspect `src/types.ts`, `src/services/ai/ClinicalAiGateway.ts`, `actions.ts`, `geminiGateway.ts`, all six task modules, `patientPersistence.ts`, `attachmentPersistence.ts`, `src/features/input/importCases.ts`, `src/hooks/usePatientStore.ts` and the App import/export/write call sites.
-- Extend existing synthetic fixtures under `tests/fixtures/`; cover structured/raw entries, string/record ROS and exam values, optional collections, prefixed/legacy IDs, missing encounter links, subnotes, legacy pearls and attachments at every supported nesting location.
-- Characterize every gateway operation: request defaults, context selection/order, provider schema, parsed output, empty/malformed fallback, cancellation where supported. Fix time/ID sources in tests; compare relevant request values rather than snapshotting implementation internals.
-- Record the accepted shapes separately for startup storage, one case file, multiple selected files and internal import handlers. The current file parser accepts one chart object per file; handler array support is not proof of array-in-one-file support. Do not expand the file format here.
-- Add negative characterization for duplicate patient IDs, malformed nested records and corrupt attachments. Document unsafe current behavior explicitly; do not encode it as the desired future acceptance rule or fix it in this package.
-- Benchmark synthetic cohorts of 10 and 100 patients with 20 entries each, plus a separate 10-patient attachment workload. Record source sizes, attachment sizes, browser/machine, warmup, sample count, median/p95 hydration/serialization time and bytes written for one edit. Do not attempt over-quota writes to the user's actual storage. Treat memory figures as optional if the runtime cannot measure them reliably.
-- Exit: test-backed contract inventory and measured baseline recorded in this tracker. No application behavior changes. Existing gaps distinguish current behavior from target ACs.
-
-### W02 — Decouple AI DTOs and projections
-
-Readiness: ready after W01. Requirements: R1. Acceptance: AC1, AC5.
-
-- Add proposed `src/services/ai/contracts.ts` for explicit task inputs/results and only the nested types those tasks consume. Avoid `Pick`/`Omit` references to mutable domain aggregates for the frozen boundary. Preserve optionality and legacy value unions.
-- Add proposed `src/services/ai/contextAdapters.ts` for domain-to-task projections when required by an actual caller. Keep feature-facing actions compatible; update the gateway and task signatures to use the independent contracts.
-- Cover chart generation, progress notes, reassessment, chat, note threads, summary refresh, clinical/input assistance, prescription parsing, lookup, media analysis, transcription and title generation. Preserve the existing result-to-workflow path; do not add clinical interpretation.
-- Preserve provider schemas, prompts, history truncation, chronological order, defaults, abort signals and lazy task loading. Media remains an explicit runtime input; task contracts need not be JSON-only.
-- Prove that adding a synthetic future domain field does not change provider context. Do not filter out existing task-consumed data while doing so. Verify no patient switch/cancellation regression using existing request identity and async-action tests.
-- Exit: no gateway signature depends on `MedicalChartResponse`; equivalence tests pass for each operation. Update `docs/ai-integration.md` and ownership guidance only to describe implemented boundaries.
-
-### W03 — Make durable attachment types truthful
-
-Readiness: ready after W01; integrate with W02 before W04. Requirements: R2–R3. Acceptance: AC2, AC5.
-
-- Define explicit persisted attachment metadata/content types in `src/services/attachmentPersistence.ts` or a nearby persistence-contract module if shared by the next package.
-- Replace misleading generic promises that serialized `T` remains the same runtime `T` at patient persistence/export boundaries. Serialized values contain metadata, not `File`; preview URLs remain runtime-only.
-- Preserve current durable key names, bytes, category, MIME type, filename and modification time. Do not add storage envelopes or new attachment IDs yet.
-- Extend `tests/attachment-persistence.test.ts` for nested entry/note/subnote attachments and byte equality. Characterize hydration failure here; stricter rejection belongs to W04. Verify preview URLs are revoked on failed partial hydration and owner removal when changing allocation paths.
-- Exit: explicit durable/runtime conversions with unchanged persisted output. Update `docs/data-and-persistence.md` for the implemented boundary.
-
-### W04 — Shared validated readers, unchanged writer
-
-Readiness: ready after W02/W03 and W01's accepted-shape inventory. Requirements: R2–R3. Acceptance: AC2–AC3, AC5.
-
-- Add proposed `src/services/patientCodec.ts` with pure unknown-input parsing and path/code-only issues. Reuse it from `patientPersistence.ts` and `src/features/input/importCases.ts`; keep file reading and UI feedback in their current owners. Validate before hydrating files or changing state.
-- First implementation decision: compare extending existing guards against one runtime schema library using the same nested legacy fixture. Record the choice, bundle impact and handling of unknown fields here. Prefer existing guards if they meet the requirements without duplicating shapes; add no dependency without evidence.
-- Plan default: reject a malformed import batch atomically with safe errors and keep existing data intact. Reject duplicate patient IDs within the batch or against the current store; do not auto-merge, auto-overwrite or offer copy-as-new in this scope. Check collisions against current state at commit time, not only before asynchronous file reads. Preserve startup's non-destructive failure behavior.
-- Preserve optional legacy fields and unknown JSON fields in the compatibility payload. Validate known nested shapes and associations; do not coerce prose or ambiguous dates into structured clinical facts. Keep existing legacy encounter inference distinct from rejection of an explicitly wrong-patient encounter link.
-- Validate base64 and known metadata without rewriting bytes. Define input-size/depth limits from W01 evidence and document them before enforcement; errors must explain supported limits without echoing filenames or clinical content.
-- Continue writing the current storage array and case-object exports. Add reader support for the proposed version-1 envelope only under a documented exact schema, with unsupported versions rejected non-destructively. Distinguish absent data, an empty valid collection, invalid JSON and unsupported version.
-- Exit: storage/import paths share shape rules, appropriate legacy inputs remain accepted, invalid batches have zero state changes, and current write output is unchanged. Update data/product docs for intentional validation behavior changes.
-
-### W05 — Versioned storage rollout and recovery
-
-Readiness: gated by D1 and W04. Requirements: R2–R3. Acceptance: AC2–AC3, AC5.
-
-- Add proposed `src/services/patientMigrations.ts` for pure ordered version transitions. Version 1 retains the legacy chart payload plus explicit migration metadata; it does not normalize every entity. Document the exact storage envelope and distinguish it from case-export format.
-- Keep established IDs. Assign missing IDs using an injected migration context and persist the allocation map with the migrated snapshot. Specify deterministic restart behavior from unchanged legacy input; an in-memory cache alone does not satisfy retry stability across reloads.
-- Define staged write/validation/commit and startup recovery states before enabling the writer: legacy only, valid staged data, completed commit, failed commit and corrupt staged data. Use `safeStorage` and existing error feedback. Session-memory fallback is not proof of durable commit.
-- Preserve a recovery copy or verified full-fidelity export; if quota prevents a safe cutover, leave the original durable value intact and report the blocker. Never clear the original to make space before recovery is verified.
-- Keep the versioned reader released before the new writer. Document minimum compatible reader, recovery location, cleanup timing and how old clients behave. Existing deployed readers cannot be retroactively made forward-compatible.
-- Exit: interruption/quota/reload tests at each write boundary preserve a readable original or verified new snapshot; repeated migrations preserve identities. Release notes and data docs explain rollback limits and export compatibility.
-
-### W06 — Patient/encounter ownership and provenance
-
-Readiness: gated by D2 and W05. Requirements: R2, R4–R5. Acceptance: AC2, AC4–AC6.
-
-- Draft the field-by-field ownership/migration map in this tracker before code: patient demographics/death; encounter admission/discharge/location/status; document content; inferred legacy links; retained unknown fields. Resolve conflicts explicitly without choosing a clinical truth silently.
-- Introduce domain records under `src/domain/` only for these owners, with a projection back to the current feature chart shape. Update patient factories/transitions, store coordination and codecs as one coherent vertical slice.
-- Keep opaque IDs and patient-scoped notes. Add provenance only where actual evidence exists; use legacy-unknown otherwise. Do not manufacture authors, review decisions or clinical occurrence times.
-- Specify the selected/current encounter rule under D2 before deriving face-sheet fields. Preserve existing patient-status interactions until that rule and its tests are approved.
-- Exit: projection and migration fixtures demonstrate preserved clinical content, explicit conflict handling, stable relationships and unchanged AI payloads. No new clinical fact extraction in this package.
-
-### W07 — Reviewed structured facts and revision workflow
-
-Readiness: gated by D3 and W06. Requirements: R4–R5. Acceptance: AC4–AC6.
-
-- Default candidate scope is manually entered/reviewed vital observations; approve exact fields, units, missingness, source links and review UX before implementation. AI extraction is an optional later task contract, not part of DTO isolation.
-- Specify create/edit/cancel/review/amend behavior, document vs fact review state, supersession and encounter-switch handling. Define how revisions relate to existing editable notes before promising immutable history.
-- Add domain types, validators, persistence and owning feature UI together. Use exact decimal/source representations and explicit temporal precision. Keep narrative available and unchanged.
-- Exit: synthetic tests demonstrate all AC4 cases and no unreviewed fact becomes verified through import or AI output. Update product/data documentation and compare measurements with W01.
-
-### W08 — Narrow FHIR exchange implementation
-
-Readiness: gated by D4 and relevant W06/W07 records. Requirements: R6. Acceptance: AC7.
-
-- Record pinned FHIR release, implementation-guide/terminology package versions, resource profiles, exchange direction and mapping-loss policy before adding `src/services/fhir/`.
-- Implement synthetic Patient/Encounter/DocumentReference export first. Add Observation only after W07; do not require structured facts for a document-only slice.
-- Create field/status/reference mappings and validator fixtures. Missing mandatory data yields an explicit mapping error, never fabricated facts. Validate offline with pinned packages and synthetic resources.
-- Exit: reproducible validator command, passing supported fixtures, failing unsupported/missing-reference cases and a supported-profile statement. No FHIR server/API or broad interoperability claim.
-
-### W09 — PostgreSQL implementation specification and migration
-
-Readiness: gated by D5; separate backend authorization required. Requirements: R5, R7. Acceptance: AC6, AC8.
-
-- Before backend code, create the concrete schema/API design in this record: entity fields, nullability, foreign keys, identifier uniqueness, tenant scope, deletion/amendment policy, revisions, idempotency and attachment lifecycle. Select hosting/ORM only against those requirements.
-- Specify browser-to-server ownership, offline behavior, authentication, access controls and the deferred AI proxy dependency. Model cross-record transactions and conflict responses; do not assume browser state is trusted.
-- Implement and rehearse a synthetic migration with ID/content reconciliation, failed-batch retry, concurrent writes, query plans and rollback/restore. Include post-cutover writes in recovery tests.
-- Exit: versioned SQL migrations, tested authorization/isolation and restore evidence, measured query plans and explicit rollout procedure. Keep this package deferred until its separate scope is authorized.
-
-### W10 — Production security and privacy readiness
-
-Readiness: gated by D5/D6 and W09. Requirements: R7. Acceptance: AC8.
-
-- Assign security/privacy and operational owners. Produce deployment-specific threat/risk assessment, vendor/service eligibility and contractual review, access/audit controls, backup/restore evidence, retention/deletion and incident response procedures.
-- Evaluate production readiness against the actual deployment and applicable obligations. Recheck authoritative guidance and provider terms at that time; this dated plan is not a compliance determination.
-- Exit: owner-approved evidence and resolved release blockers. A passing application test suite is not an approval substitute.
+When a stage completes, move its file from `ongoing/` to `done/` and update incoming parent/sibling links. The parent stays open until the agreed roadmap scope is completed or explicitly revised; deferred work must never be marked complete by association.
 
 ## Execution decision gates
 
@@ -246,43 +154,22 @@ Readiness: gated by D5/D6 and W09. Requirements: R7. Acceptance: AC8.
 
 W04's atomic rejection and duplicate-ID rejection are bounded execution defaults for the preparation scope. Record a user-requested alternative here before implementation; do not stall W01–W03 on later gates or silently expand into a merge/reconciliation UI.
 
-## Package verification commands and handoff
+## Verification and handoff ownership
 
-For W01–W05, run the relevant focused checks, then the shared-contract suite once the package is complete:
+Each stage contains its applicable verification commands, acceptance checklist and handoff requirements. The outcome IDs below are shared roadmap targets, not a second execution checklist. Use linked stage evidence to assess them; a single stage does not satisfy every outcome.
 
-```sh
-npm test -- tests/ai-actions.test.ts tests/ai-task-contracts.test.ts tests/response-parsing.test.ts tests/gemini-transport.test.ts
-npm test -- tests/patient-persistence.test.ts tests/attachment-persistence.test.ts tests/input-import.test.ts tests/patient-factories.test.ts tests/patient-transitions.test.ts
-npm test -- tests/request-identity.test.ts tests/app-async-actions.test.tsx
-npm run typecheck
-npm test
-npm run build
-npm run docs:check
-npm run format:check
-```
+The first implementation action, when authorized, is W01 in stage 1. Claim it there, preserve behavior and record contract gaps and reproducible baseline measurements. Do not start implementation as part of creating these planning files.
 
-Run only the relevant focused groups during development. For runtime persistence/import changes, additionally run:
+## Shared acceptance outcomes
 
-```sh
-npm run test:e2e -- tests/e2e/persistence.spec.ts tests/e2e/input-workflow.spec.ts tests/e2e/patient-navigation.spec.ts
-```
-
-Add browser chat coverage when AI action plumbing changes. W06–W10 require the tests defined in their packages in addition to applicable repository checks; FHIR/SQL/security commands must be specified when their tooling is selected, not guessed now. New tests must cover meaningful contracts, and all provider interactions remain mocked/offline.
-
-At each handoff, replace current package state with: owner, status, affected paths, commit/PR if present, requirement/AC evidence, actual commands/results, remaining failures, storage-format compatibility and exact next action. Mark this tracker active only when implementation begins. Move it to done only when its agreed scope is complete; if later phases become separately scoped projects, link their canonical records and explicitly record the reduced scope rather than checking off deferred work.
-
-First implementation instruction: **Execute W01 only, preserve application behavior, record baseline evidence and contract gaps here, and run the relevant checks. Proceed to W02 only when W01's exit conditions pass and implementation scope permits it.**
-
-## Acceptance criteria and verification plan
-
-- [ ] **AC1 (R1):** Existing synthetic inputs produce equivalent task request payloads/schemas and parsed result shapes across the migration. Extend `tests/ai-actions.test.ts`, `tests/ai-task-contracts.test.ts`, `tests/response-parsing.test.ts` and `tests/gemini-transport.test.ts`; no live provider calls.
-- [ ] **AC2 (R2):** Legacy load → migrate → save → reload preserves IDs, relationships, original text, references, `clinicalPearl` and attachment bytes/metadata. A second migration yields the same identities. Cover missing IDs and write-failure retries in persistence/attachment tests.
-- [ ] **AC3 (R3):** Empty collection succeeds; malformed nested data, unknown versions, wrong-patient references, conflicting IDs and corrupt attachments produce actionable errors without overwriting storage or silently losing records. Verify import and reload browser paths.
-- [ ] **AC4 (R4):** Date-only/partial dates, ambiguous local time, reported age, missing vs zero, less-than quantities and unreviewed AI facts survive round trips. No narrative rewrite or automatic promotion to verified facts.
-- [ ] **AC5 (R1–R4):** Cancelled AI work and patient/encounter switches never apply results to a different record; capture target identity/revision before invocation and check before commit. Existing review/edit/save/cancel and resource cleanup behavior remains intact.
-- [ ] **AC6 (R5):** Document benchmark datasets and before/after hydration/write/context metrics. Set budgets from that baseline before implementation; do not assert performance gains from modeling alone. Future SQL phase includes query plans and concurrent-update tests.
-- [ ] **AC7 (R6):** Each supported FHIR fixture passes the pinned profile validator; missing required fields and unresolved references fail explicitly. Unsupported fields and mapping loss are reported. No broad conformance claim beyond the tested subset.
-- [ ] **AC8 (R7):** Backend and production phases cannot close without isolation, access audit, recovery and operational assessment evidence appropriate to the deployed system.
+- **AC1 (R1):** Existing synthetic inputs produce equivalent task request payloads/schemas and parsed result shapes across the migration. Extend `tests/ai-actions.test.ts`, `tests/ai-task-contracts.test.ts`, `tests/response-parsing.test.ts` and `tests/gemini-transport.test.ts`; no live provider calls.
+- **AC2 (R2):** Legacy load → migrate → save → reload preserves IDs, relationships, original text, references, `clinicalPearl` and attachment bytes/metadata. A second migration yields the same identities. Cover missing IDs and write-failure retries in persistence/attachment tests.
+- **AC3 (R3):** Empty collection succeeds; malformed nested data, unknown versions, wrong-patient references, conflicting IDs and corrupt attachments produce actionable errors without overwriting storage or silently losing records. Verify import and reload browser paths.
+- **AC4 (R4):** Date-only/partial dates, ambiguous local time, reported age, missing vs zero, less-than quantities and unreviewed AI facts survive round trips. No narrative rewrite or automatic promotion to verified facts.
+- **AC5 (R1–R4):** Cancelled AI work and patient/encounter switches never apply results to a different record; capture target identity/revision before invocation and check before commit. Existing review/edit/save/cancel and resource cleanup behavior remains intact.
+- **AC6 (R5):** Document benchmark datasets and before/after hydration/write/context metrics. Set budgets from that baseline before implementation; do not assert performance gains from modeling alone. Future SQL phase includes query plans and concurrent-update tests.
+- **AC7 (R6):** Each supported FHIR fixture passes the pinned profile validator; missing required fields and unresolved references fail explicitly. Unsupported fields and mapping loss are reported. No broad conformance claim beyond the tested subset.
+- **AC8 (R7):** Backend and production phases cannot close without isolation, access audit, recovery and operational assessment evidence appropriate to the deployed system.
 
 Application changes require `npm run typecheck`, `npm run build`, relevant focused tests and the shared-contract unit suite. Run browser reload/import/export and affected clinical workflows. Documentation changes require `npm run docs:check` and `npm run format:check`. Passing tests does not establish clinical accuracy, live provider behavior, interoperability with an untested partner or legal compliance.
 
@@ -306,16 +193,16 @@ Readiness: W01 is ready; W02–W04 have concrete scope and become ready after th
 
 ## Documentation impact
 
-Current implementation facts have not changed, so authoritative architecture/data/AI/operations documents remain unchanged. Upon implementation, update `docs/data-and-persistence.md` for durable versions/migrations, `docs/ai-integration.md` for DTO boundaries, `docs/architecture.md` for ownership, and product/testing/operations docs for actual workflows and deployment capabilities. This proposal remains the single planning record.
+Current implementation facts have not changed, so authoritative architecture/data/AI/operations documents remain unchanged. Upon implementation, update `docs/data-and-persistence.md` for durable versions/migrations, `docs/ai-integration.md` for DTO boundaries, `docs/architecture.md` for ownership, and product/testing/operations docs for actual workflows and deployment capabilities. This roadmap owns the shared proposal; linked stage records own their execution details without duplicating this design.
 
 ## Progress
 
-Execution reference prepared with W01–W10, dependencies, concrete owners/paths, exit conditions, verification commands and D1–D6 gates. Import parser, attachment serialization and patient-store call sites inspected to ground the packages. All packages remain not started. Next implementation action: claim W01 and produce its characterization fixtures and baseline evidence; later policy gates do not block that package.
+Stages 1 and 2 have linked execution trackers; W01–W05 details and package evidence ownership moved there. Stages 3–6 remain gated roadmap summaries without placeholder documents. Implementation has not started. Next action when authorized: claim W01 in stage 1. Resolve later decisions only before the work they gate.
 
 ## Verification
 
-`npm run docs:check` and `npm run format:check` passed for this documentation-only change. No runtime code changed; proposed application, migration, FHIR, database and security checks have not run.
+Planning-document checks passed for this split: `npm run docs:check` and `npm run format:check`. No application code changed; implementation tests, benchmarks, FHIR validation, database migration and security assessment have not run for this split.
 
 ## Outcome
 
-Concrete execution reference delivered; planning acceptance is satisfied by the scoped packages, dependencies, file ownership, verification commands, decision gates and handoff instructions. This record remains planned because its implementation acceptance criteria are future work; it does not claim the data model, PostgreSQL migration, FHIR compatibility or HIPAA readiness has been implemented.
+Staged execution references prepared. Only stages with sufficient scope have files; later stages will be specified as decisions become clear. The roadmap and stage trackers remain planned. No application implementation, PostgreSQL migration, FHIR compatibility or HIPAA readiness is claimed.
